@@ -1,101 +1,97 @@
-import 'package:flutter/foundation.dart';
+import 'home/home_screen.dart';
+import 'status/status_screen.dart';
+import 'files/files_screen.dart';
+import 'settings/settings_screen.dart';
+import 'settings/calibrate_screen.dart';
+import 'settings/wifi_screen.dart';
+import 'settings/about_screen.dart';
+
 import 'package:flutter/material.dart';
-import 'package:device_preview/device_preview.dart';
+import 'package:go_router/go_router.dart';
+import 'package:window_size/window_size.dart';
 
-void main() => runApp(DevicePreview(
-      enabled: !kReleaseMode,
-      builder: (context) => const Orion(),
-    ));
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  setWindowMinSize(const Size(800, 480));
+  setWindowMaxSize(const Size(800, 480));
+  runApp(const Orion());
+}
 
+/// The route configuration.
+final GoRouter _router = GoRouter(
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (BuildContext context, GoRouterState state) {
+        return const HomeScreen();
+      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'files',
+          builder: (BuildContext context, GoRouterState state) {
+            return const FilesScreen();
+          },
+        ),
+        GoRoute(
+          path: 'settings',
+          builder: (BuildContext context, GoRouterState state) {
+            return const SettingsScreen();
+          },
+          routes: <RouteBase>[
+            GoRoute(
+              path: 'calibrate',
+              builder: (BuildContext context, GoRouterState state) {
+                return const CalibrateScreen();
+              },
+            ),
+            GoRoute(
+              path: 'wifi',
+              builder: (BuildContext context, GoRouterState state) {
+                return const WifiScreen();
+              },
+            ),
+            GoRoute(
+              path: 'about',
+              builder: (BuildContext context, GoRouterState state) {
+                return const AboutScreen();
+              },
+            ),
+          ],
+        ),
+        GoRoute(
+          path: 'status',
+          builder: (BuildContext context, GoRouterState state) {
+            return const StatusScreen();
+          },
+        ),
+      ],
+    ),
+  ],
+);
+
+/// The main app.
 class Orion extends StatelessWidget {
-  const Orion({super.key});
-
-  static const appTitle = 'Orion MSLA Control';
+  /// Constructs a [Orion]
+  const Orion({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: appTitle,
-        useInheritedMediaQuery: true,
-        locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder,
+    return SizedBox(
+      width: 800,
+      height: 480,
+      child: MaterialApp.router(
+        routerConfig: _router,
         theme: ThemeData(
-          brightness: Brightness.light,
-          colorSchemeSeed: const Color(0xff6750a4),
-          useMaterial3: true,
-        ),
+            brightness: Brightness.light,
+            colorSchemeSeed: const Color(0xff6750a4),
+            useMaterial3: true),
         darkTheme: ThemeData(
           brightness: Brightness.dark,
           colorSchemeSeed: const Color(0xff6750a4),
           useMaterial3: true,
         ),
         themeMode: ThemeMode.system,
-        home: Scaffold(
-          appBar: AppBar(
-            title: const Text(appTitle),
-          ),
-          body: const Navigation(),
-        ));
-  }
-}
-
-class Navigation extends StatefulWidget {
-  const Navigation({super.key});
-
-  @override
-  State<Navigation> createState() => _NavigationState();
-}
-
-class _NavigationState extends State<Navigation> {
-  int currentPageIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        bottomNavigationBar: NavigationBar(
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-          onDestinationSelected: (int index) {
-            setState(() {
-              currentPageIndex = index;
-            });
-          },
-          selectedIndex: currentPageIndex,
-          destinations: const <Widget>[
-            NavigationDestination(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.folder),
-              label: 'Files',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.code),
-              label: 'Console',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings),
-              label: 'Settings',
-            )
-          ],
-        ),
-        body: <Widget>[
-          Container(
-            alignment: Alignment.center,
-            child: const Text('Page 1'),
-          ),
-          Container(
-            alignment: Alignment.center,
-            child: const Text('Page 2'),
-          ),
-          Container(
-            alignment: Alignment.center,
-            child: const Text('Page 3'),
-          ),
-          Container(
-            alignment: Alignment.center,
-            child: const Text('Page 4'),
-          ),
-        ][currentPageIndex]);
+      ),
+    );
   }
 }
