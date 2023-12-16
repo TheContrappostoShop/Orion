@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class AboutScreen extends StatefulWidget {
@@ -15,6 +14,8 @@ class AboutScreen extends StatefulWidget {
 class _AboutScreenState extends State<AboutScreen> {
   double leftPadding = 0;
   double rightPadding = 0;
+  Color? _standardColor = Colors.white.withOpacity(0.0);
+  Color? _qrColor = Colors.white.withOpacity(0.0);
 
   final GlobalKey textKey1 = GlobalKey();
   final GlobalKey textKey2 = GlobalKey();
@@ -40,6 +41,10 @@ class _AboutScreenState extends State<AboutScreen> {
       setState(() {
         leftPadding = (screenWidth - maxWidth - 220) / 3;
         rightPadding = leftPadding;
+        _standardColor = null;
+        _qrColor = Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black;
       });
     });
 
@@ -64,8 +69,10 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       title,
                       key: textKey1,
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: _standardColor),
                     ),
                   ),
                 ),
@@ -79,7 +86,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       serialNumber,
                       key: textKey2,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
@@ -93,7 +100,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       orionVersion,
                       key: textKey3,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
@@ -107,7 +114,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       apiVersion,
                       key: textKey4,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
@@ -121,7 +128,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       boardType,
                       key: textKey5,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
@@ -135,12 +142,12 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       warranty,
                       key: textKey6,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: kToolbarHeight / 2),
+              //const SizedBox(height: kToolbarHeight / 2), //TODO: Figure out why centered text looks off
             ],
           ),
           Align(
@@ -154,9 +161,9 @@ class _AboutScreenState extends State<AboutScreen> {
                     data: 'https://github.com/TheContrappostoShop',
                     version: QrVersions.auto,
                     size: 220.0,
-                    foregroundColor: Colors.white,
+                    foregroundColor: _qrColor,
                   ),
-                  const SizedBox(height: kToolbarHeight / 2),
+                  //const SizedBox(height: kToolbarHeight / 2),
                 ],
               ),
             ),

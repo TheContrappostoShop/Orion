@@ -39,7 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Calibrate',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.wifi),
+            icon: Icon(Icons.network_wifi),
             label: 'WiFi',
           ),
           BottomNavigationBarItem(
