@@ -80,6 +80,7 @@ class Orion extends StatelessWidget {
       width: 800,
       height: 480,
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         routerConfig: _router,
         theme: ThemeData(
             brightness: Brightness.light,

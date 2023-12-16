@@ -51,7 +51,7 @@ packages:
     source: hosted
     version: "3.1.1"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       url: "https://pub.dartlang.org"
@@ -154,8 +154,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.0.9"
+  ini:
+    dependency: "direct main"
+    description:
+      name: ini
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       url: "https://pub.dartlang.org"
@@ -495,6 +502,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.2"
+  wifi_flutter:
+    dependency: "direct main"
+    description:
+      name: wifi_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   wifi_info_flutter:
     dependency: "direct main"
     description:
