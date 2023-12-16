@@ -8,12 +8,9 @@ import 'settings/about_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:window_size/window_size.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  setWindowMinSize(const Size(800, 480));
-  setWindowMaxSize(const Size(800, 480));
   runApp(const Orion());
 }
 
@@ -77,8 +74,6 @@ class Orion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 800,
-      height: 480,
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         routerConfig: _router,

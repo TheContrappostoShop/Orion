@@ -43,16 +43,16 @@ dependencies:
   path_provider: ^2.1.0
   qr_flutter: ^4.0.0
   wifi_info_flutter: ^2.0.2
-  window_size:
-    git:
-      url: https://github.com/google/flutter-desktop-embedding.git
-      path: plugins/window_size
+  # window_size:
+  #   git:
+  #     url: https://github.com/google/flutter-desktop-embedding.git
+  #     path: plugins/window_size
   flutter_svg: ^1.1.6
   archive: ^3.4.2
   permission_handler: ^11.0.1
   ini: ^2.1.0
   crypto: ^3.0.2
-  intl: ^0.17.0
+  intl: ^0.18.0
   wifi_flutter: ^0.2.0
 
 dev_dependencies:
