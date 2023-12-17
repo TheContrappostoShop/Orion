@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'home/home_screen.dart';
 import 'status/status_screen.dart';
 import 'files/files_screen.dart';
@@ -12,9 +14,15 @@ import 'package:window_size/window_size.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  setWindowMinSize(const Size(800, 480));
-  setWindowMaxSize(const Size(800, 480));
   runApp(const Orion());
+}
+
+void macDebug() {
+  if (kDebugMode) {
+    setWindowTitle('Orion Debug - Prometheus mSLA');
+    setWindowMinSize(const Size(800, 480));
+    setWindowMaxSize(const Size(800, 480));
+  }
 }
 
 /// The route configuration.
@@ -76,9 +84,10 @@ class Orion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Theme.of(context).platform == TargetPlatform.macOS) {
+      macDebug();
+    }
     return SizedBox(
-      width: 800,
-      height: 480,
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         routerConfig: _router,
