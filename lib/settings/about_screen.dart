@@ -3,7 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class AboutScreen extends StatefulWidget {
-  const AboutScreen({Key? key}) : super(key: key);
+  const AboutScreen({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -42,9 +42,9 @@ class _AboutScreenState extends State<AboutScreen> {
         leftPadding = (screenWidth - maxWidth - 220) / 3;
         rightPadding = leftPadding;
         _standardColor = null;
-        _qrColor = Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black;
+        _qrColor = Theme.of(context).primaryColor;
+        _qrColor = Colors.purple;
+        print(_qrColor);
       });
     });
 
@@ -157,11 +157,13 @@ class _AboutScreenState extends State<AboutScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  QrImage(
+                  QrImageView(
                     data: 'https://github.com/TheContrappostoShop',
                     version: QrVersions.auto,
                     size: 220.0,
-                    foregroundColor: _qrColor,
+                    eyeStyle: QrEyeStyle(color: _qrColor),
+                    dataModuleStyle: QrDataModuleStyle(color: Colors.purpleAccent, dataModuleShape: QrDataModuleShape.circle),
+                   //  foregroundColor: _qrColor, // INFO Deprecated in the new version, using eyeStyle instead
                   ),
                   //const SizedBox(height: kToolbarHeight / 2),
                 ],

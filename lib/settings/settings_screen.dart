@@ -30,7 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: _selectedIndex == 0
           ? const CalibrateScreen()
           : _selectedIndex == 1
-              ? const WifiScreen()
+              ?  WifiScreen()
               : const AboutScreen(),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

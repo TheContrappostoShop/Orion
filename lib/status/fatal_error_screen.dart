@@ -143,7 +143,7 @@ class _FatalScreenState extends State<FatalScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  QrImage(
+                  QrImageView(
                     data: 'https://prometheus-msla.org',
                     version: QrVersions.auto,
                     size: 250.0,

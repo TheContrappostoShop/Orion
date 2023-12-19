@@ -142,7 +142,7 @@ class _ErrorScreenState extends State<ErrorScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  QrImage(
+                  QrImageView(
                     data: 'https://github.com/TheContrappostoShop',
                     version: QrVersions.auto,
                     size: 250.0,

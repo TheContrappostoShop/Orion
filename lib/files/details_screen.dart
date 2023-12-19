@@ -15,7 +15,7 @@ import 'package:crypto/crypto.dart';
 class DetailScreen extends StatefulWidget {
   final File file;
 
-  const DetailScreen({Key? key, required this.file}) : super(key: key);
+  const DetailScreen({super.key, required this.file});
 
   @override
   // ignore: library_private_types_in_public_api

@@ -6,9 +6,21 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+Directory getInitialDir(platform){
+  switch (platform) {
+    case TargetPlatform.macOS:
+      return Directory('/Users/${Platform.environment['USER']}/Documents');
+    case TargetPlatform.linux:
+      return Directory('/home/${Platform.environment['USER']}');
+    case TargetPlatform.windows:
+      return Directory('%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
+    default:
+      return Directory('/');
+  }
+}
+
 void checkFullDiskAccess(BuildContext context) {
-  final documentsDir =
-      Directory('/Users/${Platform.environment['USER']}/Documents');
+  final documentsDir = getInitialDir(Theme.of(context).platform);
   try {
     documentsDir.listSync();
   } catch (e) {
@@ -41,7 +53,7 @@ void checkFullDiskAccess(BuildContext context) {
 
 /// The files screen
 class FilesScreen extends StatefulWidget {
-  const FilesScreen({Key? key}) : super(key: key);
+  const FilesScreen({super.key});
   @override
   // ignore: library_private_types_in_public_api
   _FilesScreenState createState() => _FilesScreenState();
@@ -55,7 +67,7 @@ class _FilesScreenState extends State<FilesScreen> {
 
   @override
   void initState() {
-    _directory = Directory('/Users/${Platform.environment['USER']}/Downloads');
+    _directory = getInitialDir(context);
     _files = [];
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -179,9 +191,10 @@ class _FilesScreenState extends State<FilesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(_directory.path.replaceFirst('/Users/paul/', '')),
+        title: const Text("Files"),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 5.0),
