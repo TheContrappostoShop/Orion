@@ -11,7 +11,7 @@ Directory getInitialDir(platform){
     case TargetPlatform.macOS:
       return Directory('/Users/${Platform.environment['USER']}/Documents');
     case TargetPlatform.linux:
-      return Directory('/home/${Platform.environment['USER']}');
+      return Directory('/home/${Platform.environment['USER']}/printableFiles<');
     case TargetPlatform.windows:
       return Directory('%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
     default:

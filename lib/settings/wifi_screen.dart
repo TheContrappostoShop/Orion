@@ -32,97 +32,117 @@ class _WifiScreenState extends State<WifiScreen> {
     _getWifiNetworks();
   }
 
-  IconData getSignalStrengthIcon(int signalStrength) {
-    if (signalStrength >= 80) {
-      return Icons.network_wifi_rounded;
-    } else if (signalStrength >= 60) {
-      return Icons.network_wifi_3_bar_rounded;
-    } else if (signalStrength >= 40) {
-      return Icons.network_wifi_2_bar_rounded;
-    } else if (signalStrength >= 20) {
-      return Icons.network_wifi_1_bar_rounded;
+  Icon getSignalStrengthIcon(
+      dynamic signalStrengthReceived, String platform) {
+    int signalStrength = 0;
+    try {
+      signalStrength = int.parse(signalStrengthReceived);
+    } catch (e) {
+      print(e);
+      return Icon(Icons.warning_rounded);
+    }
+    if (platform == 'linux') {
+      if (signalStrength >= 80) {
+        return Icon(Icons.network_wifi_rounded,color: Colors.green[700],);
+      } else if (signalStrength >= 60) {
+        return Icon(Icons.network_wifi_3_bar_rounded,color: Colors.green[700]);
+      } else if (signalStrength >= 40) {
+        return Icon(Icons.network_wifi_2_bar_rounded,color: Colors.orangeAccent);
+      } else if (signalStrength >= 20) {
+        return Icon(Icons.network_wifi_1_bar_rounded,color: Colors.orangeAccent);
+      }
+      return Icon(Icons.warning_rounded, color: Colors.red);
     } else {
-      return Icons.warning_rounded;
+      if (signalStrength >= -50) {
+        return Icon(Icons.network_wifi_rounded,color: Colors.green[700],);
+      } else if (signalStrength >= -60) {
+        return Icon(Icons.network_wifi_3_bar_rounded,color: Colors.green[700]);
+      } else if (signalStrength >= -70) {
+        return Icon(Icons.network_wifi_2_bar_rounded,color: Colors.orangeAccent);
+      }
+      return Icon(Icons.warning_rounded, color: Colors.red[700]);
     }
   }
 
-  Future<void> _getWifiNetworks() async {
+  var platform;
+  Future<List<Map<String, String>>> _getWifiNetworks() async {
     try {
-      // Execute 'nmcli' command to list Wi-Fi networks
-      final result = await Process.run('nmcli', ['device', 'wifi', 'list']);
+      var result;
+      switch (Theme.of(context).platform) {
+        case TargetPlatform.macOS:
+          result = await Process.run('/usr/local/bin/airport', ['-s']);
+          platform = 'macos';
+          break;
+        case TargetPlatform.linux:
+          result = await Process.run('nmcli', ['device', 'wifi', 'list']);
+          platform = 'linux';
+          break;
+        default:
+      }
       if (result.exitCode == 0) {
-        // Parsing output to get Wi-Fi networks
-        wifiNetworks = result.stdout.toString().split('\n');
+        final List<Map<String, String>> networks = [];
+        final List<String> lines = result.stdout.toString().split('\n');
+
+        // Skip the first two lines (header and separator)
+        for (int i = 2; i < lines.length; i++) {
+          final List<String> columns = lines[i].split(RegExp(r'\s+'));
+
+          if (columns.length >= 7) {
+            networks.add({
+              'SSID': platform == 'linux' ? columns[2] : columns[1],
+              // 'MODE': columns[1],
+              // 'CHAN': columns[2],
+              // 'RATE': columns[3],
+              'SIGNAL': platform == 'linux' ? columns[7] : columns[2],
+              // 'SECURITY': columns[5],
+              // 'ACTIVE': columns[6],
+            });
+          }
+        }
+        return networks;
       } else {
         print('Failed to get Wi-Fi networks');
+        return [];
       }
     } catch (e) {
       print('Error: $e');
+      return [];
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     
-      body: ListView.builder(
-        itemCount: wifiNetworks.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(wifiNetworks[index]),
-            // You can add more onTap logic to connect to the selected network
-            onTap: () {
-              // Your logic to connect to this network
-              // For Linux, this would involve executing appropriate commands
-              // using Process class based on the selected network
-            },
-          );
+      body: FutureBuilder<List<Map<String, String>>>(
+        future: _getWifiNetworks(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else {
+              final List<Map<String, String>> networks = snapshot.data ?? [];
+              return ListView.builder(
+                itemCount: networks.length,
+                itemBuilder: (context, index) {
+                  final network = networks[index];
+                  return ListTile(
+                    title: Text('SSID: ${network['SSID']}'),
+                    subtitle: Text('Signal: ${network['SIGNAL']} dBm'),
+                    trailing:
+                        getSignalStrengthIcon(network['SIGNAL']!, platform),
+                    // Add onTap logic to connect to the selected network if needed
+                    onTap: () {
+                      // Your logic to connect to this network
+                    },
+                  );
+                },
+              );
+            }
+          }
         },
       ),
     );
   }
 }
-  
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   _getWifiNetworks();
-  //   return Column(
-  //     children: <Widget>[
-  //       FutureBuilder<String>(
-  //         future: getWifiIP(context),
-  //         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-  //           if (snapshot.connectionState == ConnectionState.waiting) {
-  //             return const CircularProgressIndicator();
-  //           } else if (snapshot.hasError) {
-  //             return Text('Error: ${snapshot.error}');
-  //           } else {
-  //             final String wifiIP = snapshot.data ?? 'Unknown';
-  //             return ListTile(
-  //               title: Text(
-  //                 'IP Address: $wifiIP',
-  //                 style: const TextStyle(fontSize: 24),
-  //               ),
-  //             );
-  //           }
-  //         },
-  //       ),
-  //       Expanded(
-  //         child: FutureBuilder<ConnectivityResult>(
-  //           future: getWifiNetworks(context),
-  //           builder: (BuildContext context,
-  //               AsyncSnapshot<ConnectivityResult> snapshot) {
-  //             if (snapshot.connectionState == ConnectionState.waiting) {
-  //               return const CircularProgressIndicator();
-  //             } else if (snapshot.hasError) {
-  //               return Text('Error: ${snapshot.error}');
-  //             } else {
-  //               return Text('test');
-  //             }
-  //           },
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-// }
