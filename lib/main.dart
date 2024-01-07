@@ -56,7 +56,7 @@ final GoRouter _router = GoRouter(
             GoRoute(
               path: 'wifi',
               builder: (BuildContext context, GoRouterState state) {
-                return WifiScreen();
+                return const WifiScreen();
               },
             ),
             GoRoute(
@@ -69,7 +69,6 @@ final GoRouter _router = GoRouter(
         ),
         GoRoute(
           path: 'status',
-          
           builder: (BuildContext context, GoRouterState state) {
             return const StatusScreen();
           },
@@ -95,7 +94,7 @@ class Orion extends StatelessWidget {
         routerConfig: _router,
         theme: themeLight,
         darkTheme: themeDark,
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.system,
       ),
     );
   }
