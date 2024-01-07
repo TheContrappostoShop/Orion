@@ -6,14 +6,15 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-Directory getInitialDir(platform){
+Directory getInitialDir(platform) {
   switch (platform) {
     case TargetPlatform.macOS:
       return Directory('/Users/${Platform.environment['USER']}/Documents');
     case TargetPlatform.linux:
       return Directory('/home/${Platform.environment['USER']}/printableFiles<');
     case TargetPlatform.windows:
-      return Directory('%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
+      return Directory(
+          '%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
     default:
       return Directory('/');
   }
@@ -98,7 +99,6 @@ class _FilesScreenState extends State<FilesScreen> {
   }
 
   void refresh() {
-    _getFiles();
     setState(
       () {
         _files = _directory
@@ -144,9 +144,7 @@ class _FilesScreenState extends State<FilesScreen> {
   }
 
   Future<void> _getFiles() async {
-    //final Directory directory = Directory.systemTemp;
-    final Directory directory =
-        Directory('/Users/${Platform.environment['USER']}/Downloads');
+    final Directory directory = getInitialDir(Theme.of(context).platform);
     List<FileSystemEntity> files = getAccessibleDirectories(directory);
     files = files
         .where((file) =>
@@ -191,10 +189,16 @@ class _FilesScreenState extends State<FilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Files"),
+        title: Text(
+          path.basename(_directory.path) == 'printer_files'
+              ? 'Print Files'
+              : path.basename(_directory.path) == 'Download' ||
+                      path.basename(_directory.path) == "Downloads"
+                  ? path.basename(_directory.path)
+                  : _directory.path,
+        ),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 5.0),
@@ -239,8 +243,8 @@ class _FilesScreenState extends State<FilesScreen> {
                 if (index == 0) {
                   return ListTile(
                     leading: const Icon(Icons.subdirectory_arrow_left_rounded),
-                    title: Row(
-                      children: const [
+                    title: const Row(
+                      children: [
                         Text('Leave Directory', style: TextStyle(fontSize: 24)),
                       ],
                     ),

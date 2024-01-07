@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// The calibrate screen
 class CalibrateScreen extends StatelessWidget {
   /// Constructs a [CalibrateScreen]
-  const CalibrateScreen({Key? key}) : super(key: key);
+  const CalibrateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

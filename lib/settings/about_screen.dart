@@ -1,6 +1,14 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:package_info/package_info.dart';
+
+Future<String> getVersionNumber() async {
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  return '${packageInfo.version} | Build ${packageInfo.buildNumber}';
+}
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -42,18 +50,17 @@ class _AboutScreenState extends State<AboutScreen> {
         leftPadding = (screenWidth - maxWidth - 220) / 3;
         rightPadding = leftPadding;
         _standardColor = null;
-        _qrColor = Theme.of(context).primaryColor;
-        _qrColor = Colors.purple;
-        print(_qrColor);
+        _qrColor = Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black;
       });
     });
 
-    const String title = 'Prometheus mSLA';
-    const String serialNumber = 'Serial: CS-PROM2023DEV';
-    const String orionVersion = 'Orion: 0.1.0 Alpha';
+    const String title = 'Custom Printer';
+    const String serialNumber = 'No S/N Available';
     const String apiVersion = 'Odyssey: 0.1.0 Alpha';
-    const String boardType = 'Board: Apollo 3.5.2';
-    const String warranty = 'Warranty Date: 0000-00-00';
+    const String boardType = 'Hardware: Apollo 3.5.2';
+    const String warranty = 'No Warranty Available';
 
     return Scaffold(
       body: Stack(
@@ -97,10 +104,19 @@ class _AboutScreenState extends State<AboutScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(left: leftPadding),
                   child: FittedBox(
-                    child: Text(
-                      orionVersion,
-                      key: textKey3,
-                      style: TextStyle(fontSize: 20, color: _standardColor),
+                    child: FutureBuilder<String>(
+                      future: getVersionNumber(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.hasData) {
+                          return Text('Orion: ${snapshot.data}',
+                              key: textKey3,
+                              style: TextStyle(
+                                  fontSize: 20, color: _standardColor));
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+                      },
                     ),
                   ),
                 ),
@@ -147,7 +163,9 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 ),
               ),
-              //const SizedBox(height: kToolbarHeight / 2), //TODO: Figure out why centered text looks off
+              const SizedBox(
+                  height: kToolbarHeight /
+                      2), //TODO: Figure out why centered text looks off without this
             ],
           ),
           Align(
@@ -158,14 +176,15 @@ class _AboutScreenState extends State<AboutScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   QrImageView(
-                    data: 'https://github.com/TheContrappostoShop',
+                    data: 'https://github.com/TheContrappostoShop/Orion',
                     version: QrVersions.auto,
                     size: 220.0,
                     eyeStyle: QrEyeStyle(color: _qrColor),
-                    dataModuleStyle: QrDataModuleStyle(color: Colors.purpleAccent, dataModuleShape: QrDataModuleShape.circle),
-                   //  foregroundColor: _qrColor, // INFO Deprecated in the new version, using eyeStyle instead
+                    dataModuleStyle: QrDataModuleStyle(
+                        color: _qrColor,
+                        dataModuleShape: QrDataModuleShape.circle),
                   ),
-                  //const SizedBox(height: kToolbarHeight / 2),
+                  const SizedBox(height: kToolbarHeight / 2),
                 ],
               ),
             ),
