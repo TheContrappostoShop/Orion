@@ -3,7 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class ErrorScreen extends StatefulWidget {
-  const ErrorScreen({Key? key}) : super(key: key);
+  const ErrorScreen({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -48,10 +48,10 @@ class _ErrorScreenState extends State<ErrorScreen> {
     });
 
     const String title = 'UV Panel Overheated!';
-    const String serialNumber = 'Scan QR Code for Guidance';
-    const String orionVersion = 'Board: Apollo 3.5.2';
-    const String apiVersion = 'Reference Code: S1-AP-UV-OH';
-    const String boardType = 'Please Restart to Continue.';
+    const String hint = 'Scan QR Code for Guidance';
+    const String boardVersion = 'Board: Apollo 3.5.2';
+    const String referenceCode = 'Reference Code: S1-AP-UV-OH';
+    const String restartNote = 'Please Restart to Continue.';
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(215, 207, 124, 0),
@@ -84,7 +84,7 @@ class _ErrorScreenState extends State<ErrorScreen> {
                   padding: EdgeInsets.only(left: leftPadding),
                   child: FittedBox(
                     child: Text(
-                      serialNumber,
+                      hint,
                       key: textKey2,
                       style: const TextStyle(fontSize: 22),
                     ),
@@ -98,7 +98,7 @@ class _ErrorScreenState extends State<ErrorScreen> {
                   padding: EdgeInsets.only(left: leftPadding),
                   child: FittedBox(
                     child: Text(
-                      orionVersion,
+                      boardVersion,
                       key: textKey3,
                       style: const TextStyle(fontSize: 22),
                     ),
@@ -112,7 +112,7 @@ class _ErrorScreenState extends State<ErrorScreen> {
                   padding: EdgeInsets.only(left: leftPadding),
                   child: FittedBox(
                     child: Text(
-                      apiVersion,
+                      referenceCode,
                       key: textKey4,
                       style: const TextStyle(fontSize: 22),
                     ),
@@ -126,7 +126,7 @@ class _ErrorScreenState extends State<ErrorScreen> {
                   padding: EdgeInsets.only(left: leftPadding),
                   child: FittedBox(
                     child: Text(
-                      boardType,
+                      restartNote,
                       key: textKey5,
                       style: const TextStyle(fontSize: 22),
                     ),
@@ -146,7 +146,10 @@ class _ErrorScreenState extends State<ErrorScreen> {
                     data: 'https://github.com/TheContrappostoShop',
                     version: QrVersions.auto,
                     size: 250.0,
-                    foregroundColor: _standardColor,
+                    eyeStyle: QrEyeStyle(color: _standardColor),
+                    dataModuleStyle: QrDataModuleStyle(
+                        color: _standardColor,
+                        dataModuleShape: QrDataModuleShape.circle),
                   ),
                 ],
               ),
