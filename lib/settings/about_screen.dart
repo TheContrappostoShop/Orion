@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -56,10 +57,13 @@ class _AboutScreenState extends State<AboutScreen> {
       });
     });
 
-    const String title = 'Custom Printer';
-    const String serialNumber = 'No S/N Available';
-    const String apiVersion = 'Odyssey: 0.1.0 Alpha';
-    const String boardType = 'Hardware: Apollo 3.5.2';
+    const String title = kDebugMode ? 'Debug Machine' : 'Prometheus mSLA';
+    const String serialNumber =
+        kDebugMode ? 'S/N: DBG-0001-001' : 'No S/N Available';
+    const String apiVersion =
+        kDebugMode ? 'Odyssey: Simulated' : 'Odyssey: 0.1.0 Alpha';
+    const String boardType =
+        kDebugMode ? 'Hardware: Debugger' : 'Hardware: Apollo 3.5.2';
     const String warranty = 'No Warranty Available';
 
     return Scaffold(
@@ -163,9 +167,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 ),
               ),
-              const SizedBox(
-                  height: kToolbarHeight /
-                      2), //TODO: Figure out why centered text looks off without this
+              const SizedBox(height: kToolbarHeight / 2),
             ],
           ),
           Align(
