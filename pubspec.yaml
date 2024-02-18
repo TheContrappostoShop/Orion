@@ -52,7 +52,6 @@ dependencies:
   ini: ^2.1.0
   crypto: ^3.0.2
   intl: ^0.18.1
-  connectivity_plus: ^5.0.2
   wifi_info_flutter: ^2.0.2
   package_info: ^2.0.2
   onscreen_keyboard: ^1.0.3

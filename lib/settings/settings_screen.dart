@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:orion/settings/debug_screen.dart';
 
 import 'calibrate_screen.dart';
 import 'wifi_screen.dart';
@@ -38,8 +40,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ? const CalibrateScreen()
           : _selectedIndex == 1
               ? const WifiScreen()
-              : const AboutScreen(),
+              : _selectedIndex == 2
+                  ? const AboutScreen()
+                  : const DebugScreen(),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
@@ -53,6 +58,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icon(Icons.info),
             label: 'About',
           ),
+          if (kDebugMode)
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bug_report),
+              label: 'Debug',
+            ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
