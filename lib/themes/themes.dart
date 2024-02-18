@@ -15,3 +15,14 @@ final ThemeData themeDark = ThemeData(
   ),
   useMaterial3: true,
 );
+
+extension ColorBrightness on Color {
+  Color withBrightness(double factor) {
+    assert(factor >= 0);
+
+    final hsl = HSLColor.fromColor(this);
+    final increasedLightness = (hsl.lightness * factor).clamp(0.0, 1.0);
+
+    return hsl.withLightness(increasedLightness).toColor();
+  }
+}
