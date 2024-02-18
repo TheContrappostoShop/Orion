@@ -6,6 +6,8 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+ScrollController _scrollController = ScrollController();
+
 Directory getInitialDir(platform) {
   switch (platform) {
     case TargetPlatform.macOS:
@@ -92,8 +94,8 @@ class _FilesScreenState extends State<FilesScreen> {
               return a.path.toLowerCase().compareTo(b.path.toLowerCase());
             });
         });
-        _sortByAlpha = false;
-        _toggleSortOrder();
+        //_sortByAlpha = false;
+        //_toggleSortOrder();
       });
     });
   }
@@ -238,6 +240,7 @@ class _FilesScreenState extends State<FilesScreen> {
       body: _directory == null
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
+              controller: _scrollController,
               itemCount: _files.length + 1,
               itemBuilder: (BuildContext context, int index) {
                 if (index == 0) {
@@ -322,6 +325,7 @@ class _FilesScreenState extends State<FilesScreen> {
                       onTap: () {
                         try {
                           if (file is Directory) {
+                            _scrollController.jumpTo(0.0);
                             setState(() {
                               _directory = file;
                               _files = file
