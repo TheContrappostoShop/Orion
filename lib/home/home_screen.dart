@@ -5,10 +5,18 @@ import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
   /// Constructs a [HomeScreen]
-  const HomeScreen({Key? key}) : super(key: key);
-
+  const HomeScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    const Size homeBtnSize = Size(200, 110);
+    final theme = Theme.of(context).copyWith(
+        elevatedButtonTheme: ElevatedButtonThemeData(style: ButtonStyle(
+      minimumSize: MaterialStateProperty.resolveWith<Size?>(
+        (Set<MaterialState> states) {
+          return homeBtnSize;
+        },
+      ),
+    )));
     return Scaffold(
       appBar: AppBar(
         title: Stack(
@@ -37,14 +45,12 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
+              style: theme.elevatedButtonTheme.style,
               onPressed: () => context.go('/status'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(200, 110),
-              ),
-              child: Column(
+              child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.info_outline, size: 48),
                   Text('Status', style: TextStyle(fontSize: 24)),
                 ],
@@ -52,14 +58,12 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(width: 20),
             ElevatedButton(
+              style: theme.elevatedButtonTheme.style,
               onPressed: () => context.go('/files'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(200, 110),
-              ),
-              child: Column(
+              child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.folder_open_outlined, size: 48),
                   Text('Print Files', style: TextStyle(fontSize: 24)),
                 ],
@@ -67,14 +71,12 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(width: 20),
             ElevatedButton(
+              style: theme.elevatedButtonTheme.style,
               onPressed: () => context.go('/settings'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(200, 110),
-              ),
-              child: Column(
+              child: const Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.settings_outlined, size: 48),
                   Text('Settings', style: TextStyle(fontSize: 24)),
                 ],
@@ -90,7 +92,7 @@ class HomeScreen extends StatelessWidget {
 /// A live clock widget
 class LiveClock extends StatefulWidget {
   /// Constructs a [LiveClock]
-  const LiveClock({Key? key}) : super(key: key);
+  const LiveClock({super.key});
 
   @override
   // ignore: library_private_types_in_public_api

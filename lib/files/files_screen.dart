@@ -6,9 +6,24 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+ScrollController _scrollController = ScrollController();
+
+Directory getInitialDir(platform) {
+  switch (platform) {
+    case TargetPlatform.macOS:
+      return Directory('/Users/${Platform.environment['USER']}/Documents');
+    case TargetPlatform.linux:
+      return Directory('/home/${Platform.environment['USER']}/printableFiles<');
+    case TargetPlatform.windows:
+      return Directory(
+          '%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
+    default:
+      return Directory('/');
+  }
+}
+
 void checkFullDiskAccess(BuildContext context) {
-  final documentsDir =
-      Directory('/Users/${Platform.environment['USER']}/Documents');
+  final documentsDir = getInitialDir(Theme.of(context).platform);
   try {
     documentsDir.listSync();
   } catch (e) {
@@ -41,7 +56,7 @@ void checkFullDiskAccess(BuildContext context) {
 
 /// The files screen
 class FilesScreen extends StatefulWidget {
-  const FilesScreen({Key? key}) : super(key: key);
+  const FilesScreen({super.key});
   @override
   // ignore: library_private_types_in_public_api
   _FilesScreenState createState() => _FilesScreenState();
@@ -55,7 +70,7 @@ class _FilesScreenState extends State<FilesScreen> {
 
   @override
   void initState() {
-    _directory = Directory('/Users/${Platform.environment['USER']}/Downloads');
+    _directory = getInitialDir(context);
     _files = [];
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -79,14 +94,13 @@ class _FilesScreenState extends State<FilesScreen> {
               return a.path.toLowerCase().compareTo(b.path.toLowerCase());
             });
         });
-        _sortByAlpha = false;
-        _toggleSortOrder();
+        //_sortByAlpha = false;
+        //_toggleSortOrder();
       });
     });
   }
 
   void refresh() {
-    _getFiles();
     setState(
       () {
         _files = _directory
@@ -132,9 +146,7 @@ class _FilesScreenState extends State<FilesScreen> {
   }
 
   Future<void> _getFiles() async {
-    //final Directory directory = Directory.systemTemp;
-    final Directory directory =
-        Directory('/Users/${Platform.environment['USER']}/Downloads');
+    final Directory directory = getInitialDir(Theme.of(context).platform);
     List<FileSystemEntity> files = getAccessibleDirectories(directory);
     files = files
         .where((file) =>
@@ -181,7 +193,14 @@ class _FilesScreenState extends State<FilesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_directory.path.replaceFirst('/Users/paul/', '')),
+        title: Text(
+          path.basename(_directory.path) == 'printer_files'
+              ? 'Print Files'
+              : path.basename(_directory.path) == 'Download' ||
+                      path.basename(_directory.path) == "Downloads"
+                  ? path.basename(_directory.path)
+                  : _directory.path,
+        ),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 5.0),
@@ -221,13 +240,14 @@ class _FilesScreenState extends State<FilesScreen> {
       body: _directory == null
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
+              controller: _scrollController,
               itemCount: _files.length + 1,
               itemBuilder: (BuildContext context, int index) {
                 if (index == 0) {
                   return ListTile(
                     leading: const Icon(Icons.subdirectory_arrow_left_rounded),
-                    title: Row(
-                      children: const [
+                    title: const Row(
+                      children: [
                         Text('Leave Directory', style: TextStyle(fontSize: 24)),
                       ],
                     ),
@@ -305,6 +325,7 @@ class _FilesScreenState extends State<FilesScreen> {
                       onTap: () {
                         try {
                           if (file is Directory) {
+                            _scrollController.jumpTo(0.0);
                             setState(() {
                               _directory = file;
                               _files = file

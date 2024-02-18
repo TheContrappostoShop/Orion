@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:orion/settings/debug_screen.dart';
 
 import 'calibrate_screen.dart';
 import 'wifi_screen.dart';
@@ -7,7 +9,7 @@ import 'about_screen.dart';
 /// The settings screen
 class SettingsScreen extends StatefulWidget {
   /// Constructs a [SettingsScreen]
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -24,15 +26,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
       body: _selectedIndex == 0
           ? const CalibrateScreen()
           : _selectedIndex == 1
               ? const WifiScreen()
-              : const AboutScreen(),
+              : _selectedIndex == 2
+                  ? const AboutScreen()
+                  : const DebugScreen(),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
@@ -46,6 +58,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icon(Icons.info),
             label: 'About',
           ),
+          if (kDebugMode)
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bug_report),
+              label: 'Debug',
+            ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,

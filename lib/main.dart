@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:orion/themes/themes.dart';
 
 import 'home/home_screen.dart';
 import 'status/status_screen.dart';
@@ -80,7 +81,7 @@ final GoRouter _router = GoRouter(
 /// The main app.
 class Orion extends StatelessWidget {
   /// Constructs a [Orion]
-  const Orion({Key? key}) : super(key: key);
+  const Orion({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -91,15 +92,8 @@ class Orion extends StatelessWidget {
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         routerConfig: _router,
-        theme: ThemeData(
-            brightness: Brightness.light,
-            colorSchemeSeed: const Color(0xff6750a4),
-            useMaterial3: true),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          colorSchemeSeed: const Color(0xff6750a4),
-          useMaterial3: true,
-        ),
+        theme: themeLight,
+        darkTheme: themeDark,
         themeMode: ThemeMode.system,
       ),
     );
