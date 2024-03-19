@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'details_screen.dart';
+import 'package:orion/files/search_file_screen.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
@@ -202,6 +203,21 @@ class _FilesScreenState extends State<FilesScreen> {
                   : _directory.path,
         ),
         actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 15.0),
+            child: IconButton(
+              icon: const Icon(Icons.search),
+              iconSize: 30,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SearchFileScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 5.0),
             child: IconButton(
