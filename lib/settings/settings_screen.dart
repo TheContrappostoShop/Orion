@@ -42,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ? const WifiScreen()
               : _selectedIndex == 2
                   ? const AboutScreen()
-                  : const DebugScreen(),
+                  : DebugScreen(),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
