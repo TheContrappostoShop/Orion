@@ -163,6 +163,7 @@ class _DetailScreenState extends State<DetailScreen> {
           .width; // 200 placeholder, change to your image width.
       setState(() {
         leftPadding = (screenWidth - maxWidth - 200) / 3;
+        if (leftPadding < 0) leftPadding = 0;
         rightPadding = leftPadding;
       });
     });
