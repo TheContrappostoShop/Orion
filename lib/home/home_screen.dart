@@ -41,48 +41,101 @@ class HomeScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ElevatedButton(
-              style: theme.elevatedButtonTheme.style,
-              onPressed: () => context.go('/status'),
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            if (constraints.maxWidth > 600) {
+              // Adjust as needed
+              // Horizontal layout
+              return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.info_outline, size: 48),
-                  Text('Status', style: TextStyle(fontSize: 24)),
+                children: <Widget>[
+                  ElevatedButton(
+                    style: theme.elevatedButtonTheme.style,
+                    onPressed: () => context.go('/status'),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.info_outline, size: 48),
+                        Text('Status', style: TextStyle(fontSize: 24)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  ElevatedButton(
+                    style: theme.elevatedButtonTheme.style,
+                    onPressed: () => context.go('/files'),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.folder_open_outlined, size: 48),
+                        Text('Print Files', style: TextStyle(fontSize: 24)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  ElevatedButton(
+                    style: theme.elevatedButtonTheme.style,
+                    onPressed: () => context.go('/settings'),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.settings_outlined, size: 48),
+                        Text('Settings', style: TextStyle(fontSize: 24)),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-            ),
-            const SizedBox(width: 20),
-            ElevatedButton(
-              style: theme.elevatedButtonTheme.style,
-              onPressed: () => context.go('/files'),
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
+              );
+            } else {
+              // Vertical layout
+              return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.folder_open_outlined, size: 48),
-                  Text('Print Files', style: TextStyle(fontSize: 24)),
+                children: <Widget>[
+                  ElevatedButton(
+                    style: theme.elevatedButtonTheme.style,
+                    onPressed: () => context.go('/status'),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.info_outline, size: 48),
+                        Text('Status', style: TextStyle(fontSize: 24)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    style: theme.elevatedButtonTheme.style,
+                    onPressed: () => context.go('/files'),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.folder_open_outlined, size: 48),
+                        Text('Print Files', style: TextStyle(fontSize: 24)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    style: theme.elevatedButtonTheme.style,
+                    onPressed: () => context.go('/settings'),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.settings_outlined, size: 48),
+                        Text('Settings', style: TextStyle(fontSize: 24)),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-            ),
-            const SizedBox(width: 20),
-            ElevatedButton(
-              style: theme.elevatedButtonTheme.style,
-              onPressed: () => context.go('/settings'),
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.settings_outlined, size: 48),
-                  Text('Settings', style: TextStyle(fontSize: 24)),
-                ],
-              ),
-            )
-          ],
+              );
+            }
+          },
         ),
       ),
     );
