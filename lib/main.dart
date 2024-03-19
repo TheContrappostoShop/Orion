@@ -21,8 +21,8 @@ void main() {
 void macDebug() {
   if (kDebugMode) {
     setWindowTitle('Orion Debug - Prometheus mSLA');
-    setWindowMinSize(const Size(800, 480));
-    setWindowMaxSize(const Size(800, 480));
+    setWindowMinSize(const Size(480, 480));
+    setWindowMaxSize(const Size(800, 800));
   }
 }
 
