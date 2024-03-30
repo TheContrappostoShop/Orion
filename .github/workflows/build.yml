@@ -15,6 +15,8 @@ jobs:
         with:
           channel: 'stable' # or: 'beta', 'dev', 'master' (or 'main')
       - run: flutter pub global activate flutterpi_tool
+      - run: flutter build linux
+      - run: pwd
       - run: flutterpi_tool build --arch=arm64 --cpu=pi4 --release
 
 
