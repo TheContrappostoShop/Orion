@@ -14,7 +14,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable' # or: 'beta', 'dev', 'master' (or 'main')
-      - run: sudo apt-get update && apt-get install -y gtk+-3.0
+      - run: sudo apt-get update && sudo apt-get install -y gtk+-3.0
       - run: pwd
       - run: flutter pub global activate flutterpi_tool
       - run: flutter build linux
