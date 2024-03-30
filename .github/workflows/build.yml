@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
-
+      - uses: seanmiddleditch/gha-setup-ninja@master
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable' # or: 'beta', 'dev', 'master' (or 'main')
+      - run: pwd
       - run: flutter pub global activate flutterpi_tool
       - run: flutter build linux
-      - run: pwd
       - run: flutterpi_tool build --arch=arm64 --cpu=pi4 --release
 
 
