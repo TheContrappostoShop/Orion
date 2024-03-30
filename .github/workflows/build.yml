@@ -1,4 +1,4 @@
-name: Build Odyssey
+name: Build Orion
 
 on:
   push:
@@ -24,9 +24,6 @@ jobs:
       - name: Copy & Compress output
         id: compress
         run: |
-          cp target/armv7-unknown-linux-gnueabihf/release/odyssey odyssey
-          cp target/armv7-unknown-linux-gnueabihf/release/odyssey.yaml odyssey.yaml
-          cp target/armv7-unknown-linux-gnueabihf/release/apiHelper.py apiHelper.py
           tar -czvf orion.tar.gz build/flutter_assets
           echo "archive=$ARCHIVE" >> $GITHUB_OUTPUT
 
