@@ -65,7 +65,8 @@ class OrionTextFieldState extends State<OrionTextField>
             widget.isKeyboardOpen.value = false;
             if (result != null) {
               widget.controller.text = result;
-              widget.onChanged(result);
+              widget.onChanged(
+                  result.replaceAll('\u200B', '').replaceAll('\u00A0', ' '));
             }
             if (widget.controller.text == '\u200B') {
               widget.controller.text = '';

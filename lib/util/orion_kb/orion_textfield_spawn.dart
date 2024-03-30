@@ -41,8 +41,9 @@ class SpawnOrionTextFieldState extends State<SpawnOrionTextField> {
 
   String getCurrentText() {
     String text = _controller.text;
-    text = text.replaceAll('\u200B', '');
-    text = text.replaceAll('\u00A0', ' '); // Strip \u200B from the text
+    text = text
+        .replaceAll('\u200B', '')
+        .replaceAll('\u00A0', ' '); // Strip \u200B from the text
     return text;
   }
 
@@ -117,6 +118,7 @@ class SpawnOrionTextFieldState extends State<SpawnOrionTextField> {
                       child: IconButton(
                         onPressed: () {
                           _controller.clear();
+                          widget.onChanged('');
                         },
                         icon: const Icon(Icons.clear_outlined),
                       ),
