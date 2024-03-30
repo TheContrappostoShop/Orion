@@ -18,7 +18,7 @@ jobs:
       - run: pwd
       - run: flutter pub global activate flutterpi_tool
       - run: flutter build linux
-      - run: flutterpi_tool build --arch=arm64 --cpu=pi4 --release
+      - run: flutterpi_tool build --release
 
 
       - name: Copy & Compress output
