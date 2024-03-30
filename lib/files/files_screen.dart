@@ -14,7 +14,7 @@ Directory getInitialDir(platform) {
     case TargetPlatform.macOS:
       return Directory('/Users/${Platform.environment['USER']}/Documents');
     case TargetPlatform.linux:
-      return Directory('/home/${Platform.environment['USER']}/printableFiles<');
+      return Directory('/home/${Platform.environment['USER']}/printableFiles');
     case TargetPlatform.windows:
       return Directory(
           '%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
@@ -204,7 +204,7 @@ class _FilesScreenState extends State<FilesScreen> {
         ),
         actions: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(right: 15.0),
+            padding: const EdgeInsets.only(right: 5.0),
             child: IconButton(
               icon: const Icon(Icons.search),
               iconSize: 30,
