@@ -15,7 +15,6 @@ jobs:
         with:
           channel: 'stable' # or: 'beta', 'dev', 'master' (or 'main')
       - run: sudo apt-get update && sudo apt-get install -y gtk+-3.0
-      - run: pwd
       - run: flutter pub global activate flutterpi_tool
       - run: flutter build linux
 
@@ -23,7 +22,7 @@ jobs:
         id: get_version
         uses: mikefarah/yq@master
         with:
-          cmd: yq '.version' pubspec.yml
+          cmd: yq '.version' pubspec.yaml
 
       - name: Build, Copy, and Compress armv7
         run: |
