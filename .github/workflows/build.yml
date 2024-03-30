@@ -18,33 +18,58 @@ jobs:
       - run: pwd
       - run: flutter pub global activate flutterpi_tool
       - run: flutter build linux
-      - run: flutterpi_tool build --release
 
+      - name: Get Version
+        id: get_version
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.version' pubspec.yml
 
-      - name: Copy & Compress output
-        id: compress
+      - name: Build, Copy, and Compress armv7
         run: |
-          tar -czvf orion.tar.gz build/flutter_assets
-          echo "archive=$ARCHIVE" >> $GITHUB_OUTPUT
+          flutterpi_tool build --release
+          mv build/flutter_assets orion_armv7
+          tar -czvf orion_armv7.tar.gz orion_armv7
 
       - uses: actions/upload-artifact@v4.3.1
         with:
-          name: orion
-          path: |
-            orion.tar.gz
+          name: orion_armv7
+          path: orion_armv7/*
+
+      - name: Build, Copy, and Compress aarch64
+        run: |
+          flutterpi_tool build --arch=arm64 --release
+          mv build/flutter_assets orion_aarch64
+          tar -czvf orion_aarch64.tar.gz orion_aarch64
+
+      - uses: actions/upload-artifact@v4.3.1
+        with:
+          name: orion_aarch64
+          path: orion_aarch64/*
+
+      - name: Build, Copy, and Compress x64
+        run: |
+          flutterpi_tool build --arch=x64 --release
+          mv build/flutter_assets orion_x64
+          tar -czvf orion_x64.tar.gz orion_x64
+
+      - uses: actions/upload-artifact@v4.3.1
+        with:
+          name: orion_x64
+          path: orion_x64/*
 
       - uses: ncipollo/release-action@v1.14.0
         if: github.ref == 'refs/heads/main'
         with:
-          artifacts: orion.tar.gz
-          tag: v1
+          artifacts: orion*.tar.gz
+          tag: v${{ steps.get_version.outputs.result }}
           skipIfReleaseExists: true
           generateReleaseNotes: true
           commit: ${{github.sha}}
       - uses: ncipollo/release-action@v1.14.0
         if: github.ref != 'refs/heads/main'
         with:
-          artifacts: orion.tar.gz
+          artifacts: orion*.tar.gz
           tag: BRANCH_${{github.ref_name}}
           skipIfReleaseExists: false
           allowUpdates: true
