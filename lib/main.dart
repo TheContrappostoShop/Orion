@@ -12,6 +12,8 @@ import 'settings/about_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:window_size/window_size.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,22 +81,38 @@ final GoRouter _router = GoRouter(
 );
 
 /// The main app.
-class Orion extends StatelessWidget {
-  /// Constructs a [Orion]
+
+class Orion extends StatefulWidget {
   const Orion({super.key});
+
+  @override
+  OrionState createState() => OrionState();
+}
+
+class OrionState extends State<Orion> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void changeThemeMode(ThemeMode themeMode) {
+    setState(() {
+      _themeMode = themeMode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     if (Theme.of(context).platform == TargetPlatform.macOS) {
       macDebug();
     }
-    return SizedBox(
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        routerConfig: _router,
-        theme: themeLight,
-        darkTheme: themeDark,
-        themeMode: ThemeMode.system,
+    return Provider<Function>.value(
+      value: changeThemeMode,
+      child: SizedBox(
+        child: MaterialApp.router(
+          debugShowCheckedModeBanner: true,
+          routerConfig: _router,
+          theme: themeLight,
+          darkTheme: themeDark,
+          themeMode: _themeMode,
+        ),
       ),
     );
   }

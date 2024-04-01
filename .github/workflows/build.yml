@@ -1,0 +1,77 @@
+name: Build Orion
+
+on:
+  push:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: seanmiddleditch/gha-setup-ninja@master
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # or: 'beta', 'dev', 'master' (or 'main')
+      - run: sudo apt-get update && sudo apt-get install -y gtk+-3.0
+      - run: flutter pub global activate flutterpi_tool
+      - run: flutter build linux
+
+      - name: Get Version
+        id: get_version
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.version' pubspec.yaml
+
+      - name: Build, Copy, and Compress armv7
+        run: |
+          flutterpi_tool build --release
+          mv build/flutter_assets orion_armv7
+          tar -czvf orion_armv7.tar.gz orion_armv7
+
+      - uses: actions/upload-artifact@v4.3.1
+        with:
+          name: orion_armv7
+          path: orion_armv7/*
+
+      - name: Build, Copy, and Compress aarch64
+        run: |
+          flutterpi_tool build --arch=arm64 --release
+          mv build/flutter_assets orion_aarch64
+          tar -czvf orion_aarch64.tar.gz orion_aarch64
+
+      - uses: actions/upload-artifact@v4.3.1
+        with:
+          name: orion_aarch64
+          path: orion_aarch64/*
+
+      - name: Build, Copy, and Compress x64
+        run: |
+          flutterpi_tool build --arch=x64 --release
+          mv build/flutter_assets orion_x64
+          tar -czvf orion_x64.tar.gz orion_x64
+
+      - uses: actions/upload-artifact@v4.3.1
+        with:
+          name: orion_x64
+          path: orion_x64/*
+
+      - uses: ncipollo/release-action@v1.14.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          artifacts: orion*.tar.gz
+          tag: v${{ steps.get_version.outputs.result }}
+          skipIfReleaseExists: true
+          generateReleaseNotes: true
+          commit: ${{github.sha}}
+      - uses: ncipollo/release-action@v1.14.0
+        if: github.ref != 'refs/heads/main'
+        with:
+          artifacts: orion*.tar.gz
+          tag: BRANCH_${{github.ref_name}}
+          skipIfReleaseExists: false
+          allowUpdates: true
+          prerelease: true
+          generateReleaseNotes: true
+          commit: ${{github.sha}}

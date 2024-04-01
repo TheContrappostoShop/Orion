@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'details_screen.dart';
+import 'package:orion/files/search_file_screen.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
@@ -13,44 +14,14 @@ Directory getInitialDir(platform) {
     case TargetPlatform.macOS:
       return Directory('/Users/${Platform.environment['USER']}/Documents');
     case TargetPlatform.linux:
-      return Directory('/home/${Platform.environment['USER']}/printableFiles<');
+      return Directory(
+          '/home/${Platform.environment['USER']}/printer_data/gcodes');
     case TargetPlatform.windows:
       return Directory(
           '%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
     default:
-      return Directory('/');
-  }
-}
-
-void checkFullDiskAccess(BuildContext context) {
-  final documentsDir = getInitialDir(Theme.of(context).platform);
-  try {
-    documentsDir.listSync();
-  } catch (e) {
-    if (e is FileSystemException) {
-      final executablePath = Platform.resolvedExecutable;
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Full Disk Access Required'),
-            content: Text(
-              'This app requires full disk access. Please open System Preferences, '
-              'navigate to Security & Privacy > Privacy > Full Disk Access, '
-              'and check the box for this app. The app is located at: $executablePath',
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
+      return Directory(
+          '/home/${Platform.environment['USER']}/printer_data/gcodes');
   }
 }
 
@@ -74,7 +45,6 @@ class _FilesScreenState extends State<FilesScreen> {
     _files = [];
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      checkFullDiskAccess(context);
       _getFiles();
 
       Future.delayed(const Duration(seconds: 0), () {
@@ -202,6 +172,21 @@ class _FilesScreenState extends State<FilesScreen> {
                   : _directory.path,
         ),
         actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 5.0),
+            child: IconButton(
+              icon: const Icon(Icons.search),
+              iconSize: 30,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SearchFileScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 5.0),
             child: IconButton(
