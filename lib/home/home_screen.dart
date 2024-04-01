@@ -43,9 +43,7 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            if (constraints.maxWidth > 600) {
-              // Adjust as needed
-              // Horizontal layout
+            if (MediaQuery.of(context).orientation == Orientation.landscape) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
