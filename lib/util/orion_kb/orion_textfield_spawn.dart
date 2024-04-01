@@ -55,8 +55,7 @@ class SpawnOrionTextFieldState extends State<SpawnOrionTextField> {
   Widget build(BuildContext context) {
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final double screenHeight = mediaQuery.size.height;
-    final double keyboardHeight =
-        mediaQuery.orientation == Orientation.portrait ? 320 : 240;
+    final double keyboardHeight = screenHeight / 2;
 
     return ValueListenableBuilder<bool>(
       valueListenable: isKeyboardOpen,

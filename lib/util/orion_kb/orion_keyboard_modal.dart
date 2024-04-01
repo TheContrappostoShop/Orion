@@ -37,15 +37,18 @@ class OrionKbModal extends ModalRoute<String> {
   @override
   Widget buildPage(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+    final radius = (width > height) ? width / 30 : height / 30;
     return Material(
       type: MaterialType.transparency,
       child: SafeArea(
         child: Container(
           decoration: BoxDecoration(
             color: Theme.of(context).canvasColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(30.0),
-              topRight: Radius.circular(30.0),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(radius),
+              topRight: Radius.circular(radius),
             ),
           ),
           child: Padding(
@@ -63,10 +66,6 @@ class OrionKbModal extends ModalRoute<String> {
   @override
   Widget buildTransitions(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation, Widget child) {
-    double heightFactor = (240 / MediaQuery.of(context).size.height);
-    if (MediaQuery.of(context).orientation == Orientation.portrait) {
-      heightFactor = (320 / MediaQuery.of(context).size.height);
-    }
     return SlideTransition(
       position: Tween<Offset>(
         begin: const Offset(0, 0.5),
@@ -76,7 +75,7 @@ class OrionKbModal extends ModalRoute<String> {
         curve: Curves.easeOut,
       )),
       child: FractionallySizedBox(
-        heightFactor: heightFactor,
+        heightFactor: 0.5,
         alignment: Alignment.bottomCenter,
         child: child,
       ),
