@@ -33,7 +33,7 @@ class SearchFileScreenState extends State<SearchFileScreen> {
         return Directory('/Users/${Platform.environment['USER']}/Documents');
       case TargetPlatform.linux:
         return Directory(
-            '/home/${Platform.environment['USER']}/printableFiles');
+            '/home/${Platform.environment['USER']}/printer_data/gcodes');
       case TargetPlatform.windows:
         return Directory(
             '%userprofile%'); // WARN Not sure if that works for windows developers. To be tested
