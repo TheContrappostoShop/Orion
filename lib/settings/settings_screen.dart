@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/settings/debug_screen.dart';
+import 'package:provider/provider.dart';
 
 import 'calibrate_screen.dart';
 import 'wifi_screen.dart';
@@ -8,15 +9,13 @@ import 'about_screen.dart';
 
 /// The settings screen
 class SettingsScreen extends StatefulWidget {
-  /// Constructs a [SettingsScreen]
   const SettingsScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _SettingsScreenState createState() => _SettingsScreenState();
+  SettingsScreenState createState() => SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class SettingsScreenState extends State<SettingsScreen> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -32,6 +31,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final changeThemeMode =
+        Provider.of<Function>(context) as void Function(ThemeMode);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -42,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ? const WifiScreen()
               : _selectedIndex == 2
                   ? const AboutScreen()
-                  : DebugScreen(),
+                  : DebugScreen(changeThemeMode: changeThemeMode),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[

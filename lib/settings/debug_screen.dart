@@ -8,10 +8,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
 
-class DebugScreen extends StatelessWidget {
+class DebugScreen extends StatefulWidget {
+  final Function(ThemeMode) changeThemeMode;
+
+  const DebugScreen({super.key, required this.changeThemeMode});
+
+  @override
+  DebugScreenState createState() => DebugScreenState();
+}
+
+class DebugScreenState extends State<DebugScreen> {
   final GlobalKey<SpawnOrionTextFieldState> debugTextFieldKey =
       GlobalKey<SpawnOrionTextFieldState>();
-  DebugScreen({super.key});
+
+  bool themeToggle = true;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +106,19 @@ class DebugScreen extends StatelessWidget {
                           );
                         },
                         child: const Text('[Debug] OrionTextField Dialog Test'),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Switch(
+                        value: themeToggle,
+                        onChanged: (bool value) {
+                          setState(() {
+                            themeToggle = value;
+                            widget.changeThemeMode(
+                                themeToggle ? ThemeMode.dark : ThemeMode.light);
+                          });
+                        },
                       ),
                     ),
                   ],
