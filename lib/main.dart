@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
-import 'package:orion/themes/themes.dart';
 
-import 'home/home_screen.dart';
-import 'status/status_screen.dart';
-import 'files/files_screen.dart';
-import 'settings/settings_screen.dart';
-import 'settings/calibrate_screen.dart';
-import 'settings/wifi_screen.dart';
-import 'settings/about_screen.dart';
+import 'package:orion/home/home_screen.dart';
+import 'package:orion/status/status_screen.dart';
+import 'package:orion/files/files_screen.dart';
+import 'package:orion/settings/settings_screen.dart';
+import 'package:orion/settings/calibrate_screen.dart';
+import 'package:orion/settings/wifi_screen.dart';
+import 'package:orion/settings/about_screen.dart';
+import 'package:orion/themes/themes.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -23,8 +23,8 @@ void main() {
 void macDebug() {
   if (kDebugMode) {
     setWindowTitle('Orion Debug - Prometheus mSLA');
-    setWindowMinSize(const Size(800, 480));
-    setWindowMaxSize(const Size(800, 480));
+    setWindowMinSize(const Size(480, 480));
+    setWindowMaxSize(const Size(800, 800));
   }
 }
 
@@ -103,17 +103,24 @@ class OrionState extends State<Orion> {
     if (Theme.of(context).platform == TargetPlatform.macOS) {
       macDebug();
     }
-    return Provider<Function>.value(
-      value: changeThemeMode,
-      child: SizedBox(
-        child: MaterialApp.router(
-          debugShowCheckedModeBanner: true,
-          routerConfig: _router,
-          theme: themeLight,
-          darkTheme: themeDark,
-          themeMode: _themeMode,
-        ),
-      ),
+    return ScreenUtilInit(
+      designSize: const Size(800, 480),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (_, child) {
+        return Provider<Function>.value(
+          value: changeThemeMode,
+          child: SizedBox(
+            child: MaterialApp.router(
+              debugShowCheckedModeBanner: true,
+              routerConfig: _router,
+              theme: themeLight,
+              darkTheme: themeDark,
+              themeMode: _themeMode,
+            ),
+          ),
+        );
+      },
     );
   }
 }

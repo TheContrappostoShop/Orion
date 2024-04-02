@@ -3,6 +3,7 @@ import 'dart:io';
 // ignore: unused_import
 import 'dart:math';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
@@ -162,7 +163,7 @@ class _DetailScreenState extends State<DetailScreen> {
           .size
           .width; // 200 placeholder, change to your image width.
       setState(() {
-        leftPadding = (screenWidth - maxWidth - 200) / 3;
+        leftPadding = (screenWidth - maxWidth - 200.dg) / 3;
         if (leftPadding < 0) leftPadding = 0;
         rightPadding = leftPadding;
       });
@@ -186,13 +187,13 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Text(
                       fileName,
                       key: textKey1,
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24.sp, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sp),
               // ignore: unnecessary_null_comparison
               Align(
                 alignment: Alignment.centerLeft,
@@ -204,13 +205,13 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Text(
                       'File Size: $fileSize',
                       key: textKey2,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20.sp),
                     ),
                   ),
                 ),
               ),
               // ignore: unnecessary_null_comparison
-              const SizedBox(height: 15),
+              SizedBox(height: 15.sp),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -220,12 +221,12 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Text(
                       'Layer Height: $layerHeight mm',
                       key: textKey3,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20.sp),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15.sp),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -235,12 +236,12 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Text(
                       'Material: ${materialName.split('@0.')[0]}',
                       key: textKey4,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20.sp),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15.sp),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -250,12 +251,12 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Text(
                       'Estimated Time: $printTime',
                       key: textKey5,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20.sp),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15.sp),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -264,7 +265,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Text(
                       'Estimated Material: $materialVolume',
                       key: textKey6,
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(fontSize: 20.sp),
                     ),
                   ),
                 ),
@@ -282,13 +283,14 @@ class _DetailScreenState extends State<DetailScreen> {
                   thumbnailPath.isNotEmpty
                       ? Image.file(
                           File(thumbnailPath),
-                          width: 200,
-                          height: 200,
+                          width: 200.dg,
+                          height: 200.dg,
                         )
-                      : const Image(
-                          image: AssetImage('assets/images/placeholder.png'),
-                          width: 200,
-                          height: 200,
+                      : Image(
+                          image:
+                              const AssetImage('assets/images/placeholder.png'),
+                          width: 200.dg,
+                          height: 200.dg,
                         ),
                   const SizedBox(height: kToolbarHeight * 0.4),
                 ],
@@ -326,7 +328,7 @@ class _DetailScreenState extends State<DetailScreen> {
               child: Text(
                 'Print',
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 24.sp,
                     color: fileExtension == '.sl1'
                         ? Theme.of(context).colorScheme.primary
                         : Colors.grey),
@@ -350,9 +352,9 @@ class _DetailScreenState extends State<DetailScreen> {
                 shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero),
               ),
-              child: const Text(
+              child: Text(
                 'Delete',
-                style: TextStyle(fontSize: 20),
+                style: TextStyle(fontSize: 24.sp),
               ),
             ),
           ),

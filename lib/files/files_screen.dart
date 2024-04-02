@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'details_screen.dart';
 import 'package:orion/files/search_file_screen.dart';
 // ignore: depend_on_referenced_packages
@@ -164,7 +166,7 @@ class _FilesScreenState extends State<FilesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          path.basename(_directory.path) == 'printer_files'
+          path.basename(_directory.path) == 'gcodes'
               ? 'Print Files'
               : path.basename(_directory.path) == 'Download' ||
                       path.basename(_directory.path) == "Downloads"
@@ -231,9 +233,10 @@ class _FilesScreenState extends State<FilesScreen> {
                 if (index == 0) {
                   return ListTile(
                     leading: const Icon(Icons.subdirectory_arrow_left_rounded),
-                    title: const Row(
+                    title: Row(
                       children: [
-                        Text('Leave Directory', style: TextStyle(fontSize: 24)),
+                        Text('Leave Directory',
+                            style: TextStyle(fontSize: 24.sp)),
                       ],
                     ),
                     onTap: () {
@@ -303,7 +306,7 @@ class _FilesScreenState extends State<FilesScreen> {
                       title: Text(
                         displayName,
                         style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 24.sp,
                             color: file is Directory ? Colors.grey : null),
                       ),
                       subtitle: file is File ? Text(subtitle) : null,

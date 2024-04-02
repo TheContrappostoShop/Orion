@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -8,15 +9,26 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    const Size homeBtnSize = Size(200, 110);
+    // High DPI devices will have a pixelRatio if 2.0, set them to 1.0.
+    double scaleFactor = 1 /
+        ((ScreenUtil().pixelRatio ?? 1.0) == 2.0
+            ? 1.0
+            : (ScreenUtil().pixelRatio ?? 1.0));
+
+    Size homeBtnSize = Size(220 * scaleFactor, 130 * scaleFactor);
+
     final theme = Theme.of(context).copyWith(
-        elevatedButtonTheme: ElevatedButtonThemeData(style: ButtonStyle(
-      minimumSize: MaterialStateProperty.resolveWith<Size?>(
-        (Set<MaterialState> states) {
-          return homeBtnSize;
-        },
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: MaterialStateProperty.resolveWith<Size?>(
+            (Set<MaterialState> states) {
+              return homeBtnSize;
+            },
+          ),
+        ),
       ),
-    )));
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Stack(
@@ -50,12 +62,13 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/status'),
-                    child: const Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, size: 48),
-                        Text('Status', style: TextStyle(fontSize: 24)),
+                        Icon(Icons.info_outline, size: 48 * scaleFactor),
+                        Text('Status',
+                            style: TextStyle(fontSize: 24 * scaleFactor)),
                       ],
                     ),
                   ),
@@ -63,12 +76,14 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/files'),
-                    child: const Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.folder_open_outlined, size: 48),
-                        Text('Print Files', style: TextStyle(fontSize: 24)),
+                        Icon(Icons.folder_open_outlined,
+                            size: 48 * scaleFactor),
+                        Text('Print Files',
+                            style: TextStyle(fontSize: 24 * scaleFactor)),
                       ],
                     ),
                   ),
@@ -76,12 +91,13 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/settings'),
-                    child: const Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.settings_outlined, size: 48),
-                        Text('Settings', style: TextStyle(fontSize: 24)),
+                        Icon(Icons.settings_outlined, size: 48 * scaleFactor),
+                        Text('Settings',
+                            style: TextStyle(fontSize: 24 * scaleFactor)),
                       ],
                     ),
                   ),
@@ -95,12 +111,13 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/status'),
-                    child: const Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, size: 48),
-                        Text('Status', style: TextStyle(fontSize: 24)),
+                        Icon(Icons.info_outline, size: 48 * scaleFactor),
+                        Text('Status',
+                            style: TextStyle(fontSize: 24 * scaleFactor)),
                       ],
                     ),
                   ),
@@ -108,12 +125,14 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/files'),
-                    child: const Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.folder_open_outlined, size: 48),
-                        Text('Print Files', style: TextStyle(fontSize: 24)),
+                        Icon(Icons.folder_open_outlined,
+                            size: 48 * scaleFactor),
+                        Text('Print Files',
+                            style: TextStyle(fontSize: 24 * scaleFactor)),
                       ],
                     ),
                   ),
@@ -121,12 +140,13 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/settings'),
-                    child: const Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.settings_outlined, size: 48),
-                        Text('Settings', style: TextStyle(fontSize: 24)),
+                        Icon(Icons.settings_outlined, size: 48 * scaleFactor),
+                        Text('Settings',
+                            style: TextStyle(fontSize: 24 * scaleFactor)),
                       ],
                     ),
                   ),

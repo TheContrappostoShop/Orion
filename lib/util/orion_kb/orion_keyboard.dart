@@ -6,6 +6,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:orion/themes/themes.dart';
 import 'package:orion/util/localization.dart';
 
@@ -97,7 +98,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
     return Expanded(
       child: Row(
         children: [
-          SizedBox(width: hasShiftAndBackspace ? 10 : 0),
+          SizedBox(width: hasShiftAndBackspace ? 10.w : 0),
           if (hasShiftAndBackspace)
             Expanded(
               child: ValueListenableBuilder<bool>(
@@ -138,7 +139,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
                 },
               ),
             ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           ...rowCharacters
               .split('')
               .expand((char) => [
@@ -160,11 +161,11 @@ class OrionKeyboardState extends State<OrionKeyboard> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                   ])
               .toList()
             ..removeLast(),
-          SizedBox(width: hasShiftAndBackspace ? 10 : 0),
+          SizedBox(width: hasShiftAndBackspace ? 10.w : 0),
           if (hasShiftAndBackspace)
             Expanded(
               child: KeyboardButton(
@@ -176,7 +177,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
                 isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
               ),
             ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
         ],
       ),
     );
@@ -188,7 +189,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
     return Expanded(
       child: Row(
         children: [
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             flex: 1,
             child: KeyboardButton(
@@ -200,7 +201,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
               isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             flex: 5,
             child: KeyboardButton(
@@ -212,7 +213,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
               isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             flex: 1,
             child: KeyboardButton(
@@ -226,7 +227,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
               isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
         ],
       ),
     );
@@ -256,7 +257,7 @@ class KeyboardButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: EdgeInsets.symmetric(vertical: 5.w),
       child: SizedBox(
         height: double.infinity,
         child: TextButton(
@@ -280,14 +281,20 @@ class KeyboardButton extends StatelessWidget {
                     text == '↵' ||
                     text == "#+=" ||
                     text == "123\u200B") {
-                  return Text(
-                    text,
-                    style: const TextStyle(fontSize: 20),
+                  return FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      text,
+                      style: const TextStyle(fontSize: 20),
+                    ),
                   );
                 }
-                return Text(
-                  isShiftEnabled ? text.toUpperCase() : text.toLowerCase(),
-                  style: const TextStyle(fontSize: 20),
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    isShiftEnabled ? text.toUpperCase() : text.toLowerCase(),
+                    style: const TextStyle(fontSize: 20),
+                  ),
                 );
               },
             ),
