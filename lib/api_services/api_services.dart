@@ -6,9 +6,7 @@ class ApiService {
 
   ApiService();
 
-  /**
-   * GET METHODS TO ODYSSEY 
-   */
+  // GET METHODS TO ODYSSEY
 
   /// Get current status of the printer
   Future<Map<String, dynamic>> getStatus() async {
@@ -69,7 +67,7 @@ class ApiService {
   Future<Map<String, dynamic>> startPrint(
       String location, String filename) async {
     final response = await http.post(
-      Uri.parse('${apiUrl}/print/start/'),
+      Uri.parse('$apiUrl/print/start/'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({location: location, filename: filename}),
     );
@@ -86,7 +84,7 @@ class ApiService {
   ///
   /// returns TODO
   Future<Map<String, dynamic>> cancelPrint() async {
-    final response = await http.post(Uri.parse('${apiUrl}/print/cancel'));
+    final response = await http.post(Uri.parse('$apiUrl/print/cancel'));
 
     if (response.statusCode == 200) {
       // TODO check the response sent by odyssey
@@ -100,7 +98,7 @@ class ApiService {
   ///
   /// returns TODO
   Future<Map<String, dynamic>> pausePrint() async {
-    final response = await http.post(Uri.parse('${apiUrl}/print/pause'));
+    final response = await http.post(Uri.parse('$apiUrl/print/pause'));
 
     if (response.statusCode == 200) {
       // TODO check the response sent by odyssey

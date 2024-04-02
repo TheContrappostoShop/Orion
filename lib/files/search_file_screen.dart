@@ -24,6 +24,7 @@ class SearchFileScreen extends StatefulWidget {
 
 class SearchFileScreenState extends State<SearchFileScreen> {
   List<FileSystemEntity> filteredFiles = [];
+  final ScrollController _scrollController = ScrollController();
   bool isLoading = false;
   String searchText = '';
 
@@ -166,6 +167,7 @@ class SearchFileScreenState extends State<SearchFileScreen> {
               key: widget.searchKey,
               keyboardHint: "Search File Name",
               locale: Localizations.localeOf(context).toString(),
+              scrollController: _scrollController,
               isHidden: false,
               noShove: true,
               onChanged: (text) {
