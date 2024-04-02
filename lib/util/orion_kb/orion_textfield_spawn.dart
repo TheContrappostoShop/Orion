@@ -35,14 +35,12 @@ class SpawnOrionTextField extends StatefulWidget {
 }
 
 class SpawnOrionTextFieldState extends State<SpawnOrionTextField> {
-  final ValueNotifier<bool> isKeyboardOpen = ValueNotifier<bool>(false);
+  late final ValueNotifier<bool> isKeyboardOpen = ValueNotifier<bool>(false);
   final TextEditingController _controller = TextEditingController();
 
   String getCurrentText() {
     String text = _controller.text;
-    text = text
-        .replaceAll('\u200B', '')
-        .replaceAll('\u00A0', ' '); // Strip \u200B from the text
+    text = text.replaceAll('\u200B', '').replaceAll('\u00A0', ' '); // Strip \u200B from the text
     return text;
   }
 
@@ -52,36 +50,17 @@ class SpawnOrionTextFieldState extends State<SpawnOrionTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData mediaQuery = MediaQuery.of(context);
-    final double screenHeight = mediaQuery.size.height;
-    final double keyboardHeight = screenHeight / 2; // Hardcoded keyboard height
-
     return ValueListenableBuilder<bool>(
       valueListenable: isKeyboardOpen,
       builder: (context, keyboardOpen, child) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (keyboardOpen) {
-            RenderBox renderBox = context.findRenderObject() as RenderBox;
-            double textFieldPosition = renderBox.localToGlobal(Offset.zero).dy;
-            double textFieldHeight = renderBox.size.height;
-            double distanceFromTextFieldToBottom =
-                screenHeight - textFieldPosition - textFieldHeight;
-
-            double distance = max(0.0, keyboardHeight);
-
-            if (distanceFromTextFieldToBottom < keyboardHeight) {
-              distance = keyboardHeight - distanceFromTextFieldToBottom + 15;
-            } else {
-              distance = 0.0;
-            }
-
-            if (widget.scrollController.hasClients) {
-              widget.scrollController.animateTo(
-                widget.scrollController.position.minScrollExtent + distance,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-            }
+            Scrollable.ensureVisible(
+              context,
+              duration: const Duration(milliseconds: 250),
+              alignment: 0.25,
+              curve: Curves.easeInOut,
+            );
           } else {
             if (widget.scrollController.hasClients) {
               widget.scrollController.animateTo(
