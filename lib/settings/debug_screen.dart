@@ -20,8 +20,21 @@ class DebugScreen extends StatefulWidget {
 class DebugScreenState extends State<DebugScreen> {
   final GlobalKey<SpawnOrionTextFieldState> debugTextFieldKey =
       GlobalKey<SpawnOrionTextFieldState>();
+  final ScrollController _scrollController = ScrollController();
 
   bool themeToggle = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = MediaQuery.of(context).platformBrightness;
+    themeToggle = brightness == Brightness.dark;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +42,7 @@ class DebugScreenState extends State<DebugScreen> {
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
           return SingleChildScrollView(
+            controller: _scrollController,
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: viewportConstraints.maxHeight,
@@ -51,6 +65,7 @@ class DebugScreenState extends State<DebugScreen> {
                         key: debugTextFieldKey,
                         keyboardHint: "Debug Test Field",
                         locale: Localizations.localeOf(context).toString(),
+                        scrollController: _scrollController,
                         isHidden: true,
                       ),
                     ),
@@ -85,6 +100,7 @@ class DebugScreenState extends State<DebugScreen> {
                                     keyboardHint: "Enter Password",
                                     locale: Localizations.localeOf(context)
                                         .toString(),
+                                    scrollController: _scrollController,
                                   ),
                                 ),
                                 actions: [
@@ -113,11 +129,14 @@ class DebugScreenState extends State<DebugScreen> {
                       child: Switch(
                         value: themeToggle,
                         onChanged: (bool value) {
-                          setState(() {
-                            themeToggle = value;
-                            widget.changeThemeMode(
-                                themeToggle ? ThemeMode.dark : ThemeMode.light);
-                          });
+                          setState(
+                            () {
+                              themeToggle = value;
+                              widget.changeThemeMode(themeToggle
+                                  ? ThemeMode.dark
+                                  : ThemeMode.light);
+                            },
+                          );
                         },
                       ),
                     ),
