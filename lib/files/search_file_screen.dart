@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/files/details_screen.dart';
 import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
-// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 
 class SearchFileScreen extends StatefulWidget {
@@ -105,16 +104,27 @@ class SearchFileScreenState extends State<SearchFileScreen> {
               AppBar(
                 toolbarHeight: 90,
                 backgroundColor: Colors.transparent,
-                elevation: 0,
-                leading: Padding(
-                  padding: const EdgeInsets.only(top: 7.5, left: 6),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                //elevation: 1,
+                actions: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width - 55,
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.only(right: 15), // Adjust as needed
+                      child: SpawnOrionTextField(
+                        key: widget.searchKey,
+                        keyboardHint: "Search File Name",
+                        locale: Localizations.localeOf(context).toString(),
+                        scrollController: _scrollController,
+                        isHidden: false,
+                        onChanged: (text) {
+                          searchFiles(text);
+                          searchText = text;
+                        },
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
               Expanded(
                 child: isLoading
@@ -159,22 +169,6 @@ class SearchFileScreenState extends State<SearchFileScreen> {
                           ),
               ),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-                top: 15.0, left: 55, right: 15), // Adjust as needed
-            child: SpawnOrionTextField(
-              key: widget.searchKey,
-              keyboardHint: "Search File Name",
-              locale: Localizations.localeOf(context).toString(),
-              scrollController: _scrollController,
-              isHidden: false,
-              noShove: true,
-              onChanged: (text) {
-                searchFiles(text);
-                searchText = text;
-              },
-            ),
           ),
         ],
       ),

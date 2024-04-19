@@ -2,7 +2,7 @@
 
 # Function to display a help message
 show_help() {
-    echo "Usage: ./orionpi.sh [IP_ADDR] [USERNAME] [PASSWORD] [-a arch] [-c cpu] [-ro]"
+    echo "Usage: ./orionpi.sh [IP_ADDR] [USERNAME] [PASSWORD] (-a arch) (-c cpu) (-ro)"
     echo ""
     echo "Required Arguments:"
     echo "  IP_ADDR         IP address of the Raspberry Pi."

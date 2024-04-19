@@ -4,8 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+/*
+ *    Orion Home Screen
+ *    Copyright (c) 2024 TheContrappostoShop (Paul S, shifubrams)
+ *    GPLv3 Licensing (see LICENSE)
+ */
+
 class HomeScreen extends StatelessWidget {
-  /// Constructs a [HomeScreen]
   const HomeScreen({super.key});
   @override
   Widget build(BuildContext context) {
@@ -124,7 +129,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/files'),
+                    onPressed: () => context.go('/gridfiles'),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -162,15 +167,13 @@ class HomeScreen extends StatelessWidget {
 
 /// A live clock widget
 class LiveClock extends StatefulWidget {
-  /// Constructs a [LiveClock]
   const LiveClock({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _LiveClockState createState() => _LiveClockState();
+  LiveClockState createState() => LiveClockState();
 }
 
-class _LiveClockState extends State<LiveClock> {
+class LiveClockState extends State<LiveClock> {
   late Timer _timer;
   late DateTime _dateTime;
 

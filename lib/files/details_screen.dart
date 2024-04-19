@@ -21,6 +21,32 @@ class DetailScreen extends StatefulWidget {
   @override
   // ignore: library_private_types_in_public_api
   _DetailScreenState createState() => _DetailScreenState();
+
+  static Future<String> extractThumbnail(File sl1File, String subfolder) async {
+    try {
+      final bytes = sl1File.readAsBytesSync();
+      final archive = ZipDecoder().decodeBytes(bytes);
+
+      for (final file in archive) {
+        if (file.name == 'thumbnail/thumbnail400x400.png') {
+          final tempDir = await getTemporaryDirectory();
+          final filePath = '${tempDir.path}/oriontmp/$subfolder/${file.name}';
+          final outputFile = File(filePath);
+          outputFile.createSync(recursive: true);
+          outputFile.writeAsBytesSync(file.content as List<int>);
+          return filePath;
+        }
+      }
+    } catch (e) {
+      // You can't use ScaffoldMessenger in a static method, so you'll need to handle errors differently.
+    }
+
+    return 'assets/images/placeholder.png';
+  }
+
+  static String generateHash(String input) {
+    return sha256.convert(utf8.encode(input)).toString();
+  }
 }
 
 class _DetailScreenState extends State<DetailScreen> {
@@ -33,37 +59,6 @@ class _DetailScreenState extends State<DetailScreen> {
   final GlobalKey textKey4 = GlobalKey();
   final GlobalKey textKey5 = GlobalKey();
   final GlobalKey textKey6 = GlobalKey();
-
-  String generateHash(String input) {
-    return sha256.convert(utf8.encode(input)).toString();
-  }
-
-  Future<String> extractThumbnail(File sl1File, String subfolder) async {
-    try {
-      final bytes = sl1File.readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      for (final file in archive) {
-        if (file.name == 'thumbnail/thumbnail400x400.png') {
-          final tempDir = await getTemporaryDirectory();
-          final filePath =
-              '${tempDir.path}/orionDevEnv/$subfolder/${file.name}';
-          final outputFile = File(filePath);
-          outputFile.createSync(recursive: true);
-          outputFile.writeAsBytesSync(file.content as List<int>);
-          return filePath;
-        }
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error extracting thumbnail.'),
-        ),
-      );
-    }
-
-    return 'assets/images/placeholder.png';
-  }
 
   Future<String> parseSlicedFile(File sl1File, String key) async {
     try {
@@ -115,11 +110,11 @@ class _DetailScreenState extends State<DetailScreen> {
   double materialVolumeInMilliliters = 0; // usedMaterial in milliliters
 
   Future<void> _initFileDetails() async {
-    String hash = generateHash(widget.file.path);
+    String hash = DetailScreen.generateHash(widget.file.path);
     layerHeight = await parseSlicedFile(widget.file, 'layerHeight');
     modifiedDate = await parseSlicedFile(widget.file, 'fileCreationTimestamp');
     materialName = await parseSlicedFile(widget.file, 'materialName');
-    thumbnailPath = await extractThumbnail(widget.file, hash);
+    thumbnailPath = await DetailScreen.extractThumbnail(widget.file, hash);
     printTimeInSeconds =
         double.parse(await parseSlicedFile(widget.file, 'printTime'));
     Duration printDuration = Duration(seconds: printTimeInSeconds.toInt());
@@ -326,12 +321,8 @@ class _DetailScreenState extends State<DetailScreen> {
                         borderRadius: BorderRadius.zero)),
               ),
               child: Text(
-                'Print',
-                style: TextStyle(
-                    fontSize: 24.sp,
-                    color: fileExtension == '.sl1'
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey),
+                'Delete',
+                style: TextStyle(fontSize: 24.sp, color: Colors.redAccent),
               ),
             ),
           ),
@@ -353,7 +344,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     borderRadius: BorderRadius.zero),
               ),
               child: Text(
-                'Delete',
+                'Print',
                 style: TextStyle(fontSize: 24.sp),
               ),
             ),

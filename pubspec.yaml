@@ -59,6 +59,8 @@ dependencies:
   provider: ^6.1.2
   flutter_screenutil: ^5.9.0
   http: ^1.2.1
+  path: any
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   flutter_test:

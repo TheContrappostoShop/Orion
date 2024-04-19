@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:orion/files/grid_files_screen.dart';
 
 import 'package:orion/home/home_screen.dart';
 import 'package:orion/status/status_screen.dart';
@@ -41,6 +42,12 @@ final GoRouter _router = GoRouter(
           path: 'files',
           builder: (BuildContext context, GoRouterState state) {
             return const FilesScreen();
+          },
+        ),
+        GoRoute(
+          path: 'gridfiles',
+          builder: (BuildContext context, GoRouterState state) {
+            return const GridFilesScreen();
           },
         ),
         GoRoute(
