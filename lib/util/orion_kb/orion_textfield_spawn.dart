@@ -34,9 +34,35 @@ class SpawnOrionTextField extends StatefulWidget {
   SpawnOrionTextFieldState createState() => SpawnOrionTextFieldState();
 }
 
-class SpawnOrionTextFieldState extends State<SpawnOrionTextField> {
-  final ValueNotifier<bool> isKeyboardOpen = ValueNotifier<bool>(false);
+class SpawnOrionTextFieldState extends State<SpawnOrionTextField>
+    with WidgetsBindingObserver {
+  ValueNotifier<bool> isKeyboardOpen = ValueNotifier<bool>(false);
+  ValueNotifier<double> expandDistance = ValueNotifier<double>(0.0);
   final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    final bottomInset = WidgetsBinding
+        .instance.platformDispatcher.views.first.viewInsets.bottom;
+    final newValue = bottomInset > 0;
+    if (isKeyboardOpen.value != newValue) {
+      Future.microtask(() {
+        isKeyboardOpen.value = newValue;
+      });
+    }
+  }
 
   String getCurrentText() {
     String text = _controller.text;
@@ -54,70 +80,59 @@ class SpawnOrionTextFieldState extends State<SpawnOrionTextField> {
   Widget build(BuildContext context) {
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final double screenHeight = mediaQuery.size.height;
-    final double keyboardHeight = screenHeight / 2; // Hardcoded keyboard height
+    final double keyboardHeight =
+        MediaQuery.of(context).orientation == Orientation.landscape
+            ? screenHeight * 0.5
+            : screenHeight * 0.4; // Hardcoded keyboard height
 
     return ValueListenableBuilder<bool>(
       valueListenable: isKeyboardOpen,
       builder: (context, keyboardOpen, child) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (keyboardOpen) {
-            RenderBox renderBox = context.findRenderObject() as RenderBox;
-            double textFieldPosition = renderBox.localToGlobal(Offset.zero).dy;
-            double textFieldHeight = renderBox.size.height;
-            double distanceFromTextFieldToBottom =
-                screenHeight - textFieldPosition - textFieldHeight;
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) {
+            if (keyboardOpen) {
+              RenderBox renderBox = context.findRenderObject() as RenderBox;
+              double textFieldPosition =
+                  renderBox.localToGlobal(Offset.zero).dy;
+              double textFieldHeight = renderBox.size.height;
+              double distanceFromTextFieldToBottom =
+                  screenHeight - textFieldPosition - textFieldHeight;
 
-            double distance = max(0.0, keyboardHeight);
+              double distance = max(0.0, keyboardHeight);
 
-            if (distanceFromTextFieldToBottom < keyboardHeight) {
-              distance = keyboardHeight - distanceFromTextFieldToBottom + 15;
-            } else {
-              distance = 0.0;
+              if (distanceFromTextFieldToBottom < keyboardHeight) {
+                distance = keyboardHeight -
+                    distanceFromTextFieldToBottom +
+                    kBottomNavigationBarHeight;
+              } else {
+                distance = 0.0;
+              }
+
+              expandDistance.value = widget.noShove ? 0.0 : distance;
             }
+          },
+        );
 
-            if (widget.scrollController.hasClients) {
-              widget.scrollController.animateTo(
-                widget.scrollController.position.minScrollExtent + distance,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-            }
-          } else {
-            if (widget.scrollController.hasClients) {
-              widget.scrollController.animateTo(
-                widget.scrollController.position.minScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-            }
-          }
-        });
-
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        return Stack(
+          alignment: Alignment.centerRight,
           children: [
-            Stack(
-              alignment: Alignment.centerRight,
-              children: [
-                OrionTextField(
-                  isKeyboardOpen: isKeyboardOpen,
-                  keyboardHint: widget.keyboardHint,
-                  controller: _controller,
-                  locale: widget.locale,
-                  isHidden: widget.isHidden,
-                  onChanged: widget.onChanged,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: IconButton(
-                    onPressed: () {
-                      _controller.clear();
-                      widget.onChanged('');
-                    },
-                    icon: const Icon(Icons.clear_outlined),
-                  ),
-                ),
-              ],
+            OrionTextField(
+              isKeyboardOpen: isKeyboardOpen,
+              keyboardHint: widget.keyboardHint,
+              controller: _controller,
+              locale: widget.locale,
+              isHidden: widget.isHidden,
+              onChanged: widget.onChanged,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: IconButton(
+                onPressed: () {
+                  _controller.clear();
+                  widget.onChanged('');
+                },
+                icon: const Icon(Icons.clear_outlined),
+              ),
             ),
           ],
         );
