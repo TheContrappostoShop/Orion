@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'details_screen.dart';
 import 'package:orion/files/search_file_screen.dart';
 // ignore: depend_on_referenced_packages
@@ -164,7 +165,7 @@ class _FilesScreenState extends State<FilesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          path.basename(_directory.path) == 'printer_files'
+          path.basename(_directory.path) == 'gcodes'
               ? 'Print Files'
               : path.basename(_directory.path) == 'Download' ||
                       path.basename(_directory.path) == "Downloads"

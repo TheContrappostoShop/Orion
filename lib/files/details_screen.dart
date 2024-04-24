@@ -20,6 +20,32 @@ class DetailScreen extends StatefulWidget {
   @override
   // ignore: library_private_types_in_public_api
   _DetailScreenState createState() => _DetailScreenState();
+
+  static Future<String> extractThumbnail(File sl1File, String subfolder) async {
+    try {
+      final bytes = sl1File.readAsBytesSync();
+      final archive = ZipDecoder().decodeBytes(bytes);
+
+      for (final file in archive) {
+        if (file.name == 'thumbnail/thumbnail400x400.png') {
+          final tempDir = await getTemporaryDirectory();
+          final filePath = '${tempDir.path}/oriontmp/$subfolder/${file.name}';
+          final outputFile = File(filePath);
+          outputFile.createSync(recursive: true);
+          outputFile.writeAsBytesSync(file.content as List<int>);
+          return filePath;
+        }
+      }
+    } catch (e) {
+      // You can't use ScaffoldMessenger in a static method, so you'll need to handle errors differently.
+    }
+
+    return 'assets/images/placeholder.png';
+  }
+
+  static String generateHash(String input) {
+    return sha256.convert(utf8.encode(input)).toString();
+  }
 }
 
 class _DetailScreenState extends State<DetailScreen> {
@@ -32,37 +58,6 @@ class _DetailScreenState extends State<DetailScreen> {
   final GlobalKey textKey4 = GlobalKey();
   final GlobalKey textKey5 = GlobalKey();
   final GlobalKey textKey6 = GlobalKey();
-
-  String generateHash(String input) {
-    return sha256.convert(utf8.encode(input)).toString();
-  }
-
-  Future<String> extractThumbnail(File sl1File, String subfolder) async {
-    try {
-      final bytes = sl1File.readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      for (final file in archive) {
-        if (file.name == 'thumbnail/thumbnail400x400.png') {
-          final tempDir = await getTemporaryDirectory();
-          final filePath =
-              '${tempDir.path}/orionDevEnv/$subfolder/${file.name}';
-          final outputFile = File(filePath);
-          outputFile.createSync(recursive: true);
-          outputFile.writeAsBytesSync(file.content as List<int>);
-          return filePath;
-        }
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error extracting thumbnail.'),
-        ),
-      );
-    }
-
-    return 'assets/images/placeholder.png';
-  }
 
   Future<String> parseSlicedFile(File sl1File, String key) async {
     try {
@@ -114,11 +109,11 @@ class _DetailScreenState extends State<DetailScreen> {
   double materialVolumeInMilliliters = 0; // usedMaterial in milliliters
 
   Future<void> _initFileDetails() async {
-    String hash = generateHash(widget.file.path);
+    String hash = DetailScreen.generateHash(widget.file.path);
     layerHeight = await parseSlicedFile(widget.file, 'layerHeight');
     modifiedDate = await parseSlicedFile(widget.file, 'fileCreationTimestamp');
     materialName = await parseSlicedFile(widget.file, 'materialName');
-    thumbnailPath = await extractThumbnail(widget.file, hash);
+    thumbnailPath = await DetailScreen.extractThumbnail(widget.file, hash);
     printTimeInSeconds =
         double.parse(await parseSlicedFile(widget.file, 'printTime'));
     Duration printDuration = Duration(seconds: printTimeInSeconds.toInt());
@@ -160,9 +155,9 @@ class _DetailScreenState extends State<DetailScreen> {
 
       final screenWidth = MediaQuery.of(context)
           .size
-          .width; // 200 placeholder, change to your image width.
+          .width; // 220 placeholder, change to your image width.
       setState(() {
-        leftPadding = (screenWidth - maxWidth - 200) / 3;
+        leftPadding = (screenWidth - maxWidth - 220) / 3;
         if (leftPadding < 0) leftPadding = 0;
         rightPadding = leftPadding;
       });
@@ -170,7 +165,8 @@ class _DetailScreenState extends State<DetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('File Details | $modifiedDate'),
+        //title: Text('File Details | $modifiedDate'),
+        title: const Text('File Details'),
       ),
       body: Stack(
         children: [
@@ -184,7 +180,7 @@ class _DetailScreenState extends State<DetailScreen> {
                       EdgeInsets.only(left: leftPadding), // Add left padding
                   child: FittedBox(
                     child: Text(
-                      fileName,
+                      '$fileName | $fileSize',
                       key: textKey1,
                       style: const TextStyle(
                           fontSize: 24, fontWeight: FontWeight.bold),
@@ -200,26 +196,9 @@ class _DetailScreenState extends State<DetailScreen> {
                   padding:
                       EdgeInsets.only(left: leftPadding), // Add left padding
                   child: FittedBox(
-                    // ignore: unnecessary_null_comparison
-                    child: Text(
-                      'File Size: $fileSize',
-                      key: textKey2,
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ),
-              ),
-              // ignore: unnecessary_null_comparison
-              const SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding:
-                      EdgeInsets.only(left: leftPadding), // Add left padding
-                  child: FittedBox(
                     child: Text(
                       'Layer Height: $layerHeight mm',
-                      key: textKey3,
+                      key: textKey2,
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
@@ -234,7 +213,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: FittedBox(
                     child: Text(
                       'Material: ${materialName.split('@0.')[0]}',
-                      key: textKey4,
+                      key: textKey3,
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
@@ -249,7 +228,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: FittedBox(
                     child: Text(
                       'Estimated Time: $printTime',
-                      key: textKey5,
+                      key: textKey4,
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
@@ -263,13 +242,12 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: FittedBox(
                     child: Text(
                       'Estimated Material: $materialVolume',
-                      key: textKey6,
+                      key: textKey5,
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: kToolbarHeight * 0.4),
             ],
           ),
           Align(
@@ -280,83 +258,98 @@ class _DetailScreenState extends State<DetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   thumbnailPath.isNotEmpty
-                      ? Image.file(
-                          File(thumbnailPath),
-                          width: 200,
-                          height: 200,
+                      ? Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(7.75),
+                              child: Image.file(
+                                File(thumbnailPath),
+                                width: 220,
+                                height: 220,
+                              ),
+                            ),
+                          ),
                         )
-                      : const Image(
-                          image: AssetImage('assets/images/placeholder.png'),
-                          width: 200,
-                          height: 200,
+                      : Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(7.75),
+                              child: const Image(
+                                image:
+                                    AssetImage('assets/images/placeholder.png'),
+                                width: 220,
+                                height: 220,
+                              ),
+                            ),
+                          ),
                         ),
-                  const SizedBox(height: kToolbarHeight * 0.4),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
-      bottomNavigationBar: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                // Add your print logic here
-              },
-              style: ButtonStyle(
-                overlayColor: MaterialStateProperty.resolveWith<Color>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.hovered) &&
-                        fileExtension != '.sl1') {
-                      return Colors.transparent;
-                    }
-                    return Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withOpacity(0.08); // default color
-                  },
-                ),
-                minimumSize: MaterialStateProperty.all<Size>(
-                    const Size(double.infinity, kToolbarHeight * 1.2)),
-                shape: MaterialStateProperty.all<OutlinedBorder>(
-                    const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero)),
-              ),
-              child: Text(
-                'Print',
-                style: TextStyle(
-                    fontSize: 20,
-                    color: fileExtension == '.sl1'
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: kToolbarHeight,
-            child: VerticalDivider(
-              width: 2,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
-          Expanded(
-            child: ElevatedButton(
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+            left: (leftPadding - 10) < 0 ? 0 : leftPadding - 10,
+            right: (rightPadding - 10) < 0 ? 0 : rightPadding - 10,
+            bottom: 40,
+            top: 20),
+        child: Row(
+          children: [
+            ElevatedButton(
               onPressed: () {
                 // Add your delete logic here
               },
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, kToolbarHeight * 1.2),
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero),
+                minimumSize: Size(
+                  120, // Subtract the padding on both sides
+                  Theme.of(context).appBarTheme.toolbarHeight as double,
+                ),
               ),
               child: const Text(
                 'Delete',
                 style: TextStyle(fontSize: 20),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 20),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Add your delete logic here
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(
+                    0, // Subtract the padding on both sides
+                    Theme.of(context).appBarTheme.toolbarHeight as double,
+                  ),
+                ),
+                child: const Text(
+                  'Print',
+                  style: TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Add your delete logic here
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(
+                  120, // Subtract the padding on both sides
+                  Theme.of(context).appBarTheme.toolbarHeight as double,
+                ),
+              ),
+              child: const Text(
+                'Edit',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

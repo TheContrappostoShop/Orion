@@ -1,19 +1,19 @@
 import 'package:flutter/foundation.dart';
-import 'package:orion/themes/themes.dart';
+import 'package:orion/files/grid_files_screen.dart';
 
-import 'home/home_screen.dart';
-import 'status/status_screen.dart';
-import 'files/files_screen.dart';
-import 'settings/settings_screen.dart';
-import 'settings/calibrate_screen.dart';
-import 'settings/wifi_screen.dart';
-import 'settings/about_screen.dart';
+import 'package:orion/home/home_screen.dart';
+import 'package:orion/status/status_screen.dart';
+import 'package:orion/files/files_screen.dart';
+import 'package:orion/settings/settings_screen.dart';
+import 'package:orion/settings/calibrate_screen.dart';
+import 'package:orion/settings/wifi_screen.dart';
+import 'package:orion/settings/about_screen.dart';
+import 'package:orion/themes/themes.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:window_size/window_size.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +23,8 @@ void main() {
 void macDebug() {
   if (kDebugMode) {
     setWindowTitle('Orion Debug - Prometheus mSLA');
-    setWindowMinSize(const Size(800, 480));
-    setWindowMaxSize(const Size(800, 480));
+    setWindowMinSize(const Size(480, 480));
+    setWindowMaxSize(const Size(800, 800));
   }
 }
 
@@ -41,6 +41,12 @@ final GoRouter _router = GoRouter(
           path: 'files',
           builder: (BuildContext context, GoRouterState state) {
             return const FilesScreen();
+          },
+        ),
+        GoRoute(
+          path: 'gridfiles',
+          builder: (BuildContext context, GoRouterState state) {
+            return const GridFilesScreen();
           },
         ),
         GoRoute(

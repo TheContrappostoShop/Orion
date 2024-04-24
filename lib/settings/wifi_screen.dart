@@ -1,6 +1,9 @@
-// ignore_for_file: avoid_print, use_build_context_synchronously, library_private_types_in_public_api
+// ignore_for_file: avoid_print, use_build_context_synchronously, library_private_types_in_public_api, unused_field
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+const MethodChannel macplatform = MethodChannel('orion.macplatform.channel');
 
 class WifiScreen extends StatefulWidget {
   const WifiScreen({super.key});
@@ -13,6 +16,7 @@ class _WifiScreenState extends State<WifiScreen> {
   List<String> wifiNetworks = [];
   String? currentWifiSSID;
   Future<List<Map<String, String>>>? _networksFuture;
+  Color? _standardColor = Colors.white.withOpacity(0.0);
 
   @override
   void initState() {
@@ -74,21 +78,18 @@ class _WifiScreenState extends State<WifiScreen> {
       ProcessResult? currentSSID;
       switch (Theme.of(context).platform) {
         case TargetPlatform.macOS:
-          result = await Process.run(
-              '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport',
-              ['-s']);
-          currentSSID = await Process.run(
-            '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport',
-            ['-I'],
-          );
           platform = 'macos';
-          final match =
-              RegExp(r'SSID: (.*)').firstMatch(currentSSID.stdout.toString());
+          final List<String> networks =
+              await macplatform.invokeMethod('networks');
+          currentSSID =
+              await Process.run('networksetup', ['-getairportnetwork', 'en0']);
+          final match = RegExp(r'Current Wi-Fi Network: (.*)')
+              .firstMatch(currentSSID.stdout.toString());
           currentWifiSSID = match?.group(1)?.trim() ?? '';
-          break;
+          return networks.map((ssid) => {'SSID': ssid, 'SIGNAL': '0'}).toList();
         case TargetPlatform.linux:
-          result = await Process.run('nmcli', ['device', 'wifi', 'list']);
           platform = 'linux';
+          result = await Process.run('nmcli', ['device', 'wifi', 'list']);
           break;
         default:
       }
@@ -173,6 +174,7 @@ class _WifiScreenState extends State<WifiScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _standardColor = Theme.of(context).textTheme.bodyLarge!.color;
     return Scaffold(
       body: FutureBuilder<List<Map<String, String>>>(
         future: _networksFuture,

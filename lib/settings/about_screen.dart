@@ -24,7 +24,6 @@ class _AboutScreenState extends State<AboutScreen> {
   double leftPadding = 0;
   double rightPadding = 0;
   Color? _standardColor = Colors.white.withOpacity(0.0);
-  Color? _qrColor = Colors.white.withOpacity(0.0);
 
   final GlobalKey textKey1 = GlobalKey();
   final GlobalKey textKey2 = GlobalKey();
@@ -50,10 +49,7 @@ class _AboutScreenState extends State<AboutScreen> {
       setState(() {
         leftPadding = (screenWidth - maxWidth - 220) / 3;
         rightPadding = leftPadding;
-        _standardColor = null;
-        _qrColor = Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black;
+        _standardColor = Theme.of(context).textTheme.bodyLarge!.color;
       });
     });
 
@@ -113,12 +109,19 @@ class _AboutScreenState extends State<AboutScreen> {
                       builder: (BuildContext context,
                           AsyncSnapshot<String> snapshot) {
                         if (snapshot.hasData) {
-                          return Text('Orion: ${snapshot.data}',
-                              key: textKey3,
-                              style: TextStyle(
-                                  fontSize: 20, color: _standardColor));
+                          return Text(
+                            'Orion: ${snapshot.data}',
+                            key: textKey3,
+                            style:
+                                TextStyle(fontSize: 20, color: _standardColor),
+                          );
                         } else {
-                          return const CircularProgressIndicator();
+                          return Text(
+                            'Orion: N/A',
+                            key: textKey3,
+                            style:
+                                TextStyle(fontSize: 20, color: _standardColor),
+                          );
                         }
                       },
                     ),
@@ -167,7 +170,6 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: kToolbarHeight / 2),
             ],
           ),
           Align(
@@ -180,13 +182,12 @@ class _AboutScreenState extends State<AboutScreen> {
                   QrImageView(
                     data: 'https://github.com/TheContrappostoShop/Orion',
                     version: QrVersions.auto,
-                    size: 220.0,
-                    eyeStyle: QrEyeStyle(color: _qrColor),
+                    size: 220,
+                    eyeStyle: QrEyeStyle(color: _standardColor),
                     dataModuleStyle: QrDataModuleStyle(
-                        color: _qrColor,
+                        color: _standardColor,
                         dataModuleShape: QrDataModuleShape.circle),
                   ),
-                  const SizedBox(height: kToolbarHeight / 2),
                 ],
               ),
             ),

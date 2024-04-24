@@ -75,7 +75,10 @@ class OrionKbModal extends ModalRoute<String> {
         curve: Curves.easeOut,
       )),
       child: FractionallySizedBox(
-        heightFactor: 0.5,
+        heightFactor:
+            MediaQuery.of(context).orientation == Orientation.landscape
+                ? 0.5
+                : 0.4,
         alignment: Alignment.bottomCenter,
         child: child,
       ),

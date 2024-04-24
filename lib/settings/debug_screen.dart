@@ -1,12 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:orion/util/orion_kb/orion_keyboard_expander.dart';
+import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
+
 /*
  *    Orion Debug Screen
  *    Copyright (c) 2024 TheContrappostoShop (Paul S.)
  *    GPLv3 Licensing (see LICENSE)
  */
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
 
 class DebugScreen extends StatefulWidget {
   final Function(ThemeMode) changeThemeMode;
@@ -20,8 +20,18 @@ class DebugScreen extends StatefulWidget {
 class DebugScreenState extends State<DebugScreen> {
   final GlobalKey<SpawnOrionTextFieldState> debugTextFieldKey =
       GlobalKey<SpawnOrionTextFieldState>();
+  final GlobalKey<SpawnOrionTextFieldState> dialogTextFieldKey =
+      GlobalKey<SpawnOrionTextFieldState>();
+  final ScrollController _scrollController = ScrollController();
 
   bool themeToggle = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = MediaQuery.of(context).platformBrightness;
+    themeToggle = brightness == Brightness.dark;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +39,7 @@ class DebugScreenState extends State<DebugScreen> {
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints viewportConstraints) {
           return SingleChildScrollView(
+            controller: _scrollController,
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: viewportConstraints.maxHeight,
@@ -40,7 +51,7 @@ class DebugScreenState extends State<DebugScreen> {
                     const Center(
                       child: Text(
                         'Internal Debug Screen\nNOT FOR PUBLIC RELEASE',
-                        style: TextStyle(fontSize: 20, color: Colors.red),
+                        style: TextStyle(fontSize: 25, color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -51,10 +62,11 @@ class DebugScreenState extends State<DebugScreen> {
                         key: debugTextFieldKey,
                         keyboardHint: "Debug Test Field",
                         locale: Localizations.localeOf(context).toString(),
+                        scrollController: _scrollController,
                         isHidden: true,
                       ),
                     ),
-                    Padding(
+                    /*Padding(
                       padding: const EdgeInsets.all(10),
                       child: ElevatedButton(
                           onPressed: () {
@@ -67,7 +79,7 @@ class DebugScreenState extends State<DebugScreen> {
                           },
                           child:
                               const Text('[Debug] Read TextField to Console')),
-                    ),
+                    ),*/
                     Padding(
                       padding: const EdgeInsets.all(10),
                       child: ElevatedButton(
@@ -81,10 +93,21 @@ class DebugScreenState extends State<DebugScreen> {
                                 content: SizedBox(
                                   width: MediaQuery.of(context).size.width *
                                       0.5, // Half the screen width
-                                  child: SpawnOrionTextField(
-                                    keyboardHint: "Enter Password",
-                                    locale: Localizations.localeOf(context)
-                                        .toString(),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        SpawnOrionTextField(
+                                          key: dialogTextFieldKey,
+                                          keyboardHint: "Enter Password",
+                                          locale:
+                                              Localizations.localeOf(context)
+                                                  .toString(),
+                                          scrollController: _scrollController,
+                                        ),
+                                        OrionKbExpander(
+                                            textFieldKey: dialogTextFieldKey),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 actions: [
@@ -105,7 +128,10 @@ class DebugScreenState extends State<DebugScreen> {
                             },
                           );
                         },
-                        child: const Text('[Debug] OrionTextField Dialog Test'),
+                        child: const Text(
+                          '[Debug] OrionTextField Dialog Test',
+                          style: TextStyle(fontSize: 18),
+                        ),
                       ),
                     ),
                     Padding(
@@ -113,14 +139,18 @@ class DebugScreenState extends State<DebugScreen> {
                       child: Switch(
                         value: themeToggle,
                         onChanged: (bool value) {
-                          setState(() {
-                            themeToggle = value;
-                            widget.changeThemeMode(
-                                themeToggle ? ThemeMode.dark : ThemeMode.light);
-                          });
+                          setState(
+                            () {
+                              themeToggle = value;
+                              widget.changeThemeMode(themeToggle
+                                  ? ThemeMode.dark
+                                  : ThemeMode.light);
+                            },
+                          );
                         },
                       ),
                     ),
+                    OrionKbExpander(textFieldKey: debugTextFieldKey)
                   ],
                 ),
               ),

@@ -88,6 +88,7 @@ class OrionTextFieldState extends State<OrionTextField>
                     return TextField(
                       controller: widget.controller,
                       readOnly: true,
+
                       decoration: InputDecoration(
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
@@ -102,7 +103,8 @@ class OrionTextFieldState extends State<OrionTextField>
                         labelText: widget.keyboardHint,
                       ),
                       // Hide the original text, We overlay our own with an animated line (cursor)
-                      style: style.copyWith(color: Colors.transparent),
+                      style: style.copyWith(
+                          color: Colors.transparent, fontSize: 28),
                     );
                   },
                 ),

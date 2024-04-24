@@ -280,14 +280,20 @@ class KeyboardButton extends StatelessWidget {
                     text == '↵' ||
                     text == "#+=" ||
                     text == "123\u200B") {
-                  return Text(
-                    text,
-                    style: const TextStyle(fontSize: 20),
+                  return FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      text,
+                      style: const TextStyle(fontSize: 20),
+                    ),
                   );
                 }
-                return Text(
-                  isShiftEnabled ? text.toUpperCase() : text.toLowerCase(),
-                  style: const TextStyle(fontSize: 20),
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    isShiftEnabled ? text.toUpperCase() : text.toLowerCase(),
+                    style: const TextStyle(fontSize: 20),
+                  ),
                 );
               },
             ),

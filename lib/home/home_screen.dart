@@ -3,20 +3,30 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+/*
+ *    Orion Home Screen
+ *    Copyright (c) 2024 TheContrappostoShop (Paul S, shifubrams)
+ *    GPLv3 Licensing (see LICENSE)
+ */
+
 class HomeScreen extends StatelessWidget {
-  /// Constructs a [HomeScreen]
   const HomeScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    const Size homeBtnSize = Size(200, 110);
+    Size homeBtnSize = const Size(220, 130);
+
     final theme = Theme.of(context).copyWith(
-        elevatedButtonTheme: ElevatedButtonThemeData(style: ButtonStyle(
-      minimumSize: MaterialStateProperty.resolveWith<Size?>(
-        (Set<MaterialState> states) {
-          return homeBtnSize;
-        },
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: MaterialStateProperty.resolveWith<Size?>(
+            (Set<MaterialState> states) {
+              return homeBtnSize;
+            },
+          ),
+        ),
       ),
-    )));
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Stack(
@@ -62,7 +72,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(width: 20),
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/files'),
+                    onPressed: () => context.go('/gridfiles'),
                     child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +117,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/files'),
+                    onPressed: () => context.go('/gridfiles'),
                     child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -142,15 +152,13 @@ class HomeScreen extends StatelessWidget {
 
 /// A live clock widget
 class LiveClock extends StatefulWidget {
-  /// Constructs a [LiveClock]
   const LiveClock({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _LiveClockState createState() => _LiveClockState();
+  LiveClockState createState() => LiveClockState();
 }
 
-class _LiveClockState extends State<LiveClock> {
+class LiveClockState extends State<LiveClock> {
   late Timer _timer;
   late DateTime _dateTime;
 
@@ -175,7 +183,6 @@ class _LiveClockState extends State<LiveClock> {
   Widget build(BuildContext context) {
     return Text(
       '${_dateTime.hour.toString().padLeft(2, '0')}:${_dateTime.minute.toString().padLeft(2, '0')}',
-      style: const TextStyle(fontSize: 20),
     );
   }
 }
