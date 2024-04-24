@@ -3,7 +3,6 @@ import 'dart:io';
 // ignore: unused_import
 import 'dart:math';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
@@ -156,9 +155,9 @@ class _DetailScreenState extends State<DetailScreen> {
 
       final screenWidth = MediaQuery.of(context)
           .size
-          .width; // 200 placeholder, change to your image width.
+          .width; // 220 placeholder, change to your image width.
       setState(() {
-        leftPadding = (screenWidth - maxWidth - 200.dg) / 3;
+        leftPadding = (screenWidth - maxWidth - 220) / 3;
         if (leftPadding < 0) leftPadding = 0;
         rightPadding = leftPadding;
       });
@@ -166,7 +165,8 @@ class _DetailScreenState extends State<DetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('File Details | $modifiedDate'),
+        //title: Text('File Details | $modifiedDate'),
+        title: const Text('File Details'),
       ),
       body: Stack(
         children: [
@@ -180,33 +180,16 @@ class _DetailScreenState extends State<DetailScreen> {
                       EdgeInsets.only(left: leftPadding), // Add left padding
                   child: FittedBox(
                     child: Text(
-                      fileName,
+                      '$fileName | $fileSize',
                       key: textKey1,
-                      style: TextStyle(
-                          fontSize: 24.sp, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 20.sp),
+              const SizedBox(height: 20),
               // ignore: unnecessary_null_comparison
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding:
-                      EdgeInsets.only(left: leftPadding), // Add left padding
-                  child: FittedBox(
-                    // ignore: unnecessary_null_comparison
-                    child: Text(
-                      'File Size: $fileSize',
-                      key: textKey2,
-                      style: TextStyle(fontSize: 20.sp),
-                    ),
-                  ),
-                ),
-              ),
-              // ignore: unnecessary_null_comparison
-              SizedBox(height: 15.sp),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -215,13 +198,13 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: FittedBox(
                     child: Text(
                       'Layer Height: $layerHeight mm',
-                      key: textKey3,
-                      style: TextStyle(fontSize: 20.sp),
+                      key: textKey2,
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 15.sp),
+              const SizedBox(height: 15),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -230,13 +213,13 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: FittedBox(
                     child: Text(
                       'Material: ${materialName.split('@0.')[0]}',
-                      key: textKey4,
-                      style: TextStyle(fontSize: 20.sp),
+                      key: textKey3,
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 15.sp),
+              const SizedBox(height: 15),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -245,13 +228,13 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: FittedBox(
                     child: Text(
                       'Estimated Time: $printTime',
-                      key: textKey5,
-                      style: TextStyle(fontSize: 20.sp),
+                      key: textKey4,
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 15.sp),
+              const SizedBox(height: 15),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -259,13 +242,12 @@ class _DetailScreenState extends State<DetailScreen> {
                   child: FittedBox(
                     child: Text(
                       'Estimated Material: $materialVolume',
-                      key: textKey6,
-                      style: TextStyle(fontSize: 20.sp),
+                      key: textKey5,
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: kToolbarHeight * 0.4),
             ],
           ),
           Align(
@@ -276,80 +258,98 @@ class _DetailScreenState extends State<DetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   thumbnailPath.isNotEmpty
-                      ? Image.file(
-                          File(thumbnailPath),
-                          width: 200.dg,
-                          height: 200.dg,
+                      ? Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(7.75),
+                              child: Image.file(
+                                File(thumbnailPath),
+                                width: 220,
+                                height: 220,
+                              ),
+                            ),
+                          ),
                         )
-                      : Image(
-                          image:
-                              const AssetImage('assets/images/placeholder.png'),
-                          width: 200.dg,
-                          height: 200.dg,
+                      : Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(7.75),
+                              child: const Image(
+                                image:
+                                    AssetImage('assets/images/placeholder.png'),
+                                width: 220,
+                                height: 220,
+                              ),
+                            ),
+                          ),
                         ),
-                  const SizedBox(height: kToolbarHeight * 0.4),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
-      bottomNavigationBar: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                // Add your print logic here
-              },
-              style: ButtonStyle(
-                overlayColor: MaterialStateProperty.resolveWith<Color>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.hovered) &&
-                        fileExtension != '.sl1') {
-                      return Colors.transparent;
-                    }
-                    return Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withOpacity(0.08); // default color
-                  },
-                ),
-                minimumSize: MaterialStateProperty.all<Size>(
-                    const Size(double.infinity, kToolbarHeight * 1.2)),
-                shape: MaterialStateProperty.all<OutlinedBorder>(
-                    const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero)),
-              ),
-              child: Text(
-                'Delete',
-                style: TextStyle(fontSize: 24.sp, color: Colors.redAccent),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: kToolbarHeight,
-            child: VerticalDivider(
-              width: 2,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
-          Expanded(
-            child: ElevatedButton(
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+            left: (leftPadding - 10) < 0 ? 0 : leftPadding - 10,
+            right: (rightPadding - 10) < 0 ? 0 : rightPadding - 10,
+            bottom: 40,
+            top: 20),
+        child: Row(
+          children: [
+            ElevatedButton(
               onPressed: () {
                 // Add your delete logic here
               },
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, kToolbarHeight * 1.2),
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero),
+                minimumSize: Size(
+                  120, // Subtract the padding on both sides
+                  Theme.of(context).appBarTheme.toolbarHeight as double,
+                ),
               ),
-              child: Text(
-                'Print',
-                style: TextStyle(fontSize: 24.sp),
+              child: const Text(
+                'Delete',
+                style: TextStyle(fontSize: 20),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 20),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Add your delete logic here
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(
+                    0, // Subtract the padding on both sides
+                    Theme.of(context).appBarTheme.toolbarHeight as double,
+                  ),
+                ),
+                child: const Text(
+                  'Print',
+                  style: TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Add your delete logic here
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(
+                  120, // Subtract the padding on both sides
+                  Theme.of(context).appBarTheme.toolbarHeight as double,
+                ),
+              ),
+              child: const Text(
+                'Edit',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

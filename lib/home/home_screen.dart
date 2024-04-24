@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 /*
@@ -14,13 +13,7 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    // High DPI devices will have a pixelRatio if 2.0, set them to 1.0.
-    double scaleFactor = 1 /
-        ((ScreenUtil().pixelRatio ?? 1.0) == 2.0
-            ? 1.0
-            : (ScreenUtil().pixelRatio ?? 1.0));
-
-    Size homeBtnSize = Size(220 * scaleFactor, 130 * scaleFactor);
+    Size homeBtnSize = const Size(220, 130);
 
     final theme = Theme.of(context).copyWith(
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -67,28 +60,25 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/status'),
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, size: 48 * scaleFactor),
-                        Text('Status',
-                            style: TextStyle(fontSize: 24 * scaleFactor)),
+                        Icon(Icons.info_outline, size: 48),
+                        Text('Status', style: TextStyle(fontSize: 24)),
                       ],
                     ),
                   ),
                   const SizedBox(width: 20),
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/files'),
-                    child: Column(
+                    onPressed: () => context.go('/gridfiles'),
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.folder_open_outlined,
-                            size: 48 * scaleFactor),
-                        Text('Print Files',
-                            style: TextStyle(fontSize: 24 * scaleFactor)),
+                        Icon(Icons.folder_open_outlined, size: 48),
+                        Text('Print Files', style: TextStyle(fontSize: 24)),
                       ],
                     ),
                   ),
@@ -96,13 +86,12 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/settings'),
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.settings_outlined, size: 48 * scaleFactor),
-                        Text('Settings',
-                            style: TextStyle(fontSize: 24 * scaleFactor)),
+                        Icon(Icons.settings_outlined, size: 48),
+                        Text('Settings', style: TextStyle(fontSize: 24)),
                       ],
                     ),
                   ),
@@ -116,13 +105,12 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/status'),
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, size: 48 * scaleFactor),
-                        Text('Status',
-                            style: TextStyle(fontSize: 24 * scaleFactor)),
+                        Icon(Icons.info_outline, size: 48),
+                        Text('Status', style: TextStyle(fontSize: 24)),
                       ],
                     ),
                   ),
@@ -130,14 +118,12 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/gridfiles'),
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.folder_open_outlined,
-                            size: 48 * scaleFactor),
-                        Text('Print Files',
-                            style: TextStyle(fontSize: 24 * scaleFactor)),
+                        Icon(Icons.folder_open_outlined, size: 48),
+                        Text('Print Files', style: TextStyle(fontSize: 24)),
                       ],
                     ),
                   ),
@@ -145,13 +131,12 @@ class HomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: theme.elevatedButtonTheme.style,
                     onPressed: () => context.go('/settings'),
-                    child: Column(
+                    child: const Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.settings_outlined, size: 48 * scaleFactor),
-                        Text('Settings',
-                            style: TextStyle(fontSize: 24 * scaleFactor)),
+                        Icon(Icons.settings_outlined, size: 48),
+                        Text('Settings', style: TextStyle(fontSize: 24)),
                       ],
                     ),
                   ),
@@ -198,7 +183,6 @@ class LiveClockState extends State<LiveClock> {
   Widget build(BuildContext context) {
     return Text(
       '${_dateTime.hour.toString().padLeft(2, '0')}:${_dateTime.minute.toString().padLeft(2, '0')}',
-      style: const TextStyle(fontSize: 20),
     );
   }
 }

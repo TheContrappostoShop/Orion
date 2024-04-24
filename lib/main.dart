@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:window_size/window_size.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,24 +109,17 @@ class OrionState extends State<Orion> {
     if (Theme.of(context).platform == TargetPlatform.macOS) {
       macDebug();
     }
-    return ScreenUtilInit(
-      designSize: const Size(800, 480),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (_, child) {
-        return Provider<Function>.value(
-          value: changeThemeMode,
-          child: SizedBox(
-            child: MaterialApp.router(
-              debugShowCheckedModeBanner: true,
-              routerConfig: _router,
-              theme: themeLight,
-              darkTheme: themeDark,
-              themeMode: _themeMode,
-            ),
-          ),
-        );
-      },
+    return Provider<Function>.value(
+      value: changeThemeMode,
+      child: SizedBox(
+        child: MaterialApp.router(
+          debugShowCheckedModeBanner: true,
+          routerConfig: _router,
+          theme: themeLight,
+          darkTheme: themeDark,
+          themeMode: _themeMode,
+        ),
+      ),
     );
   }
 }

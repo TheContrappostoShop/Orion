@@ -128,7 +128,10 @@ class DebugScreenState extends State<DebugScreen> {
                             },
                           );
                         },
-                        child: const Text('[Debug] OrionTextField Dialog Test'),
+                        child: const Text(
+                          '[Debug] OrionTextField Dialog Test',
+                          style: TextStyle(fontSize: 18),
+                        ),
                       ),
                     ),
                     Padding(

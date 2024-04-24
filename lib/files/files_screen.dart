@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'details_screen.dart';
 import 'package:orion/files/search_file_screen.dart';
@@ -233,10 +232,9 @@ class _FilesScreenState extends State<FilesScreen> {
                 if (index == 0) {
                   return ListTile(
                     leading: const Icon(Icons.subdirectory_arrow_left_rounded),
-                    title: Row(
+                    title: const Row(
                       children: [
-                        Text('Leave Directory',
-                            style: TextStyle(fontSize: 24.sp)),
+                        Text('Leave Directory', style: TextStyle(fontSize: 24)),
                       ],
                     ),
                     onTap: () {
@@ -306,7 +304,7 @@ class _FilesScreenState extends State<FilesScreen> {
                       title: Text(
                         displayName,
                         style: TextStyle(
-                            fontSize: 24.sp,
+                            fontSize: 24,
                             color: file is Directory ? Colors.grey : null),
                       ),
                       subtitle: file is File ? Text(subtitle) : null,

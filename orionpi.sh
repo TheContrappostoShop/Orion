@@ -152,4 +152,4 @@ fi
 # SSH command to kill all instances of flutter-pi on the Raspberry Pi
 printf "\n\r[\033[0;32m✓\033[0m]\033[0;32m%s\033[0m\n" "  Running OrionPi on Raspberry Pi!"
 printf "\r[i]""  Press \033[0;31mCtrl+C\033[0m to disconnect.\n\n"
-sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 -d "109, 65" /home/pi/orionpi/flutter_assets'
+sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 /home/pi/orionpi/flutter_assets'

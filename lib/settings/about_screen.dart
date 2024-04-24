@@ -3,7 +3,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:package_info/package_info.dart';
 
@@ -48,7 +47,7 @@ class _AboutScreenState extends State<AboutScreen> {
 
       final screenWidth = MediaQuery.of(context).size.width;
       setState(() {
-        leftPadding = (screenWidth - maxWidth - 150.dg) / 3;
+        leftPadding = (screenWidth - maxWidth - 220) / 3;
         rightPadding = leftPadding;
         _standardColor = Theme.of(context).textTheme.bodyLarge!.color;
       });
@@ -78,14 +77,14 @@ class _AboutScreenState extends State<AboutScreen> {
                       title,
                       key: textKey1,
                       style: TextStyle(
-                          fontSize: 24.sp,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: _standardColor),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 20.sp),
+              const SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -94,12 +93,12 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       serialNumber,
                       key: textKey2,
-                      style: TextStyle(fontSize: 20.sp, color: _standardColor),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 15.sp),
+              const SizedBox(height: 15),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -113,15 +112,15 @@ class _AboutScreenState extends State<AboutScreen> {
                           return Text(
                             'Orion: ${snapshot.data}',
                             key: textKey3,
-                            style: TextStyle(
-                                fontSize: 20.sp, color: _standardColor),
+                            style:
+                                TextStyle(fontSize: 20, color: _standardColor),
                           );
                         } else {
                           return Text(
                             'Orion: N/A',
                             key: textKey3,
-                            style: TextStyle(
-                                fontSize: 20.sp, color: _standardColor),
+                            style:
+                                TextStyle(fontSize: 20, color: _standardColor),
                           );
                         }
                       },
@@ -129,7 +128,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 15.sp),
+              const SizedBox(height: 15),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -138,12 +137,12 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       apiVersion,
                       key: textKey4,
-                      style: TextStyle(fontSize: 20.sp, color: _standardColor),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 15.sp),
+              const SizedBox(height: 15),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -152,12 +151,12 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       boardType,
                       key: textKey5,
-                      style: TextStyle(fontSize: 20.sp, color: _standardColor),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 15.sp),
+              const SizedBox(height: 15),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
@@ -166,7 +165,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       warranty,
                       key: textKey6,
-                      style: TextStyle(fontSize: 20.sp, color: _standardColor),
+                      style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),
                 ),
@@ -183,7 +182,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   QrImageView(
                     data: 'https://github.com/TheContrappostoShop/Orion',
                     version: QrVersions.auto,
-                    size: 150.dg,
+                    size: 220,
                     eyeStyle: QrEyeStyle(color: _standardColor),
                     dataModuleStyle: QrDataModuleStyle(
                         color: _standardColor,

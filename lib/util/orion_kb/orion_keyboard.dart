@@ -6,7 +6,6 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:orion/themes/themes.dart';
 import 'package:orion/util/localization.dart';
 
@@ -98,7 +97,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
     return Expanded(
       child: Row(
         children: [
-          SizedBox(width: hasShiftAndBackspace ? 10.w : 0),
+          SizedBox(width: hasShiftAndBackspace ? 10 : 0),
           if (hasShiftAndBackspace)
             Expanded(
               child: ValueListenableBuilder<bool>(
@@ -139,7 +138,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
                 },
               ),
             ),
-          SizedBox(width: 10.w),
+          const SizedBox(width: 10),
           ...rowCharacters
               .split('')
               .expand((char) => [
@@ -161,11 +160,11 @@ class OrionKeyboardState extends State<OrionKeyboard> {
                         },
                       ),
                     ),
-                    SizedBox(width: 10.w),
+                    const SizedBox(width: 10),
                   ])
               .toList()
             ..removeLast(),
-          SizedBox(width: hasShiftAndBackspace ? 10.w : 0),
+          SizedBox(width: hasShiftAndBackspace ? 10 : 0),
           if (hasShiftAndBackspace)
             Expanded(
               child: KeyboardButton(
@@ -177,7 +176,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
                 isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
               ),
             ),
-          SizedBox(width: 10.w),
+          const SizedBox(width: 10),
         ],
       ),
     );
@@ -189,7 +188,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
     return Expanded(
       child: Row(
         children: [
-          SizedBox(width: 10.w),
+          const SizedBox(width: 10),
           Expanded(
             flex: 1,
             child: KeyboardButton(
@@ -201,7 +200,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
               isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
             ),
           ),
-          SizedBox(width: 10.w),
+          const SizedBox(width: 10),
           Expanded(
             flex: 5,
             child: KeyboardButton(
@@ -213,7 +212,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
               isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
             ),
           ),
-          SizedBox(width: 10.w),
+          const SizedBox(width: 10),
           Expanded(
             flex: 1,
             child: KeyboardButton(
@@ -227,7 +226,7 @@ class OrionKeyboardState extends State<OrionKeyboard> {
               isSecondarySymbolKeyboardShown: _isSecondarySymbolKeyboardShown,
             ),
           ),
-          SizedBox(width: 10.w),
+          const SizedBox(width: 10),
         ],
       ),
     );
@@ -257,7 +256,7 @@ class KeyboardButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5.w),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: SizedBox(
         height: double.infinity,
         child: TextButton(
