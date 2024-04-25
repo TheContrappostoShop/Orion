@@ -1,16 +1,27 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-class ApiService {
-  static const String apiUrl = "10.15.1.5:12357";
-  /**
-   * GET METHODS TO ODYSSEY 
-   */
+/*
+ *    Orion API Services
+ *    Copyright (c) 2024 TheContrappostoShop (PaulGD03, shifubrams)
+ *    GPLv3 Licensing (see LICENSE)
+ */
 
-  /// Get current status of the printer
+class ApiService {
+  // For Debugging Purposes: TheContrappostoShop Internal Debug API URL (Simulated Odyssey)
+  // During production, this will be the actual Odyssey API URL (currently assuming to localhost)
+  static const String apiUrl =
+      kDebugMode ? "dev.plyktra.de" : '127.0.0.1:12357';
+
+  ///
+  /// GET METHODS TO ODYSSEY
+  ///
+
+  // Get current status of the printer
   static Future<Map<String, dynamic>> getStatus() async {
     final response = await http.get(
-      Uri.parse('http:/apiUrl/status'),
+      Uri.parse('http://apiUrl/status'),
     );
 
     if (response.statusCode == 200) {
@@ -20,14 +31,13 @@ class ApiService {
     }
   }
 
-  /// Get list of files in a specific location with pagination
-  /// Takes 3 parameters : location [string], pageSize [int] and pageIndex [int]
-  ///
-  /// returns TODO
+  // Get list of files in a specific location with pagination
+  // Takes 3 parameters : location [string], pageSize [int] and pageIndex [int]
   static Future<Map<String, dynamic>> listFiles(
-      String location, int pageSize, int pageIndex) async {
+      String location, int pageSize, int pageIndex, String subdirectory) async {
     final queryParams = {
-      "location": location,
+      "category": location,
+      "path_prefix": subdirectory == '/' ? '' : subdirectory,
       "page_index": pageIndex.toString(),
       "page_size": pageSize.toString(),
     };
@@ -41,10 +51,28 @@ class ApiService {
     }
   }
 
-  /// Get a file
-  /// Takes 2 parameters : location [string] and filename [String]
-  ///
-  /// returns TODO
+  // Get list of folders in a specific location with pagination
+  // Takes 3 parameters : location [string], pageSize [int] and pageIndex [int]
+  static Future<Map<String, dynamic>> listDirs(
+      String location, int pageSize, int pageIndex, String subdirectory) async {
+    final queryParams = {
+      "category": location,
+      "path_prefix": subdirectory == '/' ? '' : subdirectory,
+      "page_index": pageIndex.toString(),
+      "page_size": pageSize.toString(),
+    };
+    final response = await http.get(Uri.http(apiUrl, '/dirs', queryParams));
+
+    if (response.statusCode == 200) {
+      // TODO check the response sent by odyssey
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to fetch status');
+    }
+  }
+
+  // Get a file
+  // Takes 2 parameters : location [string] and filename [String]
   static Future<Map<String, dynamic>> getFile(
       String location, String filename) async {
     final queryParams = {"location": location, "filename": filename};
@@ -58,14 +86,12 @@ class ApiService {
     }
   }
 
-  /**
-   * POST METHODS TO ODYSSEY 
-   */
-
-  /// Start printing a given file
-  /// Takes 2 parameters : location [string] and filename [String]
   ///
-  /// returns TODO
+  /// POST METHODS TO ODYSSEY
+  ///
+
+  // Start printing a given file
+  // Takes 2 parameters : location [string] and filename [String]
   static Future<Null> startPrint(String location, String filename) async {
     final response = await http.post(
       Uri.parse('http://$apiUrl/print/start/$location/$filename'),
@@ -76,9 +102,7 @@ class ApiService {
     }
   }
 
-  /// Cancel the print
-  ///
-  /// returns TODO
+  // Cancel the print
   static Future<Null> cancelPrint() async {
     final response = await http.post(Uri.parse('http://$apiUrl/print/cancel'));
 
@@ -88,9 +112,7 @@ class ApiService {
     }
   }
 
-  /// Pause the print
-  ///
-  /// returns TODO
+  // Pause the print
   static Future<Null> pausePrint() async {
     final response = await http.post(Uri.parse('http://$apiUrl/print/pause'));
 
@@ -100,9 +122,7 @@ class ApiService {
     }
   }
 
-  /// Resume the print
-  ///
-  /// returns TODO
+  // Resume the print
   static Future<Null> resumePrint() async {
     final response = await http.post(Uri.parse('http://$apiUrl/print/resume'));
 
@@ -112,10 +132,8 @@ class ApiService {
     }
   }
 
-  /// Move the Z axis
-  /// Takes 1 param height [double] which is the desired position of the Z axis
-  ///
-  /// returns TODO
+  // Move the Z axis
+  // Takes 1 param height [double] which is the desired position of the Z axis
   static Future<Map<String, dynamic>> move(double height) async {
     final response = await http.post(
       Uri.parse('http://$apiUrl/manual'),
@@ -131,13 +149,11 @@ class ApiService {
     }
   }
 
-  /// Toggle cure
-  /// Takes 1 param on [bool] which define if we start or stop the curing
-  ///
-  /// returns TODO
+  // Toggle cure
+  // Takes 1 param on [bool] which define if we start or stop the curing
   static Future<Map<String, dynamic>> manualCure(bool cure) async {
     final response = await http.post(
-      Uri.parse('http:/apiUrl/manual'),
+      Uri.parse('http://apiUrl/manual'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({'cure': cure}),
     );
@@ -150,14 +166,12 @@ class ApiService {
     }
   }
 
-  /**
-   * DELETE METHODS TO ODYSSEY 
-   */
-
-  /// Delete a file
-  /// Takes 2 parameters : location [string] and filename [String]
   ///
-  /// returns TODO
+  /// DELETE METHODS TO ODYSSEY
+  ///
+
+  // Delete a file
+  // Takes 2 parameters : location [string] and filename [String]
   static Future<Map<String, dynamic>> deleteFile(
       String location, String filename) async {
     final queryParams = {"location": location, "filename": filename};
