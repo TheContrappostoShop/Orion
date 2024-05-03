@@ -340,13 +340,13 @@ class _FilesScreenState extends State<FilesScreen> {
                             });
                           } else {
                             if (file is File) {
-                              Navigator.push(
+                              /*Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       DetailScreen(file: file),
                                 ),
-                              );
+                              );*/
                             }
                           }
                         } catch (e) {
