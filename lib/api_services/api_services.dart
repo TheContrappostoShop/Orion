@@ -31,13 +31,13 @@ class ApiService {
     }
   }
 
-  // Get list of files in a specific location with pagination
+  // Get list of files and directories in a specific location with pagination
   // Takes 3 parameters : location [string], pageSize [int] and pageIndex [int]
-  static Future<Map<String, dynamic>> listFiles(
+  static Future<Map<String, dynamic>> listItems(
       String location, int pageSize, int pageIndex, String subdirectory) async {
     final queryParams = {
-      "category": location,
-      "path_prefix": subdirectory == '/' ? '' : subdirectory,
+      "location": location,
+      "subdirectory": subdirectory == '/' ? '' : subdirectory,
       "page_index": pageIndex.toString(),
       "page_size": pageSize.toString(),
     };
@@ -51,38 +51,34 @@ class ApiService {
     }
   }
 
-  // Get list of folders in a specific location with pagination
-  // Takes 3 parameters : location [string], pageSize [int] and pageIndex [int]
-  static Future<Map<String, dynamic>> listDirs(
-      String location, int pageSize, int pageIndex, String subdirectory) async {
-    final queryParams = {
-      "category": location,
-      "path_prefix": subdirectory == '/' ? '' : subdirectory,
-      "page_index": pageIndex.toString(),
-      "page_size": pageSize.toString(),
-    };
-    final response = await http.get(Uri.http(apiUrl, '/dirs', queryParams));
-
-    if (response.statusCode == 200) {
-      // TODO check the response sent by odyssey
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to fetch status');
-    }
-  }
-
-  // Get a file
+  // Get file metadata
   // Takes 2 parameters : location [string] and filename [String]
-  static Future<Map<String, dynamic>> getFile(
-      String location, String filename) async {
-    final queryParams = {"location": location, "filename": filename};
-    final response = await http.get(Uri.http(apiUrl, '/files', queryParams));
+  static Future<Map<String, dynamic>> getFileMetadata(
+      String location, String file_path) async {
+    final queryParams = {"location": location, "file_path": file_path};
+    final response =
+        await http.get(Uri.http(apiUrl, '/file/metadata', queryParams));
 
     if (response.statusCode == 200) {
       // TODO check the response sent by odyssey
       return json.decode(response.body);
     } else {
       throw Exception('Failed to fetch status');
+    }
+  }
+
+  // Get file thumbnail
+  // Takes 2 parameters : location [string] and filename [String]
+  static Future<Uint8List> getFileThumbnail(
+      String location, String file_path) async {
+    final queryParams = {"location": location, "file_path": file_path};
+    final response =
+        await http.get(Uri.http(apiUrl, '/file/thumbnail', queryParams));
+
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    } else {
+      throw Exception('Failed to fetch thumbnail');
     }
   }
 
