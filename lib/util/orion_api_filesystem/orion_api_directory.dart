@@ -8,12 +8,14 @@ class OrionApiDirectory implements OrionApiItem {
   final String name;
   final int lastModified;
   final String locationCategory;
+  final String parentPath;
 
   OrionApiDirectory({
     required this.path,
     required this.name,
     required this.lastModified,
     required this.locationCategory,
+    required this.parentPath,
   });
 
   factory OrionApiDirectory.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class OrionApiDirectory implements OrionApiItem {
       name: json['name'],
       lastModified: json['last_modified'],
       locationCategory: json['location_category'],
+      parentPath: json['parent_path'],
     );
   }
 }
@@ -32,7 +35,8 @@ Future<List<OrionApiDirectory>> _getDirs(
   try {
     String subdirectory = path.relative(directory, from: defaultDirectory);
 
-    final response = await ApiService.listDirs('uploads', 100, 0, subdirectory);
+    final response =
+        await ApiService.listItems('uploads', 100, 0, subdirectory);
 
     final List<OrionApiDirectory> dirs = (response['dirs'] as List)
         .where((item) => item != null)

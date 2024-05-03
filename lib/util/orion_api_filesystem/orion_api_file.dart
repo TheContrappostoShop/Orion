@@ -8,6 +8,7 @@ class OrionApiFile implements OrionApiItem {
   final String name;
   final int? lastModified;
   final String? locationCategory;
+  final String parentPath;
   final double? usedMaterial;
   final double? printTime;
   final double? layerHeight;
@@ -17,6 +18,7 @@ class OrionApiFile implements OrionApiItem {
     this.file,
     required this.path,
     required this.name,
+    required this.parentPath,
     this.lastModified,
     this.locationCategory,
     this.usedMaterial,
@@ -33,6 +35,7 @@ class OrionApiFile implements OrionApiItem {
       path: fileData['path'] ?? '',
       name: fileData['name'] ?? '',
       lastModified: fileData['last_modified'] ?? 0,
+      parentPath: fileData['parent_path'] ?? '',
       locationCategory: json['location_category'],
       usedMaterial: json['used_material'] ?? 0.0,
       printTime: json['print_time'] ?? 0.0,
