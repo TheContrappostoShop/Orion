@@ -1,15 +1,15 @@
-/*
- *    Orion File Search Screen
- *    Copyright (c) 2024 TheContrappostoShop (Paul S.)
- *    GPLv3 Licensing (see LICENSE)
- */
-
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/files/details_screen.dart';
 import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
 import 'package:path/path.dart' as path;
+
+/*
+ *    Orion File Search Screen
+ *    Copyright (c) 2024 TheContrappostoShop (PaulGD03)
+ *    GPLv3 Licensing (see LICENSE)
+ */
 
 class SearchFileScreen extends StatefulWidget {
   final GlobalKey<SpawnOrionTextFieldState> searchKey =
@@ -155,13 +155,13 @@ class SearchFileScreenState extends State<SearchFileScreen> {
                                 onTap: () {
                                   if (file is File &&
                                       file.path.endsWith('.sl1')) {
-                                    Navigator.push(
+                                    /*Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             DetailScreen(file: file),
                                       ),
-                                    );
+                                    );*/
                                   }
                                 },
                               );
