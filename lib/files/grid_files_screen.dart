@@ -32,7 +32,9 @@ class GridFilesScreen extends StatefulWidget {
 
 class GridFilesScreenState extends State<GridFilesScreen> {
   late String _directory = '';
+  late String _subdirectory = '';
   late String _defaultDirectory = '';
+  late String _parentPath = '';
 
   late List<OrionApiItem> _items = [];
   late Future<List<OrionApiItem>> _itemsFuture = Future.value([]);
@@ -78,18 +80,18 @@ class GridFilesScreenState extends State<GridFilesScreen> {
         _isLoading = true;
       });
       _apiErrorState = false;
-      String subdirectory = path.relative(directory, from: _defaultDirectory);
-      if (init) subdirectory = '/';
+      _subdirectory = path.relative(directory, from: _defaultDirectory);
+      if (init) _subdirectory = '/';
       if (directory == _defaultDirectory) {
-        subdirectory = '/';
+        _subdirectory = '/';
       }
 
       location = _isUSB ? 'Usb' : 'Local';
 
       final fileResponse =
-          await ApiService.listFiles(location, 100, 0, subdirectory);
+          await ApiService.listItems(location, 100, 0, _subdirectory);
       final dirResponse =
-          await ApiService.listDirs(location, 100, 0, subdirectory);
+          await ApiService.listItems(location, 100, 0, _subdirectory);
 
       final List<OrionApiFile> files = (fileResponse['files'] as List)
           .where((item) => item != null)
@@ -102,12 +104,15 @@ class GridFilesScreenState extends State<GridFilesScreen> {
           .toList();
 
       final List<OrionApiItem> items = [...dirs, ...files];
+      if (items.isNotEmpty) {
+        _parentPath = items.first.parentPath;
+      }
 
       if (kDebugMode) {
         print('---------------------------------------');
         print("Device: ${_isUSB ? 'USB' : 'Internal'}");
-        print("Fetching from: $directory");
-        print("Subdirectory: $subdirectory");
+        print("Parent Path: $_parentPath");
+        print("Subdirectory: $_subdirectory");
         print("Fetched: ${files.length} files and ${dirs.length} directories.");
       }
 
@@ -136,7 +141,8 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                 content: const Text(
                     'An Error has occurred while fetching files!\n'
                     'Please ensure that Odyssey is running and accessible.\n\n'
-                    'If the issue persists, please contact support.',
+                    'If the issue persists, please contact support.\n'
+                    'Error Code: PINK-CARROT',
                     style: TextStyle(color: Colors.grey)),
                 actions: <Widget>[
                   TextButton(
@@ -173,21 +179,9 @@ class GridFilesScreenState extends State<GridFilesScreen> {
       return _isUSB == false ? 'Print Files (Internal)' : 'Print Files (USB)';
     }
 
-    final lookupTable = {
-      'Download': 'Download',
-      'Downloads': 'Downloads',
-      'Documents': 'Documents',
-      'Desktop': 'Desktop',
-    };
-
-    if (directory.startsWith(_defaultDirectory)) {
-      // If it's a subdirectory of the default directory, only show the directory name
-      if (_apiErrorState) return 'Odyssey API Error';
-      return "${path.basename(directory)} ${_isUSB ? '(USB)' : '(Internal)'}";
-    }
-
-    String directoryName = path.basename(directory);
-    return lookupTable[directoryName] ?? directory;
+    // If it's a subdirectory of the default directory, only show the directory name
+    if (_apiErrorState) return 'Odyssey API Error';
+    return "$directory ${_isUSB ? '(USB)' : '(Internal)'}";
   }
 
   @override
@@ -402,13 +396,16 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                   });
                                 } else if (item is OrionApiFile) {
                                   // TODO: file is OrionApiFile, change when DetailScreen is updated
-                                  /*Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DetailScreen(file: file.file),
-                              ),
-                            );*/
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DetailScreen(
+                                        fileName: fileName,
+                                        fileSubdirectory: _subdirectory,
+                                        fileLocation: location,
+                                      ),
+                                    ),
+                                  );
                                 }
                               },
                               // File name that hovers over the file
@@ -463,18 +460,21 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                               child: FutureBuilder<String>(
                                                 future: DetailScreen
                                                     .extractThumbnail(
-                                                        (item as OrionApiFile)
-                                                            .file!,
-                                                        DetailScreen
-                                                            .generateHash(
-                                                                item.path)),
+                                                  location,
+                                                  _subdirectory,
+                                                  fileName,
+                                                ),
                                                 builder: (BuildContext context,
                                                     AsyncSnapshot<String>
                                                         snapshot) {
                                                   if (snapshot
                                                           .connectionState ==
                                                       ConnectionState.waiting) {
-                                                    return const CircularProgressIndicator();
+                                                    return const Padding(
+                                                        padding:
+                                                            EdgeInsets.all(60),
+                                                        child:
+                                                            CircularProgressIndicator());
                                                   } else if (snapshot.error !=
                                                       null) {
                                                     return const Icon(
