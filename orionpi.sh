@@ -19,7 +19,7 @@
 
 # Function to display a help message
 show_help() {
-    echo "Usage: ./orionpi.sh [IP_ADDR] [USERNAME] [PASSWORD] (-a arch) (-c cpu) (-ro)"
+    echo "Usage: ./orionpi.sh [IP_ADDR] [USERNAME] [PASSWORD] (-a arch) (-c cpu) (-ro) (-r)"
     echo ""
     echo "Required Arguments:"
     echo "  IP_ADDR         IP address of the Raspberry Pi."
@@ -30,6 +30,7 @@ show_help() {
     echo -e "  -a, --arch      Host architecture. [\033[0;31marm\033[0m, arm64, x86]"
     echo -e "  -c, --cpu       Target CPU. [generic, pi3, \033[0;31mpi4\033[0m]"
     echo -e "  -ro             Run-only mode. Run OrionPi in run-only mode, no build or copy."
+    echo -e "  -r              Release mode. Build OrionPi in release mode."
     exit 1
 }
 
@@ -56,6 +57,10 @@ do
             ;;
         -ro)
             run_only=true
+            shift
+            ;;
+        -r)
+            release=true
             shift
             ;;
         *)
@@ -150,7 +155,11 @@ if [ "$run_only" != true ]; then
     start_msg="Building Flutter Bundle"
     printf "%s" "$start_msg"
     start_time=$(date +%s)
-    (flutterpi_tool build --arch=arm --cpu=pi4 > /dev/null 2>&1 & show_scroller $! "$start_msg")
+    if [ "$release" = true ]; then
+        (flutterpi_tool build --arch=arm --cpu=pi4 --release > /dev/null 2>&1 & show_scroller $! "$start_msg")
+    else
+        (flutterpi_tool build --arch=arm --cpu=pi4 > /dev/null 2>&1 & show_scroller $! "$start_msg")
+    fi
     wait $!
     end_time=$(date +%s)
     print_done "Done. [$((end_time - start_time))s]" $((end_time - start_time))
@@ -163,7 +172,6 @@ if [ "$run_only" != true ]; then
     wait $!
     end_time=$(date +%s)
     print_done "Done. [$((end_time - start_time))s]" $((end_time - start_time))
-
 fi
 
 # SSH command to kill all instances of flutter-pi on the Raspberry Pi
