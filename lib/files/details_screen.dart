@@ -1,17 +1,14 @@
+// ignore: depend_on_referenced_packages
+// ignore_for_file: unused_import
+
 import 'dart:convert';
 import 'dart:io';
-// ignore: unused_import
 import 'dart:math';
-import 'package:flutter/scheduler.dart';
 import 'package:orion/api_services/api_services.dart';
-import 'package:orion/util/orion_api_filesystem/orion_api_file.dart';
-// ignore: depend_on_referenced_packages
+import 'package:orion/status/status_screen.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
-import 'package:archive/archive.dart';
-import 'package:archive/archive_io.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:ini/ini.dart';
 import 'package:crypto/crypto.dart';
 
 /*
@@ -32,8 +29,7 @@ class DetailScreen extends StatefulWidget {
       required this.fileLocation});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _DetailScreenState createState() => _DetailScreenState();
+  DetailScreenState createState() => DetailScreenState();
 
   static bool _isDefaultDir(String dir) {
     return dir == '/' || dir == '/uploads/';
@@ -81,7 +77,7 @@ class DetailScreen extends StatefulWidget {
 
       return filePath;
     } catch (e) {
-      print('Failed to fetch thumbnail: $e');
+      //print('Failed to fetch thumbnail: $e');
     }
 
     return 'assets/images/placeholder.png';
@@ -92,7 +88,7 @@ class DetailScreen extends StatefulWidget {
   }
 }
 
-class _DetailScreenState extends State<DetailScreen> {
+class DetailScreenState extends State<DetailScreen> {
   double leftPadding = 0;
   double rightPadding = 0;
 
@@ -179,7 +175,7 @@ class _DetailScreenState extends State<DetailScreen> {
         materialVolume = tempMaterialVolume;
       });
     } catch (e) {
-      print('Failed to fetch file details: $e');
+      //print('Failed to fetch file details: $e');
     }
   }
 
@@ -201,7 +197,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           );
         } else {
-          WidgetsBinding.instance!.addPostFrameCallback((_) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
             final keys = [
               textKey1,
               textKey2,
@@ -253,9 +249,9 @@ class _DetailScreenState extends State<DetailScreen> {
                                       ? leftPadding
                                       : leftPadding - 10),
                               child: Card.outlined(
-                                elevation: 3,
+                                elevation: 1,
                                 child: Padding(
-                                  padding: EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(10),
                                   child: FittedBox(
                                     child: RichText(
                                       text: TextSpan(
@@ -409,9 +405,8 @@ class _DetailScreenState extends State<DetailScreen> {
                 child: Row(
                   children: [
                     ElevatedButton(
-                      onPressed: () {
-                        // Add your delete logic here
-                      },
+                      onPressed: null,
+                      // TODO: Add delete logic here
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(
                           120, // Subtract the padding on both sides
@@ -427,7 +422,19 @@ class _DetailScreenState extends State<DetailScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          // Add your delete logic here
+                          String subdirectory = widget.fileSubdirectory == '/'
+                              ? ''
+                              : widget.fileSubdirectory;
+                          ApiService.startPrint(widget.fileLocation,
+                              path.join(subdirectory, widget.fileName));
+                          print('Printing ${widget.fileName}...');
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const StatusScreen(
+                                  newPrint: true,
+                                ),
+                              ));
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size(
@@ -444,9 +451,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                     const SizedBox(width: 20),
                     ElevatedButton(
-                      onPressed: () {
-                        // Add your delete logic here
-                      },
+                      onPressed: null,
+                      // TODO: Add edit logic here
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(
                           120, // Subtract the padding on both sides
