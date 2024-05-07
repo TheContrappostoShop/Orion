@@ -1,21 +1,31 @@
-// ignore: depend_on_referenced_packages
-// ignore_for_file: unused_import
+/*
+* Orion - Detail Screen
+* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// ignore_for_file: depend_on_referenced_packages
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/status/status_screen.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:crypto/crypto.dart';
-
-/*
- *    Orion Grid Files Screen
- *    Copyright (c) 2024 TheContrappostoShop (PaulGD03)
- *    GPLv3 Licensing (see LICENSE)
- */
 
 class DetailScreen extends StatefulWidget {
   final String fileName;
@@ -427,7 +437,6 @@ class DetailScreenState extends State<DetailScreen> {
                               : widget.fileSubdirectory;
                           ApiService.startPrint(widget.fileLocation,
                               path.join(subdirectory, widget.fileName));
-                          print('Printing ${widget.fileName}...');
                           Navigator.push(
                               context,
                               MaterialPageRoute(

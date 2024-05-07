@@ -1,21 +1,38 @@
+/*
+* Orion - About Screen
+* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 // ignore_for_file: avoid_print
+// ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:orion/pubspec.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:package_info/package_info.dart';
 
 Future<String> getVersionNumber() async {
-  PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  return '${packageInfo.version} | Build ${packageInfo.buildNumber}';
+  return Pubspec.version;
 }
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _AboutScreenState createState() => _AboutScreenState();
 }
 
@@ -56,11 +73,9 @@ class _AboutScreenState extends State<AboutScreen> {
     const String title = kDebugMode ? 'Debug Machine' : 'Prometheus mSLA';
     const String serialNumber =
         kDebugMode ? 'S/N: DBG-0001-001' : 'No S/N Available';
-    const String apiVersion =
-        kDebugMode ? 'Odyssey: Simulated' : 'Odyssey: 0.1.0 Alpha';
+    const String apiVersion = kDebugMode ? 'Odyssey: Simulated' : 'Odyssey: ?';
     const String boardType =
         kDebugMode ? 'Hardware: Debugger' : 'Hardware: Apollo 3.5.2';
-    const String warranty = 'No Warranty Available';
 
     return Scaffold(
       body: Stack(
@@ -151,20 +166,6 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       boardType,
                       key: textKey5,
-                      style: TextStyle(fontSize: 20, color: _standardColor),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(left: leftPadding),
-                  child: FittedBox(
-                    child: Text(
-                      warranty,
-                      key: textKey6,
                       style: TextStyle(fontSize: 20, color: _standardColor),
                     ),
                   ),

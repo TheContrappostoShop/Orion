@@ -1,4 +1,23 @@
+/*
+* Orion - Grid Files Screen
+* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 // ignore_for_file: unnecessary_type_check, use_build_context_synchronously
+// import 'package:orion/files/search_file_screen.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -7,7 +26,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/api_services/api_services.dart';
-//import 'package:orion/files/search_file_screen.dart';
 import 'package:orion/files/details_screen.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_directory.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_file.dart';
@@ -15,15 +33,8 @@ import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
 import 'package:path/path.dart' as path;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-/*
- *    Orion Grid Files Screen
- *    Copyright (c) 2024 TheContrappostoShop (PaulGD03, shifubrams)
- *    GPLv3 Licensing (see LICENSE)
- */
-
 ScrollController _scrollController = ScrollController();
 
-/// The files screen
 class GridFilesScreen extends StatefulWidget {
   const GridFilesScreen({super.key});
   @override
