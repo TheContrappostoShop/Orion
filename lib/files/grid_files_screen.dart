@@ -395,7 +395,6 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                     _isNavigating = false;
                                   });
                                 } else if (item is OrionApiFile) {
-                                  // TODO: file is OrionApiFile, change when DetailScreen is updated
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(

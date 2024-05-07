@@ -1,12 +1,17 @@
+// ignore: depend_on_referenced_packages
+
 import 'dart:async';
 import 'dart:io';
-
-import 'details_screen.dart';
 import 'package:orion/files/search_file_screen.dart';
-// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+/*
+ *    Orion Files Screen (Legacy)
+ *    Copyright (c) 2024 TheContrappostoShop (PaulGD03)
+ *    GPLv3 Licensing (see LICENSE)
+ */
 
 ScrollController _scrollController = ScrollController();
 
@@ -30,11 +35,10 @@ Directory getInitialDir(platform) {
 class FilesScreen extends StatefulWidget {
   const FilesScreen({super.key});
   @override
-  // ignore: library_private_types_in_public_api
-  _FilesScreenState createState() => _FilesScreenState();
+  FilesScreenState createState() => FilesScreenState();
 }
 
-class _FilesScreenState extends State<FilesScreen> {
+class FilesScreenState extends State<FilesScreen> {
   late Directory _directory;
   late List<FileSystemEntity> _files;
   bool _sortByAlpha = true;
