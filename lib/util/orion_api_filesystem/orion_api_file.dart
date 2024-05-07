@@ -4,10 +4,12 @@ import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
 
 class OrionApiFile implements OrionApiItem {
   final io.File? file;
+  @override
   final String path;
   final String name;
   final int? lastModified;
   final String? locationCategory;
+  @override
   final String parentPath;
   final double? usedMaterial;
   final double? printTime;

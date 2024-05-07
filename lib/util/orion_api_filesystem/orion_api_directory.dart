@@ -4,10 +4,12 @@ import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
 import 'package:path/path.dart' as path;
 
 class OrionApiDirectory implements OrionApiItem {
+  @override
   final String path;
   final String name;
   final int lastModified;
   final String locationCategory;
+  @override
   final String parentPath;
 
   OrionApiDirectory({
