@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 /*
  *    Orion API Services
- *    Copyright (c) 2024 TheContrappostoShop (PaulGD03, shifubrams)
+ *    Copyright (c) 2024 TheContrappostoShop (shifubrams, PaulGD03)
  *    GPLv3 Licensing (see LICENSE)
  */
 
@@ -21,7 +21,7 @@ class ApiService {
   // Get current status of the printer
   static Future<Map<String, dynamic>> getStatus() async {
     final response = await http.get(
-      Uri.parse('http://apiUrl/status'),
+      Uri.parse('http://$apiUrl/status'),
     );
 
     if (response.statusCode == 200) {
@@ -54,8 +54,8 @@ class ApiService {
   // Get file metadata
   // Takes 2 parameters : location [string] and filename [String]
   static Future<Map<String, dynamic>> getFileMetadata(
-      String location, String file_path) async {
-    final queryParams = {"location": location, "file_path": file_path};
+      String location, String filePath) async {
+    final queryParams = {"location": location, "file_path": filePath};
     final response =
         await http.get(Uri.http(apiUrl, '/file/metadata', queryParams));
 
@@ -70,8 +70,8 @@ class ApiService {
   // Get file thumbnail
   // Takes 2 parameters : location [string] and filename [String]
   static Future<Uint8List> getFileThumbnail(
-      String location, String file_path) async {
-    final queryParams = {"location": location, "file_path": file_path};
+      String location, String filePath) async {
+    final queryParams = {"location": location, "file_path": filePath};
     final response =
         await http.get(Uri.http(apiUrl, '/file/thumbnail', queryParams));
 
@@ -88,9 +88,12 @@ class ApiService {
 
   // Start printing a given file
   // Takes 2 parameters : location [string] and filename [String]
-  static Future<Null> startPrint(String location, String filename) async {
+  static Future<void> startPrint(String location, String filePath) async {
     final response = await http.post(
-      Uri.parse('http://$apiUrl/print/start/$location/$filename'),
+      Uri.https(apiUrl, '/print/start', {
+        'location': location,
+        'file_path': filePath,
+      }),
     );
 
     if (response.statusCode != 200) {
@@ -100,7 +103,7 @@ class ApiService {
 
   // Cancel the print
   static Future<Null> cancelPrint() async {
-    final response = await http.post(Uri.parse('http://$apiUrl/print/cancel'));
+    final response = await http.post(Uri.parse('https://$apiUrl/print/cancel'));
 
     if (response.statusCode != 200) {
       // TODO check the response sent by odyssey
@@ -110,7 +113,7 @@ class ApiService {
 
   // Pause the print
   static Future<Null> pausePrint() async {
-    final response = await http.post(Uri.parse('http://$apiUrl/print/pause'));
+    final response = await http.post(Uri.parse('https://$apiUrl/print/pause'));
 
     if (response.statusCode != 200) {
       // TODO check the response sent by odyssey
@@ -120,7 +123,7 @@ class ApiService {
 
   // Resume the print
   static Future<Null> resumePrint() async {
-    final response = await http.post(Uri.parse('http://$apiUrl/print/resume'));
+    final response = await http.post(Uri.parse('https://$apiUrl/print/resume'));
 
     if (response.statusCode != 200) {
       // TODO check the response sent by odyssey
@@ -132,7 +135,7 @@ class ApiService {
   // Takes 1 param height [double] which is the desired position of the Z axis
   static Future<Map<String, dynamic>> move(double height) async {
     final response = await http.post(
-      Uri.parse('http://$apiUrl/manual'),
+      Uri.parse('https://$apiUrl/manual'),
       headers: {"Content-Type": "application/json"},
       body: json.encode({'z': height}),
     );
