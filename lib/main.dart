@@ -78,7 +78,9 @@ final GoRouter _router = GoRouter(
         GoRoute(
           path: 'status',
           builder: (BuildContext context, GoRouterState state) {
-            return const StatusScreen();
+            return const StatusScreen(
+              newPrint: false,
+            );
           },
         ),
       ],
