@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/files/details_screen.dart';
-import 'package:orion/home/home_screen.dart';
 import 'package:orion/settings/settings_screen.dart';
 import 'package:orion/themes/themes.dart';
 
@@ -21,7 +20,8 @@ class StatusScreen extends StatefulWidget {
   StatusScreenState createState() => StatusScreenState();
 }
 
-class StatusScreenState extends State<StatusScreen> {
+class StatusScreenState extends State<StatusScreen>
+    with SingleTickerProviderStateMixin {
   double leftPadding = 0;
   double rightPadding = 0;
 
@@ -34,6 +34,8 @@ class StatusScreenState extends State<StatusScreen> {
 
   final ValueNotifier<String?> thumbnailNotifier = ValueNotifier<String?>(null);
   late ValueNotifier<bool> newPrintNotifier = ValueNotifier<bool>(false);
+  late AnimationController _controller;
+  late Animation<double> _animation;
   Future<void>? _initStatusDetailsFuture;
   Map<String, dynamic>? status;
   double opacity = 0.0;
@@ -46,6 +48,15 @@ class StatusScreenState extends State<StatusScreen> {
     super.initState();
     _initStatusDetailsFuture = getStatus();
     newPrintNotifier = ValueNotifier<bool>(widget.newPrint);
+    _controller =
+        AnimationController(duration: const Duration(seconds: 2), vsync: this)
+          ..repeat(reverse: true);
+
+    _animation = Tween(begin: 0.2, end: 1.0).animate(_controller)
+      ..addListener(() {
+        setState(() {});
+      });
+
     timer =
         Timer.periodic(const Duration(seconds: 1), (Timer t) => getStatus());
   }
@@ -53,34 +64,38 @@ class StatusScreenState extends State<StatusScreen> {
   @override
   void dispose() {
     timer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
   Future<void> getStatus() async {
     try {
       status = await ApiService.getStatus();
-      if (status!['status'] == 'Printing' || status!['status'] == 'Idle') {
-        if (status!['print_data'] != null &&
-            status!['print_data']['file_data'] != null) {
-          String? thumbnailFullPath =
-              status!['print_data']['file_data']['path'];
-          String? fileName = status!['print_data']['file_data']['name'];
-          String location = status!['print_data']['file_data']
-                  ['location_category'] ??
-              'Local';
-          if (thumbnailFullPath != null && fileName != null) {
-            String thumbnailSubdir = thumbnailFullPath.split('/').first;
-            // If we are in the home directory, the thumbnailSubdir will be the file name.
-            // Therefore, change it to / manually.
-            if (thumbnailSubdir.endsWith('.sl1')) thumbnailSubdir = '/';
-            thumbnailNotifier.value = await DetailScreen.extractThumbnail(
-              location,
-              thumbnailSubdir,
-              fileName,
-            );
+      if (status != null) {
+        if (status!['status'] == 'Printing' || status!['status'] == 'Idle') {
+          if (status!['print_data'] != null &&
+              status!['print_data']['file_data'] != null) {
+            String? thumbnailFullPath =
+                status!['print_data']['file_data']['path'];
+            String? fileName = status!['print_data']['file_data']['name'];
+            String location = status!['print_data']['file_data']
+                    ['location_category'] ??
+                'Local';
+            if (thumbnailFullPath != null && fileName != null) {
+              String thumbnailSubdir = '/';
+              if (thumbnailFullPath.contains('/')) {
+                thumbnailSubdir = thumbnailFullPath.substring(
+                    0, thumbnailFullPath.lastIndexOf('/'));
+              }
+              thumbnailNotifier.value = await DetailScreen.extractThumbnail(
+                location,
+                thumbnailSubdir,
+                fileName,
+              );
+            }
+          } else {
+            thumbnailNotifier.value = null;
           }
-        } else {
-          thumbnailNotifier.value = null;
         }
       } else {
         thumbnailNotifier.value = null;
@@ -93,13 +108,16 @@ class StatusScreenState extends State<StatusScreen> {
 
   Color getStatusColor() {
     final Map<String, Color> statusColor = {
-      'Printing': Theme.of(context).colorScheme.primary,
+      'Printing': Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).colorScheme.primary
+          : Colors.black54,
       'Idle': Colors.greenAccent,
       'Shutdown': Colors.red,
       'Canceled': Colors.red,
       'Pause': Colors.orange,
-      'Curing':
-          Theme.of(context).colorScheme.primaryContainer.withBrightness(1.7),
+      'Curing': Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).colorScheme.primaryContainer.withBrightness(1.7)
+          : Theme.of(context).colorScheme.primary,
     };
 
     String printStatus = status!['status'];
@@ -142,7 +160,7 @@ class StatusScreenState extends State<StatusScreen> {
             ),
           );
         } else {
-          if (status!['print_data'] == null) {
+          if (status != null && status!['print_data'] == null) {
             return Scaffold(
               appBar: AppBar(
                 title: const Text('Loading...'),
@@ -161,8 +179,17 @@ class StatusScreenState extends State<StatusScreen> {
                 child: CircularProgressIndicator(),
               ),
             );
+          } else if (status == null) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Error'),
+              ),
+              body: const Center(
+                child: Text('An error occured while connecting to Odyssey.'),
+              ),
+            );
           } else {
-            if (status!['status'] == 'Printing') {
+            if (status != null && status!['status'] == 'Printing') {
               newPrintNotifier.value = false;
             }
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -195,10 +222,45 @@ class StatusScreenState extends State<StatusScreen> {
               });
             });
 
+            int totalSeconds = status!['print_data']['print_time'].toInt();
+            Duration duration = Duration(seconds: totalSeconds);
+
+            String twoDigits(int n) => n.toString().padLeft(2, "0");
+            String twoDigitMinutes =
+                twoDigits(duration.inMinutes.remainder(60));
+            String twoDigitSeconds =
+                twoDigits(duration.inSeconds.remainder(60));
+
             return Scaffold(
               appBar: AppBar(
                 automaticallyImplyLeading: false,
-                title: const Text('Print Status'),
+                title: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                          text: 'Print Status',
+                          style: Theme.of(context).appBarTheme.titleTextStyle),
+                      TextSpan(
+                          text: ' - ',
+                          style: Theme.of(context).appBarTheme.titleTextStyle),
+                      TextSpan(
+                        text: isCanceling && status!['layer'] != null
+                            ? 'Canceling...'
+                            : status!['layer'] == null
+                                ? 'Canceled'
+                                : isPausing == true &&
+                                        status!['paused'] == false
+                                    ? 'Pausing...'
+                                    : status!['paused'] == true
+                                        ? 'Paused'
+                                        : status!['status'] == 'Idle'
+                                            ? 'Finished'
+                                            : '${status!['status']}',
+                        style: Theme.of(context).appBarTheme.titleTextStyle,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               body: Opacity(
                 opacity: opacity,
@@ -220,53 +282,17 @@ class StatusScreenState extends State<StatusScreen> {
                                           ? leftPadding
                                           : leftPadding - 10),
                                   child: Card.outlined(
+                                    key: textKey1,
                                     elevation: 1,
                                     child: Padding(
                                       padding: const EdgeInsets.all(10),
                                       child: FittedBox(
-                                        child: RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text:
-                                                    '${status!['print_data']['file_data']['name']}',
-                                                style: TextStyle(
-                                                    fontSize: 24,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: getStatusColor()),
-                                              ),
-                                              TextSpan(
-                                                text: ' - ',
-                                                style: TextStyle(
-                                                    fontSize: 24,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: getStatusColor()),
-                                              ),
-                                              TextSpan(
-                                                text: isCanceling &&
-                                                        status!['layer'] != null
-                                                    ? 'Canceling...'
-                                                    : status!['layer'] == null
-                                                        ? 'Canceled'
-                                                        : isPausing == true &&
-                                                                status!['paused'] ==
-                                                                    false
-                                                            ? 'Pausing...'
-                                                            : status!['paused'] ==
-                                                                    true
-                                                                ? 'Paused'
-                                                                : status!['status'] ==
-                                                                        'Idle'
-                                                                    ? 'Finished'
-                                                                    : '${status!['status']}',
-                                                style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: getStatusColor(),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                        child: Text(
+                                          '${status!['print_data']['file_data']['name']}',
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: getStatusColor()),
                                         ),
                                       ),
                                     ),
@@ -291,7 +317,7 @@ class StatusScreenState extends State<StatusScreen> {
                                 child: Padding(
                                   padding: EdgeInsets.only(left: leftPadding),
                                   child: Text(
-                                    'Layer: ${status!['layer']} of ${status!['print_data']['layer_count']}',
+                                    'Layer: ${status!['layer'] ?? '-'} / ${status!['print_data']['layer_count']}',
                                     style: const TextStyle(fontSize: 20),
                                     key: textKey3,
                                   ),
@@ -303,7 +329,7 @@ class StatusScreenState extends State<StatusScreen> {
                                 child: Padding(
                                   padding: EdgeInsets.only(left: leftPadding),
                                   child: Text(
-                                    'Print Time: ${status!['print_data']['print_time']}',
+                                    'Printing Time: ${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds',
                                     style: const TextStyle(fontSize: 20),
                                     key: textKey4,
                                   ),
@@ -390,7 +416,7 @@ class StatusScreenState extends State<StatusScreen> {
                                                             Colors.transparent,
                                                             Colors.black
                                                                 .withOpacity(
-                                                                    0.3),
+                                                                    0.75),
                                                           ],
                                                           stops: [
                                                             progress,
@@ -405,39 +431,89 @@ class StatusScreenState extends State<StatusScreen> {
                                                       left: 0,
                                                       right: 0,
                                                       child: Center(
-                                                        child: Stack(
-                                                          children: <Widget>[
-                                                            // Stroked text to act as an outline
-                                                            Text(
-                                                              '${(progress * 100).toStringAsFixed(0)}%',
-                                                              style: TextStyle(
-                                                                fontSize: 32,
-                                                                foreground:
-                                                                    Paint()
-                                                                      ..style =
-                                                                          PaintingStyle
-                                                                              .stroke
-                                                                      ..strokeWidth =
-                                                                          3
-                                                                      ..color = Theme.of(
-                                                                              context)
-                                                                          .colorScheme
-                                                                          .primaryContainer,
-                                                              ),
-                                                            ),
-                                                            // Solid text as fill.
-                                                            Text(
-                                                              '${(progress * 100).toStringAsFixed(0)}%',
-                                                              style: TextStyle(
-                                                                fontSize: 32,
-                                                                color: Theme.of(
-                                                                        context)
-                                                                    .colorScheme
-                                                                    .primary,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
+                                                        child: isCanceling ||
+                                                                status!['layer'] ==
+                                                                    null
+                                                            ? Card.outlined(
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .all(
+                                                                          5),
+                                                                  child: status![
+                                                                              'layer'] !=
+                                                                          null
+                                                                      ? FadeTransition(
+                                                                          opacity:
+                                                                              _animation,
+                                                                          child:
+                                                                              Icon(
+                                                                            Icons.cancel_outlined,
+                                                                            color:
+                                                                                getStatusColor(),
+                                                                            size:
+                                                                                64,
+                                                                          ),
+                                                                        )
+                                                                      : Icon(
+                                                                          Icons
+                                                                              .cancel_outlined,
+                                                                          color:
+                                                                              getStatusColor(),
+                                                                          size:
+                                                                              64,
+                                                                        ),
+                                                                ),
+                                                              )
+                                                            : isPausing ||
+                                                                    status!['paused'] ==
+                                                                        true
+                                                                ? Card.outlined(
+                                                                    child:
+                                                                        Padding(
+                                                                      padding:
+                                                                          const EdgeInsets
+                                                                              .all(
+                                                                              5),
+                                                                      child: status!['paused'] !=
+                                                                              true
+                                                                          ? FadeTransition(
+                                                                              opacity: _animation,
+                                                                              child: Icon(Icons.pause_circle_outline, color: getStatusColor(), size: 64))
+                                                                          : Icon(Icons.pause_circle_outline, color: getStatusColor(), size: 64),
+                                                                    ),
+                                                                  )
+                                                                : Stack(
+                                                                    children: <Widget>[
+                                                                      // Stroked text to act as an outline
+                                                                      Text(
+                                                                        '${(progress * 100).toStringAsFixed(0)}%',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              38,
+                                                                          foreground: Paint()
+                                                                            ..style =
+                                                                                PaintingStyle.stroke
+                                                                            ..strokeWidth =
+                                                                                3
+                                                                            ..color = Theme.of(context).colorScheme.primaryContainer,
+                                                                        ),
+                                                                      ),
+                                                                      // Solid text as fill.
+                                                                      Text(
+                                                                        '${(progress * 100).toStringAsFixed(0)}%',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              38,
+                                                                          color: Theme.of(context)
+                                                                              .colorScheme
+                                                                              .primary,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                       ),
                                                     ),
                                                   ],
@@ -497,7 +573,7 @@ class StatusScreenState extends State<StatusScreen> {
                                               width: MediaQuery.of(context)
                                                       .size
                                                       .width *
-                                                  0.8, // 80% of screen width
+                                                  0.5, // 80% of screen width
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: <Widget>[
@@ -513,7 +589,7 @@ class StatusScreenState extends State<StatusScreen> {
                                                               FontWeight.bold),
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 20),
+                                                  const SizedBox(height: 10),
                                                   Padding(
                                                     padding:
                                                         const EdgeInsets.only(
@@ -544,7 +620,7 @@ class StatusScreenState extends State<StatusScreen> {
                                                   ),
                                                   const SizedBox(
                                                       height:
-                                                          40), // Add some spacing between the buttons
+                                                          20), // Add some spacing between the buttons
                                                   Padding(
                                                     padding:
                                                         const EdgeInsets.only(
@@ -569,17 +645,6 @@ class StatusScreenState extends State<StatusScreen> {
                                                               fontSize: 24),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 30),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: const Text(
-                                                      'Close',
-                                                      style: TextStyle(
-                                                          fontSize: 20),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 20),
@@ -613,12 +678,8 @@ class StatusScreenState extends State<StatusScreen> {
                                   ? null
                                   : status!['layer'] == null
                                       ? () {
-                                          Navigator.pop(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const HomeScreen(),
-                                              ));
+                                          Navigator.popUntil(context,
+                                              ModalRoute.withName('/'));
                                         }
                                       : () {
                                           if (status!['paused'] == true) {
