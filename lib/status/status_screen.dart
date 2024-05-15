@@ -22,6 +22,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/files/details_screen.dart';
+import 'package:orion/files/grid_files_screen.dart';
 import 'package:orion/settings/settings_screen.dart';
 import 'package:orion/themes/themes.dart';
 import 'package:orion/util/status_card.dart';
@@ -150,16 +151,29 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
             ),
           );
         } else {
-          if (status != null && status!['print_data'] == null) {
+          if (status != null && status!['print_data'] == null && newPrintNotifier.value == false) {
             return Scaffold(
               appBar: AppBar(
-                title: const Text('Loading...'),
+                title: const Text('No Print Data Available'),
               ),
-              body: const Center(
-                child: CircularProgressIndicator(),
+              body: Center(
+                child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const GridFilesScreen()),
+                      );
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                        'Go to Files',
+                        style: TextStyle(fontSize: 26),
+                      ),
+                    )),
               ),
             );
-          } else if (newPrintNotifier.value == true && (status == null || status!['status'] != 'Printing')) {
+          } else if (status != null && status!['print_data'] == null && newPrintNotifier.value == true) {
             return Scaffold(
               appBar: AppBar(
                 title: const Text('Loading...'),
