@@ -18,9 +18,7 @@
 
 // ignore_for_file: unused_element
 
-import 'package:orion/api_services/api_services.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
-import 'package:path/path.dart' as path;
 
 class OrionApiDirectory implements OrionApiItem {
   @override
@@ -47,27 +45,5 @@ class OrionApiDirectory implements OrionApiItem {
       locationCategory: json['location_category'],
       parentPath: json['parent_path'],
     );
-  }
-}
-
-// _getDirs method
-Future<List<OrionApiDirectory>> _getDirs(
-    String directory, String defaultDirectory) async {
-  try {
-    String subdirectory = path.relative(directory, from: defaultDirectory);
-
-    final response =
-        await ApiService.listItems('uploads', 100, 0, subdirectory);
-
-    final List<OrionApiDirectory> dirs = (response['dirs'] as List)
-        .where((item) => item != null)
-        .map<OrionApiDirectory>((item) {
-      OrionApiDirectory dir = OrionApiDirectory.fromJson(item);
-      return dir;
-    }).toList();
-
-    return dirs;
-  } catch (e) {
-    return [];
   }
 }
