@@ -46,11 +46,7 @@ To get started with Orion, follow one of these steps:
 PrometheusOS is an all-in-one solution that includes both Odyssey and Orion. Here's how to install it:
 
 1. **Prerequisites:** Ensure you have a Raspberry Pi model compatible with PrometheusOS.
-2. **Download PrometheusOS:** Visit the [PrometheusOS GitHub page](https://github.com/TheContrappostoShop/PrometheusOS) and download the latest release.
-3. **Prepare the SD Card:** Format an SD card to FAT32. The SD card should have at least 8GB of storage.
-4. **Write PrometheusOS to the SD Card:** Use a tool like [Balena Etcher](https://www.balena.io/etcher/) to write the downloaded PrometheusOS image to the SD card.
-5. **Insert the SD Card into the Raspberry Pi:** Remove the SD card from your computer and insert it into the Raspberry Pi.
-6. **Boot the Raspberry Pi:** Connect the Raspberry Pi to power and boot it up. It should start up with PrometheusOS, which includes both Odyssey and Orion.
+2. **Installation:** Visit the [PrometheusOS GitHub page](https://github.com/TheContrappostoShop/PrometheusOS) and follow the detailed instructions there to install PrometheusOS on your Raspberry Pi.
 
 ### Variant 2: Manual Compilation
 
