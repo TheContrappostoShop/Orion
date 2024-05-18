@@ -62,10 +62,11 @@ class StatusCardState extends State<StatusCard> {
 
     // If the print is active, not paused, canceled or finished, it is active.
     final isActive = (widget.isPausing == false &&
-        widget.isCanceling == false &&
-        widget.status['layer'] != null &&
-        widget.status['paused'] != true &&
-        widget.status['status'] != 'Idle');
+            widget.isCanceling == false &&
+            widget.status['layer'] != null &&
+            widget.status['paused'] != true &&
+            widget.status['status'] != 'Idle') ||
+        widget.status['status'] != 'Shutdown';
 
     // While the print is active, show the progress in percentage. (overlapping text for outline effect)
     return isActive
