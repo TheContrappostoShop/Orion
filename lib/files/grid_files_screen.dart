@@ -25,11 +25,13 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/files/details_screen.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_directory.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_file.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
+import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:path/path.dart' as path;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -42,6 +44,7 @@ class GridFilesScreen extends StatefulWidget {
 }
 
 class GridFilesScreenState extends State<GridFilesScreen> {
+  final _logger = Logger('GridFilesScreen');
   late String _directory = '';
   late String _subdirectory = '';
   late String _defaultDirectory = '';
@@ -49,8 +52,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
 
   late List<OrionApiItem> _items = [];
   late Future<List<OrionApiItem>> _itemsFuture = Future.value([]);
-  late Completer<List<OrionApiItem>> _itemsCompleter =
-      Completer<List<OrionApiItem>>();
+  late Completer<List<OrionApiItem>> _itemsCompleter = Completer<List<OrionApiItem>>();
 
   String location = '';
   //bool _sortByAlpha = true;
@@ -70,7 +72,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
           _defaultDirectory = path.dirname(items.first.path);
           _directory = _defaultDirectory;
         } else {
-          _defaultDirectory = '/etc';
+          _defaultDirectory = '~';
           _directory = _defaultDirectory;
         }
         _itemsCompleter.complete(items);
@@ -84,32 +86,28 @@ class GridFilesScreenState extends State<GridFilesScreen> {
     //_toggleSortOrder();
   }
 
-  Future<List<OrionApiItem>> _getItems(String directory,
-      [bool init = false]) async {
+  Future<List<OrionApiItem>> _getItems(String directory, [bool init = false]) async {
     try {
       setState(() {
         _isLoading = true;
       });
       _apiErrorState = false;
       _subdirectory = path.relative(directory, from: _defaultDirectory);
-      if (init) _subdirectory = '/';
+      if (init) _subdirectory = '';
       if (directory == _defaultDirectory) {
-        _subdirectory = '/';
+        _subdirectory = '';
       }
 
       location = _isUSB ? 'Usb' : 'Local';
 
-      final fileResponse =
-          await ApiService.listItems(location, 100, 0, _subdirectory);
-      final dirResponse =
-          await ApiService.listItems(location, 100, 0, _subdirectory);
+      final itemResponse = await ApiService.listItems(location, 100, 0, _subdirectory);
 
-      final List<OrionApiFile> files = (fileResponse['files'] as List)
+      final List<OrionApiFile> files = (itemResponse['files'] as List)
           .where((item) => item != null)
           .map<OrionApiFile>((item) => OrionApiFile.fromJson(item))
           .toList();
 
-      final List<OrionApiDirectory> dirs = (dirResponse['dirs'] as List)
+      final List<OrionApiDirectory> dirs = (itemResponse['dirs'] as List)
           .where((item) => item != null)
           .map<OrionApiDirectory>((item) => OrionApiDirectory.fromJson(item))
           .toList();
@@ -132,6 +130,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
       });
       return items;
     } catch (e) {
+      _logger.severe('Failed to fetch files', e);
       setState(() {
         _isLoading = false;
       });
@@ -268,8 +267,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
           ? const Center(child: CircularProgressIndicator())
           : FutureBuilder<List<OrionApiItem>>(
               future: _itemsCompleter.future,
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<OrionApiItem>> snapshot) {
+              builder: (BuildContext context, AsyncSnapshot<List<OrionApiItem>> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting ||
                     snapshot.connectionState == ConnectionState.none) {
                   return const Center(
@@ -282,18 +280,14 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                 } else {
                   _items = snapshot.data!;
                   return Padding(
-                    padding:
-                        const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                     child: GridView.builder(
                       controller: _scrollController,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           childAspectRatio: 1.03,
                           mainAxisSpacing: 5,
                           crossAxisSpacing: 5,
-                          crossAxisCount: MediaQuery.of(context).orientation ==
-                                  Orientation.landscape
-                              ? 4
-                              : 2),
+                          crossAxisCount: MediaQuery.of(context).orientation == Orientation.landscape ? 4 : 2),
                       itemCount: _items.length + 1,
                       itemBuilder: (BuildContext context, int index) {
                         if (index == 0) {
@@ -306,8 +300,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                   ? () async {
                                       _isUSB = !_isUSB;
                                       _itemsFuture = _getItems(_directory);
-                                      _itemsCompleter =
-                                          Completer<List<OrionApiItem>>();
+                                      _itemsCompleter = Completer<List<OrionApiItem>>();
                                       final items = await _itemsFuture;
                                       _itemsCompleter.complete(items);
                                       setState(() {
@@ -317,16 +310,13 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                   : () async {
                                       try {
                                         _scrollController.jumpTo(0);
-                                        final parentDirectory =
-                                            path.dirname(_directory);
+                                        final parentDirectory = path.dirname(_directory);
                                         _directory = parentDirectory;
                                         setState(() {
                                           _isNavigating = true;
                                         });
-                                        _itemsFuture =
-                                            _getItems(parentDirectory);
-                                        _itemsCompleter =
-                                            Completer<List<OrionApiItem>>();
+                                        _itemsFuture = _getItems(parentDirectory);
+                                        _itemsCompleter = Completer<List<OrionApiItem>>();
                                         final items = await _itemsFuture;
                                         _itemsCompleter.complete(items);
                                         setState(() {
@@ -334,12 +324,11 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                           _isNavigating = false;
                                         });
                                       } catch (e) {
+                                        _logger.severe('Failed to navigate to parent directory', e);
                                         if (e is FileSystemException) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
+                                          ScaffoldMessenger.of(context).showSnackBar(
                                             const SnackBar(
-                                              content: Text(
-                                                  'Operation not permitted'),
+                                              content: Text('Operation not permitted'),
                                             ),
                                           );
                                         }
@@ -360,8 +349,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       minFontSize: 18,
-                                      style: const TextStyle(
-                                          fontSize: 24, color: Colors.grey),
+                                      style: const TextStyle(fontSize: 24, color: Colors.grey),
                                     ),
                                   ),
                                 ),
@@ -397,8 +385,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                     _isNavigating = true;
                                   });
                                   _itemsFuture = _getItems(item.path);
-                                  _itemsCompleter =
-                                      Completer<List<OrionApiItem>>();
+                                  _itemsCompleter = Completer<List<OrionApiItem>>();
                                   final items = await _itemsFuture;
                                   _itemsCompleter.complete(items);
                                   setState(() {
@@ -420,8 +407,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                               },
                               // File name that hovers over the file
                               child: _isNavigating
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
+                                  ? const Center(child: CircularProgressIndicator())
                                   : GridTile(
                                       footer: Card(
                                         shape: const RoundedRectangleBorder(
@@ -431,9 +417,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                           ),
                                         ),
                                         color: item is OrionApiFile
-                                            ? Theme.of(context)
-                                                .cardColor
-                                                .withOpacity(0.65)
+                                            ? Theme.of(context).cardColor.withOpacity(0.65)
                                             : Colors.transparent,
                                         elevation: item is OrionApiFile ? 2 : 0,
                                         child: GridTileBar(
@@ -444,56 +428,38 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                             minFontSize: 20,
                                             style: TextStyle(
                                               fontSize: 24,
-                                              color: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyLarge!
-                                                  .color,
+                                              color: Theme.of(context).textTheme.bodyLarge!.color,
                                             ),
                                           ),
                                         ),
                                       ),
                                       child: item is OrionApiDirectory
                                           ? IconTheme(
-                                              data: const IconThemeData(
-                                                  color: Colors.grey),
+                                              data: const IconThemeData(color: Colors.grey),
                                               child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 15),
-                                                child: PhosphorIcon(
-                                                    PhosphorIcons.folder(),
-                                                    size: 75),
+                                                padding: const EdgeInsets.only(bottom: 15),
+                                                child: PhosphorIcon(PhosphorIcons.folder(), size: 75),
                                               ),
                                             )
                                           : Padding(
-                                              padding:
-                                                  const EdgeInsets.all(4.5),
+                                              padding: const EdgeInsets.all(4.5),
                                               child: FutureBuilder<String>(
-                                                future: DetailScreen
-                                                    .extractThumbnail(
+                                                future: ThumbnailUtil.extractThumbnail(
                                                   location,
                                                   _subdirectory,
                                                   fileName,
                                                 ),
-                                                builder: (BuildContext context,
-                                                    AsyncSnapshot<String>
-                                                        snapshot) {
-                                                  if (snapshot
-                                                          .connectionState ==
-                                                      ConnectionState.waiting) {
+                                                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                                                  if (snapshot.connectionState == ConnectionState.waiting) {
                                                     return const Padding(
-                                                        padding:
-                                                            EdgeInsets.all(60),
-                                                        child:
-                                                            CircularProgressIndicator());
-                                                  } else if (snapshot.error !=
-                                                      null) {
-                                                    return const Icon(
-                                                        Icons.error);
+                                                        padding: EdgeInsets.all(60),
+                                                        child: CircularProgressIndicator());
+                                                  } else if (snapshot.error != null) {
+                                                    return const Icon(Icons.error);
                                                   } else {
                                                     return ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              7.75), // Adjust the border radius as needed
+                                                      borderRadius: BorderRadius.circular(
+                                                          7.75), // Adjust the border radius as needed
                                                       child: Image.file(
                                                         File(snapshot.data!),
                                                         fit: BoxFit
