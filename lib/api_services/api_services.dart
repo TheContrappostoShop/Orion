@@ -23,8 +23,22 @@ import 'package:http/http.dart' as http;
 class ApiService {
   // For Debugging Purposes: TheContrappostoShop Internal Debug API URL (Simulated Odyssey)
   // During production, this will be the actual Odyssey API URL (currently assuming to localhost)
-  static const String apiUrl =
-      kDebugMode ? "dev.plyktra.de" : '127.0.0.1:12357';
+  static const String apiUrl = kDebugMode ? "https://dev.plyktra.de" : 'http://127.0.0.1:12357';
+
+  // Method for creating a Uri object based on http or https protocol
+  static Uri dynUri(String apiUrl, String path, Map<String, dynamic> queryParams) {
+    if (queryParams.containsKey('file_path')) {
+      queryParams['file_path'] = queryParams['file_path'].toString().replaceAll('//', '');
+    }
+
+    if (apiUrl.startsWith('https://')) {
+      return Uri.https(apiUrl.replaceFirst('https://', ''), path, queryParams);
+    } else if (apiUrl.startsWith('http://')) {
+      return Uri.http(apiUrl.replaceFirst('http://', ''), path, queryParams);
+    } else {
+      throw ArgumentError('apiUrl must start with either http:// or https://');
+    }
+  }
 
   ///
   /// GET METHODS TO ODYSSEY
@@ -33,7 +47,7 @@ class ApiService {
   // Get current status of the printer
   static Future<Map<String, dynamic>> getStatus() async {
     final response = await http.get(
-      Uri.parse('http://$apiUrl/status'),
+      dynUri(apiUrl, '/status', {}),
     );
 
     if (response.statusCode == 200) {
@@ -49,11 +63,11 @@ class ApiService {
       String location, int pageSize, int pageIndex, String subdirectory) async {
     final queryParams = {
       "location": location,
-      "subdirectory": subdirectory == '/' ? '' : subdirectory,
+      "subdirectory": subdirectory,
       "page_index": pageIndex.toString(),
       "page_size": pageSize.toString(),
     };
-    final response = await http.get(Uri.http(apiUrl, '/files', queryParams));
+    final response = await http.get(dynUri(apiUrl, '/files', queryParams));
 
     if (response.statusCode == 200) {
       // TODO check the response sent by odyssey
@@ -64,12 +78,10 @@ class ApiService {
   }
 
   // Get file metadata
-  // Takes 2 parameters : location [string] and filename [String]
-  static Future<Map<String, dynamic>> getFileMetadata(
-      String location, String filePath) async {
+  // Takes 2 parameters : location [string] and filePath [String]
+  static Future<Map<String, dynamic>> getFileMetadata(String location, String filePath) async {
     final queryParams = {"location": location, "file_path": filePath};
-    final response =
-        await http.get(Uri.http(apiUrl, '/file/metadata', queryParams));
+    final response = await http.get(dynUri(apiUrl, '/file/metadata', queryParams));
 
     if (response.statusCode == 200) {
       // TODO check the response sent by odyssey
@@ -80,12 +92,10 @@ class ApiService {
   }
 
   // Get file thumbnail
-  // Takes 2 parameters : location [string] and filename [String]
-  static Future<Uint8List> getFileThumbnail(
-      String location, String filePath) async {
+  // Takes 2 parameters : location [string] and filePath [String]
+  static Future<Uint8List> getFileThumbnail(String location, String filePath) async {
     final queryParams = {"location": location, "file_path": filePath};
-    final response =
-        await http.get(Uri.http(apiUrl, '/file/thumbnail', queryParams));
+    final response = await http.get(dynUri(apiUrl, '/file/thumbnail', queryParams));
 
     if (response.statusCode == 200) {
       return response.bodyBytes;
@@ -99,10 +109,10 @@ class ApiService {
   ///
 
   // Start printing a given file
-  // Takes 2 parameters : location [string] and filename [String]
+  // Takes 2 parameters : location [string] and filePath [String]
   static Future<void> startPrint(String location, String filePath) async {
     final response = await http.post(
-      Uri.https(apiUrl, '/print/start', {
+      dynUri(apiUrl, '/print/start', {
         'location': location,
         'file_path': filePath,
       }),
@@ -115,7 +125,7 @@ class ApiService {
 
   // Cancel the print
   static Future<Null> cancelPrint() async {
-    final response = await http.post(Uri.parse('https://$apiUrl/print/cancel'));
+    final response = await http.post(dynUri(apiUrl, '/print/cancel', {}));
 
     if (response.statusCode != 200) {
       // TODO check the response sent by odyssey
@@ -125,7 +135,7 @@ class ApiService {
 
   // Pause the print
   static Future<Null> pausePrint() async {
-    final response = await http.post(Uri.parse('https://$apiUrl/print/pause'));
+    final response = await http.post(dynUri(apiUrl, '/print/pause', {}));
 
     if (response.statusCode != 200) {
       // TODO check the response sent by odyssey
@@ -135,7 +145,7 @@ class ApiService {
 
   // Resume the print
   static Future<Null> resumePrint() async {
-    final response = await http.post(Uri.parse('https://$apiUrl/print/resume'));
+    final response = await http.post(dynUri(apiUrl, '/print/resume', {}));
 
     if (response.statusCode != 200) {
       // TODO check the response sent by odyssey
@@ -147,7 +157,7 @@ class ApiService {
   // Takes 1 param height [double] which is the desired position of the Z axis
   static Future<Map<String, dynamic>> move(double height) async {
     final response = await http.post(
-      Uri.parse('https://$apiUrl/manual'),
+      dynUri(apiUrl, '/manual', {}),
       headers: {"Content-Type": "application/json"},
       body: json.encode({'z': height}),
     );
@@ -161,10 +171,10 @@ class ApiService {
   }
 
   // Toggle cure
-  // Takes 1 param on [bool] which define if we start or stop the curing
+  // Takes 1 param cure [bool] which define if we start or stop the curing
   static Future<Map<String, dynamic>> manualCure(bool cure) async {
     final response = await http.post(
-      Uri.parse('http://apiUrl/manual'),
+      dynUri(apiUrl, '/manual', {}),
       headers: {"Content-Type": "application/json"},
       body: json.encode({'cure': cure}),
     );
@@ -181,12 +191,12 @@ class ApiService {
   /// DELETE METHODS TO ODYSSEY
   ///
 
+  // TODO: Implement deleteFile method properly
   // Delete a file
-  // Takes 2 parameters : location [string] and filename [String]
-  static Future<Map<String, dynamic>> deleteFile(
-      String location, String filename) async {
+  // Takes 2 parameters : location [string] and filePath [String]
+  static Future<Map<String, dynamic>> deleteFile(String location, String filename) async {
     final queryParams = {"location": location, "filename": filename};
-    final response = await http.delete(Uri.http(apiUrl, '/files', queryParams));
+    final response = await http.delete(dynUri(apiUrl, '/files', queryParams));
 
     if (response.statusCode == 200) {
       // TODO check the response sent by odyssey
