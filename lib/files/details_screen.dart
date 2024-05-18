@@ -21,8 +21,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/status/status_screen.dart';
+import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -39,59 +41,12 @@ class DetailScreen extends StatefulWidget {
   DetailScreenState createState() => DetailScreenState();
 
   static bool _isDefaultDir(String dir) {
-    return dir == '/' || dir == '/uploads/';
-  }
-
-  static Future<String> extractThumbnail(String location, String subdirectory, String filename) async {
-    try {
-      String finalLocation =
-          [(_isDefaultDir(subdirectory) ? '' : subdirectory), filename].join(_isDefaultDir(subdirectory) ? '' : '/');
-      final bytes = await ApiService.getFileThumbnail(location, finalLocation);
-
-      final tempDir = await getTemporaryDirectory();
-      final orionTmpDir = Directory('${tempDir.path}/oriontmp/$finalLocation');
-      if (!await orionTmpDir.exists()) {
-        await orionTmpDir.create(recursive: true);
-      }
-
-      final filePath = '${orionTmpDir.path}/thumbnail400x400.png';
-      final outputFile = File(filePath);
-      outputFile.writeAsBytesSync(bytes);
-
-      // Check the total size of the oriontmp directory
-      int totalSize = 0;
-      final files = orionTmpDir.listSync(recursive: true);
-      for (var file in files) {
-        if (file is File) {
-          totalSize += await file.length();
-        }
-      }
-
-      // If the total size exceeds 100MB, delete the oldest files
-      if (totalSize > 100 * 1024 * 1024) {
-        files.sort((a, b) => a.statSync().modified.compareTo(b.statSync().modified));
-        while (totalSize > 100 * 1024 * 1024 && files.isNotEmpty) {
-          int fileSize = await (files.first as File).length();
-          await files.first.delete();
-          totalSize -= fileSize;
-          files.removeAt(0);
-        }
-      }
-
-      return filePath;
-    } catch (e) {
-      //print('Failed to fetch thumbnail: $e');
-    }
-
-    return 'assets/images/placeholder.png';
-  }
-
-  static String generateHash(String input) {
-    return sha256.convert(utf8.encode(input)).toString();
+    return dir == '';
   }
 }
 
 class DetailScreenState extends State<DetailScreen> {
+  final _logger = Logger('DetailScreen');
   double leftPadding = 0;
   double rightPadding = 0;
 
@@ -142,7 +97,7 @@ class DetailScreenState extends State<DetailScreen> {
       String tempModifiedDate = DateTime.fromMillisecondsSinceEpoch(fileDetails['file_data']['last_modified'] * 1000)
           .toString(); // convert to milliseconds
       String tempMaterialName = 'N/A'; // this information is not provided by the API
-      String tempThumbnailPath = await DetailScreen.extractThumbnail(
+      String tempThumbnailPath = await ThumbnailUtil.extractThumbnail(
           widget.fileLocation, widget.fileSubdirectory, widget.fileName); // fetch thumbnail from API
       double tempPrintTimeInSeconds = fileDetails['print_time'];
       Duration printDuration = Duration(seconds: tempPrintTimeInSeconds.toInt());
@@ -165,7 +120,7 @@ class DetailScreenState extends State<DetailScreen> {
         materialVolume = tempMaterialVolume;
       });
     } catch (e) {
-      //print('Failed to fetch file details: $e');
+      _logger.severe('Failed to fetch file details', e);
     }
   }
 
@@ -393,7 +348,7 @@ class DetailScreenState extends State<DetailScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          String subdirectory = widget.fileSubdirectory == '/' ? '' : widget.fileSubdirectory;
+                          String subdirectory = widget.fileSubdirectory;
                           ApiService.startPrint(widget.fileLocation, path.join(subdirectory, widget.fileName));
                           Navigator.push(
                               context,
