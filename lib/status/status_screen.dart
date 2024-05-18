@@ -20,11 +20,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/files/details_screen.dart';
 import 'package:orion/files/grid_files_screen.dart';
 import 'package:orion/settings/settings_screen.dart';
 import 'package:orion/themes/themes.dart';
+import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:orion/util/status_card.dart';
 
 class StatusScreen extends StatefulWidget {
@@ -36,6 +38,7 @@ class StatusScreen extends StatefulWidget {
 }
 
 class StatusScreenState extends State<StatusScreen> with SingleTickerProviderStateMixin {
+  final _logger = Logger('StatusScreen');
   double leftPadding = 0;
   double rightPadding = 0;
 
@@ -84,7 +87,7 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
               if (thumbnailFullPath.contains('/')) {
                 thumbnailSubdir = thumbnailFullPath.substring(0, thumbnailFullPath.lastIndexOf('/'));
               }
-              thumbnailNotifier.value = await DetailScreen.extractThumbnail(
+              thumbnailNotifier.value = await ThumbnailUtil.extractThumbnail(
                 location,
                 thumbnailSubdir,
                 fileName,
@@ -99,7 +102,7 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
       }
       if (mounted) setState(() {});
     } catch (e) {
-      //('Failed to get status: $e');
+      _logger.severe('Failed to get status: $e');
     }
   }
 
@@ -173,7 +176,9 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                     )),
               ),
             );
-          } else if (status != null && status!['print_data'] == null && newPrintNotifier.value == true) {
+          } else if (status != null &&
+              (status!['layer'] == null || status!['layer'] == status!['print_data']['layer_count']) &&
+              newPrintNotifier.value == true) {
             return Scaffold(
               appBar: AppBar(
                 title: const Text('Loading...'),
