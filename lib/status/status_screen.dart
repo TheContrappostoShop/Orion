@@ -22,7 +22,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
-import 'package:orion/files/details_screen.dart';
 import 'package:orion/files/grid_files_screen.dart';
 import 'package:orion/settings/settings_screen.dart';
 import 'package:orion/themes/themes.dart';
