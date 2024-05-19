@@ -16,9 +16,6 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// ignore_for_file: depend_on_referenced_packages
-
-import 'dart:convert';
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:logging/logging.dart';
@@ -27,8 +24,6 @@ import 'package:orion/status/status_screen.dart';
 import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:crypto/crypto.dart';
 
 class DetailScreen extends StatefulWidget {
   final String fileName;
