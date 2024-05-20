@@ -1,8 +1,25 @@
 #!/bin/bash
+#
+# Orion - An open-source user interface for the Odyssey 3d-printing engine.
+# Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 # Function to display a help message
 show_help() {
-    echo "Usage: ./orionpi.sh [IP_ADDR] [USERNAME] [PASSWORD] (-a arch) (-c cpu) (-ro)"
+    echo "Usage: ./orionpi.sh [IP_ADDR] [USERNAME] [PASSWORD] (-a arch) (-c cpu) (-ro) (-r)"
     echo ""
     echo "Required Arguments:"
     echo "  IP_ADDR         IP address of the Raspberry Pi."
@@ -13,6 +30,7 @@ show_help() {
     echo -e "  -a, --arch      Host architecture. [\033[0;31marm\033[0m, arm64, x86]"
     echo -e "  -c, --cpu       Target CPU. [generic, pi3, \033[0;31mpi4\033[0m]"
     echo -e "  -ro             Run-only mode. Run OrionPi in run-only mode, no build or copy."
+    echo -e "  -r              Release mode. Build OrionPi in release mode."
     exit 1
 }
 
@@ -39,6 +57,10 @@ do
             ;;
         -ro)
             run_only=true
+            shift
+            ;;
+        -r)
+            release=true
             shift
             ;;
         *)
@@ -133,7 +155,11 @@ if [ "$run_only" != true ]; then
     start_msg="Building Flutter Bundle"
     printf "%s" "$start_msg"
     start_time=$(date +%s)
-    (flutterpi_tool build --arch=arm --cpu=pi4 > /dev/null 2>&1 & show_scroller $! "$start_msg")
+    if [ "$release" = true ]; then
+        (flutterpi_tool build --arch=arm --cpu=pi4 --release > /dev/null 2>&1 & show_scroller $! "$start_msg")
+    else
+        (flutterpi_tool build --arch=arm --cpu=pi4 > /dev/null 2>&1 & show_scroller $! "$start_msg")
+    fi
     wait $!
     end_time=$(date +%s)
     print_done "Done. [$((end_time - start_time))s]" $((end_time - start_time))
@@ -146,10 +172,13 @@ if [ "$run_only" != true ]; then
     wait $!
     end_time=$(date +%s)
     print_done "Done. [$((end_time - start_time))s]" $((end_time - start_time))
-
 fi
 
 # SSH command to kill all instances of flutter-pi on the Raspberry Pi
 printf "\n\r[\033[0;32m✓\033[0m]\033[0;32m%s\033[0m\n" "  Running OrionPi on Raspberry Pi!"
 printf "\r[i]""  Press \033[0;31mCtrl+C\033[0m to disconnect.\n\n"
-sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 /home/pi/orionpi/flutter_assets'
+if [ "$release" = true ]; then
+    sshpass -p "$password" ssh $user@$ip 'flutter-pi --release --pixelformat=RGB565 /home/pi/orionpi/flutter_assets'
+else
+    sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 /home/pi/orionpi/flutter_assets'
+fi

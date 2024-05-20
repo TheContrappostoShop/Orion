@@ -1,9 +1,26 @@
+/*
+* Orion - Files Screen
+* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async';
 import 'dart:io';
-
-import 'details_screen.dart';
 import 'package:orion/files/search_file_screen.dart';
-// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -30,11 +47,10 @@ Directory getInitialDir(platform) {
 class FilesScreen extends StatefulWidget {
   const FilesScreen({super.key});
   @override
-  // ignore: library_private_types_in_public_api
-  _FilesScreenState createState() => _FilesScreenState();
+  FilesScreenState createState() => FilesScreenState();
 }
 
-class _FilesScreenState extends State<FilesScreen> {
+class FilesScreenState extends State<FilesScreen> {
   late Directory _directory;
   late List<FileSystemEntity> _files;
   bool _sortByAlpha = true;
@@ -340,13 +356,13 @@ class _FilesScreenState extends State<FilesScreen> {
                             });
                           } else {
                             if (file is File) {
-                              Navigator.push(
+                              /*Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       DetailScreen(file: file),
                                 ),
-                              );
+                              );*/
                             }
                           }
                         } catch (e) {

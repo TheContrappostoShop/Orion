@@ -1,5 +1,5 @@
 /*
-* Orion - Calibrate Screen
+* Orion - Orion API Item
 * Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
 *
 * This program is free software: you can redistribute it and/or modify
@@ -16,20 +16,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import 'package:flutter/material.dart';
-
-/// The calibrate screen
-class CalibrateScreen extends StatelessWidget {
-  /// Constructs a [CalibrateScreen]
-  const CalibrateScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Calibrate',
-        style: TextStyle(fontSize: 24),
-      ),
-    );
-  }
+abstract class OrionApiItem {
+  String get path;
+  String get parentPath;
 }
