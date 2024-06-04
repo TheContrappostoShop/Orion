@@ -26,9 +26,11 @@ jobs:
 
       - name: Build, Copy, and Compress armv7
         run: |
+          BUILD_NAME=orion_armv7
           flutterpi_tool build --release
-          mv build/flutter_assets orion_armv7
-          tar -czvf orion_armv7.tar.gz orion_armv7
+          mv build/flutter_assets $BUILD_NAME
+          ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
+          cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
 
       - uses: actions/upload-artifact@v4.3.1
         with:
@@ -37,9 +39,11 @@ jobs:
 
       - name: Build, Copy, and Compress aarch64
         run: |
+          BUILD_NAME=orion_aarch64
           flutterpi_tool build --arch=arm64 --release
-          mv build/flutter_assets orion_aarch64
-          tar -czvf orion_aarch64.tar.gz orion_aarch64
+          mv build/flutter_assets $BUILD_NAME
+          ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
+          cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
 
       - uses: actions/upload-artifact@v4.3.1
         with:
@@ -48,9 +52,11 @@ jobs:
 
       - name: Build, Copy, and Compress x64
         run: |
+          BUILD_NAME=orion_x64
           flutterpi_tool build --arch=x64 --release
-          mv build/flutter_assets orion_x64
-          tar -czvf orion_x64.tar.gz orion_x64
+          mv build/flutter_assets $BUILD_NAME
+          ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
+          cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
 
       - uses: actions/upload-artifact@v4.3.1
         with:
