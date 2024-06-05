@@ -29,6 +29,7 @@ import 'package:orion/settings/calibrate_screen.dart';
 import 'package:orion/settings/wifi_screen.dart';
 import 'package:orion/settings/about_screen.dart';
 import 'package:orion/themes/themes.dart';
+import 'package:orion/util/error_handler.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -39,13 +40,25 @@ import 'package:logging/logging.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    ErrorHandler.onErrorDetails(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    ErrorHandler.onError(error, stack);
+    return true;
+  };
+
   Logger.root.level = Level.ALL; // Log all log levels
   Logger.root.onRecord.listen((record) async {
-    Directory logDir = await getApplicationDocumentsDirectory();
+    Directory logDir = await getApplicationSupportDirectory();
     File logFile = File('${logDir.path}/app.log');
 
+    stdout.writeln(
+        '${record.time}\t[${record.loggerName}]\t${record.level.name}\t${record.message}');
     final sink = logFile.openWrite(mode: FileMode.append);
-    sink.writeln('${record.level.name}: ${record.time}: ${record.message}');
+    sink.writeln(
+        '${record.time}\t[${record.loggerName}]\t${record.level.name}\t${record.message}');
     await sink.close();
   });
   runApp(const Orion());
