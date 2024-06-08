@@ -1,6 +1,6 @@
 /*
 * Orion - Grid Files Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -317,7 +317,9 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                             elevation: 1,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(10),
-                              onTap: !_usbAvailable && !_isUSB
+                              onTap: !_usbAvailable &&
+                                      !_isUSB &&
+                                      _directory == _defaultDirectory
                                   ? null
                                   : _directory == _defaultDirectory
                                       ? () async {
