@@ -1,6 +1,6 @@
 /*
-* Orion - Seattings Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Orion - Settings Screen
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/pubspec.dart';
 import 'package:orion/settings/debug_screen.dart';
+import 'package:orion/settings/general_screen.dart';
 import 'package:orion/util/markdown_screen.dart';
+import 'package:orion/settings/wifi_screen.dart';
+import 'package:orion/settings/about_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:about/about.dart';
-
-import 'calibrate_screen.dart';
-import 'wifi_screen.dart';
-import 'about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -77,7 +76,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                         'Version {{ version }}, Build {{ buildNumber }}',
                     applicationName: 'Orion',
                     applicationLegalese:
-                        'GPLv3 - Copyright © TheContrappostoShop {{ year buildType }}',
+                        'GPLv3 - Copyright © TheContrappostoShop {{ year }}',
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.only(left: 10, right: 10),
@@ -124,7 +123,7 @@ class SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
       body: _selectedIndex == 0
-          ? const CalibrateScreen()
+          ? const GeneralCfgScreen()
           : _selectedIndex == 1
               ? const WifiScreen()
               : _selectedIndex == 2
@@ -135,7 +134,7 @@ class SettingsScreenState extends State<SettingsScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Calibrate',
+            label: 'General',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.network_wifi),
