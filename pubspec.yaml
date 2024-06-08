@@ -63,6 +63,7 @@ dependencies:
   pubspec_extract: ^2.0.5
   flutter_markdown: ^0.6.23
   logging: ^1.2.0
+  toastification: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -92,6 +93,7 @@ flutter:
   assets:
     - assets/images/opensource.svg
     - assets/images/placeholder.png
+    - assets/images/bsod.png
     - README.md
     - CHANGELOG.md
 
