@@ -1,6 +1,6 @@
 /*
 * Orion - Status Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -36,8 +36,11 @@ class StatusScreen extends StatefulWidget {
   StatusScreenState createState() => StatusScreenState();
 }
 
-class StatusScreenState extends State<StatusScreen> with SingleTickerProviderStateMixin {
+class StatusScreenState extends State<StatusScreen>
+    with SingleTickerProviderStateMixin {
   final _logger = Logger('StatusScreen');
+  final ApiService _api = ApiService();
+
   double leftPadding = 0;
   double rightPadding = 0;
 
@@ -53,17 +56,18 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
   Future<void>? _initStatusDetailsFuture;
   Map<String, dynamic>? status;
   double opacity = 0.0;
-  bool isPausing = false;
-  bool isCanceling = false;
-  Timer? timer;
+  bool isPausing = false; // Flag to check if pausing is in progress
+  bool isCanceling = false; // Flag to check if canceling is in progress
+  bool isThumbnailFetched = false; // Flag to check if thumbnail is fetched
+  Timer? timer; // Timer for fetching status
 
   @override
   void initState() {
     super.initState();
     _initStatusDetailsFuture = getStatus();
     newPrintNotifier = ValueNotifier<bool>(widget.newPrint);
-
-    timer = Timer.periodic(const Duration(seconds: 1), (Timer t) => getStatus());
+    timer = Timer.periodic(const Duration(seconds: 1),
+        (Timer t) => getStatus()); // Fetch status every second
   }
 
   @override
@@ -74,23 +78,31 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
 
   Future<void> getStatus() async {
     try {
-      status = await ApiService.getStatus();
+      status = await _api.getStatus();
       if (status != null) {
         if (status!['status'] == 'Printing' || status!['status'] == 'Idle') {
-          if (status!['print_data'] != null && status!['print_data']['file_data'] != null) {
-            String? thumbnailFullPath = status!['print_data']['file_data']['path'];
+          if (status!['print_data'] != null &&
+              status!['print_data']['file_data'] != null) {
+            String? thumbnailFullPath =
+                status!['print_data']['file_data']['path'];
             String? fileName = status!['print_data']['file_data']['name'];
-            String location = status!['print_data']['file_data']['location_category'] ?? 'Local';
-            if (thumbnailFullPath != null && fileName != null) {
+            String location = status!['print_data']['file_data']
+                    ['location_category'] ??
+                'Local';
+            if (thumbnailFullPath != null &&
+                fileName != null &&
+                !isThumbnailFetched) {
               String thumbnailSubdir = '/';
               if (thumbnailFullPath.contains('/')) {
-                thumbnailSubdir = thumbnailFullPath.substring(0, thumbnailFullPath.lastIndexOf('/'));
+                thumbnailSubdir = thumbnailFullPath.substring(
+                    0, thumbnailFullPath.lastIndexOf('/'));
               }
               thumbnailNotifier.value = await ThumbnailUtil.extractThumbnail(
                 location,
                 thumbnailSubdir,
                 fileName,
               );
+              isThumbnailFetched = true;
             }
           } else {
             thumbnailNotifier.value = null;
@@ -105,10 +117,12 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
     }
   }
 
+  // Method to get the status color based on the status
   Color getStatusColor() {
     final Map<String, Color> statusColor = {
-      'Printing':
-          Theme.of(context).brightness == Brightness.dark ? Theme.of(context).colorScheme.primary : Colors.black54,
+      'Printing': Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).colorScheme.primary
+          : Colors.black54,
       'Idle': Colors.greenAccent,
       'Shutdown': Colors.red,
       'Canceled': Colors.red,
@@ -119,19 +133,24 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
     };
 
     String printStatus = status!['status'];
-    bool curing = status!['physical_state']['curing'] ?? false; // Default to false if 'curing' is null
+    bool curing = status!['physical_state']['curing'] ??
+        false; // Default to false if 'curing' is null
 
     bool paused = status!['paused'] ?? false;
     bool canceled = status!['layer'] == null;
 
     if (curing) {
-      return statusColor['Curing'] ?? Colors.black; // Default to black if 'Curing' is not in the map
+      return statusColor['Curing'] ??
+          Colors.black; // Default to black if 'Curing' is not in the map
     } else if (paused) {
-      return statusColor['Pause'] ?? Colors.black; // Default to black if 'Pause' is not in the map
+      return statusColor['Pause'] ??
+          Colors.black; // Default to black if 'Pause' is not in the map
     } else if (canceled) {
-      return statusColor['Canceled'] ?? Colors.black; // Default to black if 'Canceled' is not in the map
+      return statusColor['Canceled'] ??
+          Colors.black; // Default to black if 'Canceled' is not in the map
     } else {
-      return statusColor[printStatus] ?? Colors.black; // Default to black if the status is not in the map
+      return statusColor[printStatus] ??
+          Colors.black; // Default to black if the status is not in the map
     }
   }
 
@@ -153,7 +172,9 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
             ),
           );
         } else {
-          if (status != null && status!['print_data'] == null && newPrintNotifier.value == false) {
+          if (status != null &&
+              status!['print_data'] == null &&
+              newPrintNotifier.value == false) {
             return Scaffold(
               appBar: AppBar(
                 title: const Text('No Print Data Available'),
@@ -163,7 +184,8 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const GridFilesScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const GridFilesScreen()),
                       );
                     },
                     child: const Padding(
@@ -176,7 +198,8 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
               ),
             );
           } else if (status != null &&
-              (status!['layer'] == null || status!['layer'] == status!['print_data']['layer_count']) &&
+              (status!['layer'] == null ||
+                  status!['layer'] == status!['print_data']['layer_count']) &&
               newPrintNotifier.value == true) {
             return Scaffold(
               appBar: AppBar(
@@ -235,7 +258,8 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
               rightPadding = leftPadding;
 
               setState(() {
-                opacity = 1.0; // Set opacity to 1 after sizes have been calculated
+                opacity =
+                    1.0; // Set opacity to 1 after sizes have been calculated
               });
             });
 
@@ -243,8 +267,10 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
             Duration duration = Duration(seconds: totalSeconds);
 
             String twoDigits(int n) => n.toString().padLeft(2, "0");
-            String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-            String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+            String twoDigitMinutes =
+                twoDigits(duration.inMinutes.remainder(60));
+            String twoDigitSeconds =
+                twoDigits(duration.inSeconds.remainder(60));
 
             return Scaffold(
               appBar: AppBar(
@@ -252,14 +278,19 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                 title: RichText(
                   text: TextSpan(
                     children: [
-                      TextSpan(text: 'Print Status', style: Theme.of(context).appBarTheme.titleTextStyle),
-                      TextSpan(text: ' - ', style: Theme.of(context).appBarTheme.titleTextStyle),
+                      TextSpan(
+                          text: 'Print Status',
+                          style: Theme.of(context).appBarTheme.titleTextStyle),
+                      TextSpan(
+                          text: ' - ',
+                          style: Theme.of(context).appBarTheme.titleTextStyle),
                       TextSpan(
                         text: isCanceling && status!['layer'] != null
                             ? 'Canceling'
                             : status!['layer'] == null
                                 ? 'Canceled'
-                                : isPausing == true && status!['paused'] == false
+                                : isPausing == true &&
+                                        status!['paused'] == false
                                     ? 'Pausing'
                                     : status!['paused'] == true
                                         ? 'Paused'
@@ -282,13 +313,18 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            if (status!['status'] == 'Printing' || status!['status'] == 'Idle') ...[
+                            if (status!['status'] == 'Printing' ||
+                                status!['status'] == 'Idle') ...[
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Padding(
-                                  padding: EdgeInsets.only(left: leftPadding <= 0 ? leftPadding : leftPadding - 10),
+                                  padding: EdgeInsets.only(
+                                      left: leftPadding <= 0
+                                          ? leftPadding
+                                          : leftPadding - 10),
                                   child: ConstrainedBox(
-                                    constraints: const BoxConstraints(maxWidth: 300),
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 300),
                                     child: Card.outlined(
                                       key: textKey1,
                                       elevation: 1,
@@ -299,7 +335,9 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                           minFontSize: 16,
                                           '${status!['print_data']['file_data']['name']}',
                                           style: TextStyle(
-                                              fontSize: 24, fontWeight: FontWeight.bold, color: getStatusColor()),
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: getStatusColor()),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -364,10 +402,14 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                             padding: EdgeInsets.only(right: rightPadding),
                             child: ValueListenableBuilder<String?>(
                               valueListenable: thumbnailNotifier,
-                              builder: (BuildContext context, String? thumbnail, Widget? child) {
+                              builder: (BuildContext context, String? thumbnail,
+                                  Widget? child) {
                                 double progress = 0.0;
-                                if (status!['layer'] != null && status!['print_data']['layer_count'] != null) {
-                                  progress = status!['layer'] / status!['print_data']['layer_count'];
+                                if (status!['layer'] != null &&
+                                    status!['print_data']['layer_count'] !=
+                                        null) {
+                                  progress = status!['layer'] /
+                                      status!['print_data']['layer_count'];
                                 }
                                 return thumbnail != null
                                     ? Stack(
@@ -375,15 +417,18 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                           Card(
                                             key: previewKey,
                                             child: Padding(
-                                              padding: const EdgeInsets.all(4.5),
+                                              padding:
+                                                  const EdgeInsets.all(4.5),
                                               child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(7.75),
+                                                borderRadius:
+                                                    BorderRadius.circular(7.75),
                                                 child: Image.file(
                                                   File(thumbnail),
                                                   width: 220,
                                                   height: 220,
                                                   color: Colors.black,
-                                                  colorBlendMode: BlendMode.saturation,
+                                                  colorBlendMode:
+                                                      BlendMode.saturation,
                                                 ),
                                               ),
                                             ),
@@ -391,9 +436,11 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                           Card(
                                             //key: previewKey,
                                             child: Padding(
-                                              padding: const EdgeInsets.all(4.5),
+                                              padding:
+                                                  const EdgeInsets.all(4.5),
                                               child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(7.75),
+                                                borderRadius:
+                                                    BorderRadius.circular(7.75),
                                                 child: Stack(
                                                   children: [
                                                     Image.file(
@@ -405,14 +452,22 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                                       width: 220,
                                                       height: 220,
                                                       decoration: BoxDecoration(
-                                                        gradient: LinearGradient(
-                                                          begin: Alignment.bottomCenter,
-                                                          end: Alignment.topCenter,
+                                                        gradient:
+                                                            LinearGradient(
+                                                          begin: Alignment
+                                                              .bottomCenter,
+                                                          end: Alignment
+                                                              .topCenter,
                                                           colors: [
                                                             Colors.transparent,
-                                                            Colors.black.withOpacity(0.65),
+                                                            Colors.black
+                                                                .withOpacity(
+                                                                    0.65),
                                                           ],
-                                                          stops: [(progress), (progress)],
+                                                          stops: [
+                                                            (progress),
+                                                            (progress)
+                                                          ],
                                                         ),
                                                       ),
                                                     ),
@@ -423,10 +478,12 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                                       right: 0,
                                                       child: Center(
                                                         child: StatusCard(
-                                                          isCanceling: isCanceling,
+                                                          isCanceling:
+                                                              isCanceling,
                                                           isPausing: isPausing,
                                                           progress: progress,
-                                                          statusColor: getStatusColor(),
+                                                          statusColor:
+                                                              getStatusColor(),
                                                           status: status!,
                                                         ),
                                                       ),
@@ -442,9 +499,11 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                         child: Padding(
                                           padding: const EdgeInsets.all(4.5),
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(7.75),
+                                            borderRadius:
+                                                BorderRadius.circular(7.75),
                                             child: const Image(
-                                              image: AssetImage('assets/images/placeholder.png'),
+                                              image: AssetImage(
+                                                  'assets/images/placeholder.png'),
                                               width: 220,
                                               height: 220,
                                             ),
@@ -472,9 +531,11 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: isCanceling == true && status!['layer'] != null
+                          onPressed: isCanceling == true &&
+                                  status!['layer'] != null
                               ? null
-                              : status!['layer'] == null || status!['status'] == 'Idle'
+                              : status!['layer'] == null ||
+                                      status!['status'] == 'Idle'
                                   ? null
                                   : () {
                                       showDialog(
@@ -482,57 +543,78 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                         builder: (BuildContext context) {
                                           return Dialog(
                                             child: SizedBox(
-                                              width: MediaQuery.of(context).size.width * 0.5, // 80% of screen width
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.5, // 80% of screen width
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: <Widget>[
                                                   const SizedBox(height: 10),
                                                   const Padding(
-                                                    padding: EdgeInsets.all(8.0),
+                                                    padding:
+                                                        EdgeInsets.all(8.0),
                                                     child: Text(
                                                       'Options',
-                                                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                                      style: TextStyle(
+                                                          fontSize: 24,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 10),
                                                   Padding(
-                                                    padding: const EdgeInsets.only(left: 20, right: 20),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 20,
+                                                            right: 20),
                                                     child: SizedBox(
                                                       height: 65,
                                                       width: double.infinity,
                                                       child: ElevatedButton(
                                                         onPressed: () {
-                                                          Navigator.pop(context);
+                                                          Navigator.pop(
+                                                              context);
                                                           Navigator.push(
                                                             context,
                                                             MaterialPageRoute(
-                                                                builder: (context) => const SettingsScreen()),
+                                                                builder:
+                                                                    (context) =>
+                                                                        const SettingsScreen()),
                                                           );
                                                         },
                                                         child: const Text(
                                                           'Settings',
-                                                          style: TextStyle(fontSize: 24),
+                                                          style: TextStyle(
+                                                              fontSize: 24),
                                                         ),
                                                       ),
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 20), // Add some spacing between the buttons
+                                                  const SizedBox(
+                                                      height:
+                                                          20), // Add some spacing between the buttons
                                                   Padding(
-                                                    padding: const EdgeInsets.only(left: 20, right: 20),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 20,
+                                                            right: 20),
                                                     child: SizedBox(
                                                       height: 65,
                                                       width: double.infinity,
                                                       child: ElevatedButton(
                                                         onPressed: () {
-                                                          Navigator.pop(context);
-                                                          ApiService.cancelPrint();
+                                                          Navigator.pop(
+                                                              context);
+                                                          _api.cancelPrint();
                                                           setState(() {
                                                             isCanceling = true;
                                                           });
                                                         },
                                                         child: const Text(
                                                           'Cancel Print',
-                                                          style: TextStyle(fontSize: 24),
+                                                          style: TextStyle(
+                                                              fontSize: 24),
                                                         ),
                                                       ),
                                                     ),
@@ -548,7 +630,8 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(
                               0, // Subtract the padding on both sides
-                              Theme.of(context).appBarTheme.toolbarHeight as double,
+                              Theme.of(context).appBarTheme.toolbarHeight
+                                  as double,
                             ),
                           ),
                           child: const Text(
@@ -560,13 +643,15 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                       const SizedBox(width: 20),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: isCanceling == true && status!['layer'] != null
+                          onPressed: isCanceling == true &&
+                                  status!['layer'] != null
                               ? null
                               : isPausing == true && status!['paused'] == false
                                   ? null
                                   : status!['layer'] == null
                                       ? () {
-                                          Navigator.popUntil(context, ModalRoute.withName('/'));
+                                          Navigator.popUntil(context,
+                                              ModalRoute.withName('/'));
                                         }
                                       : status!['status'] == 'Idle'
                                           ? () {
@@ -574,12 +659,12 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                                             }
                                           : () {
                                               if (status!['paused'] == true) {
-                                                ApiService.resumePrint();
+                                                _api.resumePrint();
                                                 setState(() {
                                                   isPausing = false;
                                                 });
                                               } else {
-                                                ApiService.pausePrint();
+                                                _api.pausePrint();
                                                 setState(() {
                                                   isPausing = true;
                                                 });
@@ -588,11 +673,13 @@ class StatusScreenState extends State<StatusScreen> with SingleTickerProviderSta
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(
                               0, // Subtract the padding on both sides
-                              Theme.of(context).appBarTheme.toolbarHeight as double,
+                              Theme.of(context).appBarTheme.toolbarHeight
+                                  as double,
                             ),
                           ),
                           child: Text(
-                            status!['layer'] == null || status!['status'] == 'Idle'
+                            status!['layer'] == null ||
+                                    status!['status'] == 'Idle'
                                 ? 'Return to Home'
                                 : status!['paused'] == true
                                     ? 'Resume'
