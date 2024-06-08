@@ -33,6 +33,8 @@ import 'package:orion/util/error_handler.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:orion/tools/tools_screen.dart';
+import 'package:orion/util/orion_config.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:window_size/window_size.dart';
 import 'package:provider/provider.dart';
@@ -127,6 +129,11 @@ final GoRouter _router = GoRouter(
             );
           },
         ),
+        GoRoute(
+            path: 'tools',
+            builder: (BuildContext context, GoRouterState state) {
+              return const ToolsScreen();
+            }),
       ],
     ),
   ],
@@ -142,12 +149,21 @@ class Orion extends StatefulWidget {
 }
 
 class OrionState extends State<Orion> {
-  ThemeMode _themeMode = ThemeMode.system;
+  late ThemeMode _themeMode;
+  late OrionConfig _config;
+
+  @override
+  void initState() {
+    super.initState();
+    _config = OrionConfig();
+    _themeMode = _config.getThemeMode();
+  }
 
   void changeThemeMode(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;
     });
+    _config.setThemeMode(themeMode);
   }
 
   @override
