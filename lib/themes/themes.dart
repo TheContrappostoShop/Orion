@@ -24,7 +24,7 @@ final ThemeData themeLight = ThemeData(
     brightness: Brightness.light,
   ),
   appBarTheme: const AppBarTheme(
-    titleTextStyle: TextStyle(fontSize: 26, color: Colors.black),
+    titleTextStyle: TextStyle(fontSize: 30, color: Colors.black),
     centerTitle: true,
     toolbarHeight: 65,
     iconTheme: IconThemeData(size: 30),
@@ -33,8 +33,8 @@ final ThemeData themeLight = ThemeData(
     bodyMedium: TextStyle(fontSize: 20),
   ),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-    selectedLabelStyle: TextStyle(fontSize: 16),
-    unselectedLabelStyle: TextStyle(fontSize: 16),
+    selectedLabelStyle: TextStyle(fontSize: 18),
+    unselectedLabelStyle: TextStyle(fontSize: 18),
     selectedIconTheme: IconThemeData(size: 30),
     unselectedIconTheme: IconThemeData(size: 30),
   ),
@@ -53,7 +53,7 @@ final ThemeData themeDark = ThemeData(
     brightness: Brightness.dark,
   ),
   appBarTheme: const AppBarTheme(
-    titleTextStyle: TextStyle(fontSize: 26, color: Colors.white),
+    titleTextStyle: TextStyle(fontSize: 30, color: Colors.white),
     centerTitle: true,
     toolbarHeight: 65,
     iconTheme: IconThemeData(size: 30),
@@ -62,8 +62,8 @@ final ThemeData themeDark = ThemeData(
     bodyMedium: TextStyle(fontSize: 20),
   ),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-    selectedLabelStyle: TextStyle(fontSize: 16),
-    unselectedLabelStyle: TextStyle(fontSize: 16),
+    selectedLabelStyle: TextStyle(fontSize: 18),
+    unselectedLabelStyle: TextStyle(fontSize: 18),
     selectedIconTheme: IconThemeData(size: 30),
     unselectedIconTheme: IconThemeData(size: 30),
   ),
