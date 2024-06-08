@@ -1,6 +1,6 @@
 /*
 * Orion - Debug Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,10 @@ class DebugScreen extends StatefulWidget {
 }
 
 class DebugScreenState extends State<DebugScreen> {
-  final GlobalKey<SpawnOrionTextFieldState> debugTextFieldKey = GlobalKey<SpawnOrionTextFieldState>();
-  final GlobalKey<SpawnOrionTextFieldState> dialogTextFieldKey = GlobalKey<SpawnOrionTextFieldState>();
+  final GlobalKey<SpawnOrionTextFieldState> debugTextFieldKey =
+      GlobalKey<SpawnOrionTextFieldState>();
+  final GlobalKey<SpawnOrionTextFieldState> dialogTextFieldKey =
+      GlobalKey<SpawnOrionTextFieldState>();
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -63,7 +65,8 @@ class DebugScreenState extends State<DebugScreen> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 15),
                       child: SpawnOrionTextField(
                         key: debugTextFieldKey,
                         keyboardHint: "Debug Test Field",
@@ -76,7 +79,8 @@ class DebugScreenState extends State<DebugScreen> {
                       padding: const EdgeInsets.all(10),
                       child: ElevatedButton(
                         onPressed: () {
-                          String text = debugTextFieldKey.currentState!.getCurrentText();
+                          String text =
+                              debugTextFieldKey.currentState!.getCurrentText();
                           if (kDebugMode) {
                             print("[Debug]: DebugTestField content: $text");
                           }
@@ -96,19 +100,24 @@ class DebugScreenState extends State<DebugScreen> {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: const Center(child: Text('WiFi-Test-0123 Password')),
+                                title: const Center(
+                                    child: Text('WiFi-Test-0123 Password')),
                                 content: SizedBox(
-                                  width: MediaQuery.of(context).size.width * 0.5, // Half the screen width
+                                  width: MediaQuery.of(context).size.width *
+                                      0.5, // Half the screen width
                                   child: SingleChildScrollView(
                                     child: Column(
                                       children: [
                                         SpawnOrionTextField(
                                           key: dialogTextFieldKey,
                                           keyboardHint: "Enter Password",
-                                          locale: Localizations.localeOf(context).toString(),
+                                          locale:
+                                              Localizations.localeOf(context)
+                                                  .toString(),
                                           scrollController: _scrollController,
                                         ),
-                                        OrionKbExpander(textFieldKey: dialogTextFieldKey),
+                                        OrionKbExpander(
+                                            textFieldKey: dialogTextFieldKey),
                                       ],
                                     ),
                                   ),

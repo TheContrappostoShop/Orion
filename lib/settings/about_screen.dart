@@ -1,6 +1,6 @@
 /*
 * Orion - About Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,8 @@ class _AboutScreenState extends State<AboutScreen> {
             title: const Text('You are already a developer'),
             alignment: Alignment.topCenter,
             primaryColor: Colors.green,
-            backgroundColor: Theme.of(context).colorScheme.surface.withBrightness(1.35),
+            backgroundColor:
+                Theme.of(context).colorScheme.surface.withBrightness(1.35),
             foregroundColor: Theme.of(context).colorScheme.onSurface,
           );
         } else {
@@ -99,10 +100,12 @@ class _AboutScreenState extends State<AboutScreen> {
               type: ToastificationType.success,
               style: ToastificationStyle.fillColored,
               autoCloseDuration: const Duration(seconds: 2),
-              title: const Text('Developer Mode Activated: You are now a developer!'),
+              title: const Text(
+                  'Developer Mode Activated: You are now a developer!'),
               alignment: Alignment.topCenter,
               primaryColor: Colors.green,
-              backgroundColor: Theme.of(context).colorScheme.surface.withBrightness(1.35),
+              backgroundColor:
+                  Theme.of(context).colorScheme.surface.withBrightness(1.35),
               foregroundColor: Theme.of(context).colorScheme.onSurface,
             );
           } else {
@@ -115,7 +118,8 @@ class _AboutScreenState extends State<AboutScreen> {
                   'You are ${5 - qrTapCount} ${5 - qrTapCount == 1 ? 'tap' : 'taps'} away from becoming a developer'),
               alignment: Alignment.topCenter,
               primaryColor: Theme.of(context).colorScheme.primary,
-              backgroundColor: Theme.of(context).colorScheme.surface.withBrightness(1.35),
+              backgroundColor:
+                  Theme.of(context).colorScheme.surface.withBrightness(1.35),
               foregroundColor: Theme.of(context).colorScheme.onSurface,
               showProgressBar: false,
             );
@@ -125,9 +129,11 @@ class _AboutScreenState extends State<AboutScreen> {
     }
 
     const String title = kDebugMode ? 'Debug Machine' : 'Prometheus mSLA';
-    const String serialNumber = kDebugMode ? 'S/N: DBG-0001-001' : 'No S/N Available';
+    const String serialNumber =
+        kDebugMode ? 'S/N: DBG-0001-001' : 'No S/N Available';
     const String apiVersion = kDebugMode ? 'Odyssey: Simulated' : 'Odyssey: ?';
-    const String boardType = kDebugMode ? 'Hardware: Debugger' : 'Hardware: Apollo 3.5.2';
+    const String boardType =
+        kDebugMode ? 'Hardware: Debugger' : 'Hardware: Apollo 3.5.2';
 
     return Scaffold(
       body: Stack(
@@ -143,7 +149,10 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Text(
                       title,
                       key: textKey1,
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: _standardColor),
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: _standardColor),
                     ),
                   ),
                 ),
@@ -170,18 +179,21 @@ class _AboutScreenState extends State<AboutScreen> {
                   child: FittedBox(
                     child: FutureBuilder<String>(
                       future: getVersionNumber(),
-                      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
                         if (snapshot.hasData) {
                           return Text(
                             'Orion: ${snapshot.data}',
                             key: textKey3,
-                            style: TextStyle(fontSize: 20, color: _standardColor),
+                            style:
+                                TextStyle(fontSize: 20, color: _standardColor),
                           );
                         } else {
                           return Text(
                             'Orion: N/A',
                             key: textKey3,
-                            style: TextStyle(fontSize: 20, color: _standardColor),
+                            style:
+                                TextStyle(fontSize: 20, color: _standardColor),
                           );
                         }
                       },
@@ -233,8 +245,9 @@ class _AboutScreenState extends State<AboutScreen> {
                       version: QrVersions.auto,
                       size: 220,
                       eyeStyle: QrEyeStyle(color: _standardColor),
-                      dataModuleStyle:
-                          QrDataModuleStyle(color: _standardColor, dataModuleShape: QrDataModuleShape.circle),
+                      dataModuleStyle: QrDataModuleStyle(
+                          color: _standardColor,
+                          dataModuleShape: QrDataModuleShape.circle),
                     ),
                   ],
                 ),

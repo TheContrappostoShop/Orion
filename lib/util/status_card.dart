@@ -1,6 +1,6 @@
 /*
 * Orion - Status Card
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,8 @@ class StatusCardState extends State<StatusCard> {
     // When paused, show current print progress.
     // When canceled, show a full circle.
     final circleProgress =
-        (widget.isPausing && widget.status['paused'] != true) || (widget.isCanceling && widget.status['layer'] != null)
+        (widget.isPausing && widget.status['paused'] != true) ||
+                (widget.isCanceling && widget.status['layer'] != null)
             ? null
             : widget.progress == 0.0
                 ? 1.0
@@ -105,7 +106,8 @@ class StatusCardState extends State<StatusCard> {
                       child: CircularProgressIndicator(
                         value: circleProgress,
                         strokeWidth: 6,
-                        valueColor: AlwaysStoppedAnimation<Color>(widget.statusColor),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(widget.statusColor),
                         backgroundColor: widget.statusColor.withOpacity(0.5),
                       ),
                     ),
