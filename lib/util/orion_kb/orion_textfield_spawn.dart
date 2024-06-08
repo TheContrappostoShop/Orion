@@ -27,7 +27,7 @@ class SpawnOrionTextField extends StatefulWidget {
   final bool isHidden;
   final bool noShove;
   final Function(String) onChanged;
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
 
   const SpawnOrionTextField({
     super.key,
@@ -36,7 +36,7 @@ class SpawnOrionTextField extends StatefulWidget {
     this.isHidden = false,
     this.noShove = false,
     this.onChanged = _defaultOnChanged,
-    required this.scrollController,
+    this.scrollController,
   });
 
   // Do nothing
