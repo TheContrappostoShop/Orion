@@ -25,11 +25,22 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    Size homeBtnSize = const Size(220, 130);
+    Size homeBtnSize = const Size(double.infinity, double.infinity);
+    double iconSize =
+        MediaQuery.of(context).size.width * 0.1; // 10% of screen width
+    double textSize =
+        MediaQuery.of(context).size.width * 0.05; // 5% of screen width
 
     final theme = Theme.of(context).copyWith(
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
+          shape: MaterialStateProperty.resolveWith<OutlinedBorder?>(
+            (Set<MaterialState> states) {
+              return RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              );
+            },
+          ),
           minimumSize: MaterialStateProperty.resolveWith<Size?>(
             (Set<MaterialState> states) {
               return homeBtnSize;
@@ -65,96 +76,73 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            if (MediaQuery.of(context).orientation == Orientation.landscape) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ElevatedButton(
-                    style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/status'),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.info_outline, size: 48),
-                        Text('Status', style: TextStyle(fontSize: 24)),
-                      ],
-                    ),
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const SizedBox(height: 5),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: theme.elevatedButtonTheme.style,
+                          onPressed: () => context.go('/gridfiles'),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.print_outlined, size: 52),
+                              Text('Print', style: TextStyle(fontSize: 28)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                    ],
                   ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/gridfiles'),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.folder_open_outlined, size: 48),
-                        Text('Print Files', style: TextStyle(fontSize: 24)),
-                      ],
-                    ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: theme.elevatedButtonTheme.style,
+                          onPressed: () => context.go('/tools'),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.handyman_outlined, size: 52),
+                              Text('Tools', style: TextStyle(fontSize: 28)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: theme.elevatedButtonTheme.style,
+                          onPressed: () => context.go('/settings'),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.settings_outlined, size: 52),
+                              Text('Settings', style: TextStyle(fontSize: 28)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                    ],
                   ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/settings'),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.settings_outlined, size: 48),
-                        Text('Settings', style: TextStyle(fontSize: 24)),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            } else {
-              // Vertical layout
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ElevatedButton(
-                    style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/status'),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.info_outline, size: 48),
-                        Text('Status', style: TextStyle(fontSize: 24)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/gridfiles'),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.folder_open_outlined, size: 48),
-                        Text('Print Files', style: TextStyle(fontSize: 24)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: theme.elevatedButtonTheme.style,
-                    onPressed: () => context.go('/settings'),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.settings_outlined, size: 48),
-                        Text('Settings', style: TextStyle(fontSize: 24)),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }
+                ),
+                const SizedBox(height: 20),
+              ],
+            );
           },
         ),
       ),
