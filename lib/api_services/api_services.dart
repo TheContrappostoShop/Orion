@@ -20,13 +20,25 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:orion/util/orion_config.dart';
 
 class ApiService {
   static final _logger = Logger('ApiService');
-  // For Debugging Purposes: TheContrappostoShop Internal Debug API URL (Simulated Odyssey)
-  // During production, this will be the actual Odyssey API URL (currently assuming to localhost)
-  static const String apiUrl =
-      kDebugMode ? "https://dev.plyktra.de" : 'http://127.0.0.1:12357';
+
+  late String apiUrl;
+  late String customUrl;
+  late bool useCustomUrl;
+
+  ApiService() {
+    try {
+      OrionConfig config = OrionConfig();
+      customUrl = config.getString('customUrl', category: 'advanced');
+      useCustomUrl = config.getFlag('useCustomUrl', category: 'advanced');
+      apiUrl = useCustomUrl ? customUrl : 'http://localhost:12357';
+    } catch (e) {
+      throw Exception('Failed to load orion.cfg: $e');
+    }
+  }
 
   // Method for creating a Uri object based on http or https protocol
   static Uri dynUri(
@@ -49,7 +61,7 @@ class ApiService {
   /// GET METHODS TO ODYSSEY
   ///
 
-  static Future<http.Response> odysseyGet(
+  Future<http.Response> odysseyGet(
       String endpoint, Map<String, dynamic> queryParams) async {
     var uri = dynUri(apiUrl, endpoint, queryParams);
     _logger.fine('Odyssey GET $uri');
@@ -63,7 +75,7 @@ class ApiService {
     }
   }
 
-  static Future<http.Response> odysseyPost(
+  Future<http.Response> odysseyPost(
       String endpoint, Map<String, dynamic> queryParams) async {
     var uri = dynUri(apiUrl, endpoint, queryParams);
     _logger.fine('Odyssey POST $uri');
@@ -77,7 +89,7 @@ class ApiService {
     }
   }
 
-  static Future<http.Response> odysseyDelete(
+  Future<http.Response> odysseyDelete(
       String endpoint, Map<String, dynamic> queryParams) async {
     var uri = dynUri(apiUrl, endpoint, queryParams);
     _logger.fine('Odyssey DELETE $uri');
@@ -92,14 +104,14 @@ class ApiService {
   }
 
   // Get current status of the printer
-  static Future<Map<String, dynamic>> getStatus() async {
+  Future<Map<String, dynamic>> getStatus() async {
     _logger.info("getStatus");
     final response = await odysseyGet('/status', {});
     return json.decode(response.body);
   }
 
   // Get current status of the printer
-  static Future<Map<String, dynamic>> getConfig() async {
+  Future<Map<String, dynamic>> getConfig() async {
     _logger.info("getConfig");
     final response = await odysseyGet('/config', {});
     return json.decode(response.body);
@@ -107,7 +119,7 @@ class ApiService {
 
   // Get list of files and directories in a specific location with pagination
   // Takes 3 parameters : location [string], pageSize [int] and pageIndex [int]
-  static Future<Map<String, dynamic>> listItems(
+  Future<Map<String, dynamic>> listItems(
       String location, int pageSize, int pageIndex, String subdirectory) async {
     _logger.info(
         "listItems location=$location pageSize=$pageSize pageIndex=$pageIndex subdirectory=$subdirectory");
@@ -122,9 +134,28 @@ class ApiService {
     return json.decode(response.body);
   }
 
+  // Method to check if USB is available
+  Future<bool> usbAvailable() async {
+    try {
+      await listItems('Local', 1, 0, '');
+    } catch (e) {
+      _logger.severe('Failed to list items on Internal: $e');
+      return false;
+    }
+
+    try {
+      // Try to list items on Usb
+      await listItems('Usb', 1, 0, '');
+      return true; // If successful, return true
+    } catch (e) {
+      _logger.severe('Failed to list items on Usb: $e');
+      return false; // If unsuccessful, return false
+    }
+  }
+
   // Get file metadata
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<Map<String, dynamic>> getFileMetadata(
+  Future<Map<String, dynamic>> getFileMetadata(
       String location, String filePath) async {
     _logger.info("getFileMetadata location=$location filePath=$filePath");
     final queryParams = {"location": location, "file_path": filePath};
@@ -135,8 +166,7 @@ class ApiService {
 
   // Get file thumbnail
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<Uint8List> getFileThumbnail(
-      String location, String filePath) async {
+  Future<Uint8List> getFileThumbnail(String location, String filePath) async {
     _logger.info("getFileThumbnail location=$location filePath=$filePath");
     final queryParams = {"location": location, "file_path": filePath};
 
@@ -150,7 +180,7 @@ class ApiService {
 
   // Start printing a given file
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<void> startPrint(String location, String filePath) async {
+  Future<void> startPrint(String location, String filePath) async {
     _logger.info("startPrint location=$location filePath=$filePath");
 
     final queryParams = {
@@ -162,21 +192,21 @@ class ApiService {
   }
 
   // Cancel the print
-  static Future<void> cancelPrint() async {
+  Future<void> cancelPrint() async {
     _logger.info("cancelPrint");
 
     await odysseyPost('/print/cancel', {});
   }
 
   // Pause the print
-  static Future<void> pausePrint() async {
+  Future<void> pausePrint() async {
     _logger.info("pausePrint");
 
     await odysseyPost('/print/pause', {});
   }
 
   // Resume the print
-  static Future<void> resumePrint() async {
+  Future<void> resumePrint() async {
     _logger.info("resumePrint");
 
     await odysseyPost('/print/resume', {});
@@ -184,7 +214,7 @@ class ApiService {
 
   // Move the Z axis
   // Takes 1 param height [double] which is the desired position of the Z axis
-  static Future<Map<String, dynamic>> move(double height) async {
+  Future<Map<String, dynamic>> move(double height) async {
     _logger.info("move height=$height");
 
     final response = await odysseyPost('/manual', {'z': height});
@@ -193,7 +223,7 @@ class ApiService {
 
   // Toggle cure
   // Takes 1 param cure [bool] which define if we start or stop the curing
-  static Future<Map<String, dynamic>> manualCure(bool cure) async {
+  Future<Map<String, dynamic>> manualCure(bool cure) async {
     _logger.info("manualCure cure=$cure");
 
     final response = await odysseyPost('/manual', {'cure': cure});
@@ -201,7 +231,7 @@ class ApiService {
   }
 
   // Home Z axis
-  static Future<Map<String, dynamic>> manualHome() async {
+  Future<Map<String, dynamic>> manualHome() async {
     _logger.info("manualHome");
 
     final response = await odysseyPost('/manual/home', {});
@@ -210,7 +240,7 @@ class ApiService {
 
   // Issue hardware-layer command
   // Takes 1 param command [String] which holds the command to run
-  static Future<Map<String, dynamic>> manualCommand(String command) async {
+  Future<Map<String, dynamic>> manualCommand(String command) async {
     _logger.info("manualCommand");
 
     final response =
@@ -224,7 +254,7 @@ class ApiService {
 
   // Delete a file
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<Map<String, dynamic>> deleteFile(
+  Future<Map<String, dynamic>> deleteFile(
       String location, String filePath) async {
     _logger.info("deleteFile location=$location fileName=$filePath");
     final queryParams = {
