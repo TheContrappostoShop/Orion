@@ -30,7 +30,11 @@ class DetailScreen extends StatefulWidget {
   final String fileSubdirectory;
   final String fileLocation;
 
-  const DetailScreen({super.key, required this.fileName, required this.fileSubdirectory, required this.fileLocation});
+  const DetailScreen(
+      {super.key,
+      required this.fileName,
+      required this.fileSubdirectory,
+      required this.fileLocation});
 
   @override
   DetailScreenState createState() => DetailScreenState();
@@ -42,6 +46,8 @@ class DetailScreen extends StatefulWidget {
 
 class DetailScreenState extends State<DetailScreen> {
   final _logger = Logger('DetailScreen');
+  final ApiService _api = ApiService();
+
   double leftPadding = 0;
   double rightPadding = 0;
 
@@ -78,28 +84,41 @@ class DetailScreenState extends State<DetailScreen> {
 
   Future<void> _initFileDetails() async {
     try {
-      final fileDetails = await ApiService.getFileMetadata(
+      final fileDetails = await _api.getFileMetadata(
         widget.fileLocation,
-        [(DetailScreen._isDefaultDir(widget.fileSubdirectory) ? '' : widget.fileSubdirectory), widget.fileName]
-            .join(DetailScreen._isDefaultDir(widget.fileSubdirectory) ? '' : '/'),
+        [
+          (DetailScreen._isDefaultDir(widget.fileSubdirectory)
+              ? ''
+              : widget.fileSubdirectory),
+          widget.fileName
+        ].join(DetailScreen._isDefaultDir(widget.fileSubdirectory) ? '' : '/'),
       );
 
       String tempFileName = fileDetails['file_data']['name'] ?? 'Placeholder';
       String tempFileSize =
-          (fileDetails['file_data']['file_size'] / 1024 / 1024).toStringAsFixed(2) + ' MB'; // convert to MB
+          (fileDetails['file_data']['file_size'] / 1024 / 1024)
+                  .toStringAsFixed(2) +
+              ' MB'; // convert to MB
       String tempFileExtension = path.extension(tempFileName);
-      String tempLayerHeight = '${fileDetails['layer_height'].toStringAsFixed(3)} mm';
-      String tempModifiedDate = DateTime.fromMillisecondsSinceEpoch(fileDetails['file_data']['last_modified'] * 1000)
+      String tempLayerHeight =
+          '${fileDetails['layer_height'].toStringAsFixed(3)} mm';
+      String tempModifiedDate = DateTime.fromMillisecondsSinceEpoch(
+              fileDetails['file_data']['last_modified'] * 1000)
           .toString(); // convert to milliseconds
-      String tempMaterialName = 'N/A'; // this information is not provided by the API
+      String tempMaterialName =
+          'N/A'; // this information is not provided by the API
       String tempThumbnailPath = await ThumbnailUtil.extractThumbnail(
-          widget.fileLocation, widget.fileSubdirectory, widget.fileName); // fetch thumbnail from API
+          widget.fileLocation,
+          widget.fileSubdirectory,
+          widget.fileName); // fetch thumbnail from API
       double tempPrintTimeInSeconds = fileDetails['print_time'];
-      Duration printDuration = Duration(seconds: tempPrintTimeInSeconds.toInt());
+      Duration printDuration =
+          Duration(seconds: tempPrintTimeInSeconds.toInt());
       String tempPrintTime =
           '${printDuration.inHours.remainder(24).toString().padLeft(2, '0')}:${printDuration.inMinutes.remainder(60).toString().padLeft(2, '0')}:${printDuration.inSeconds.remainder(60).toString().padLeft(2, '0')}';
       double tempMaterialVolumeInMilliliters = fileDetails['used_material'];
-      String tempMaterialVolume = '${tempMaterialVolumeInMilliliters.toStringAsFixed(2)} mL';
+      String tempMaterialVolume =
+          '${tempMaterialVolumeInMilliliters.toStringAsFixed(2)} mL';
 
       setState(() {
         fileName = tempFileName;
@@ -138,7 +157,14 @@ class DetailScreenState extends State<DetailScreen> {
           );
         } else {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            final keys = [textKey1, textKey2, textKey3, textKey4, textKey5, textKey6];
+            final keys = [
+              textKey1,
+              textKey2,
+              textKey3,
+              textKey4,
+              textKey5,
+              textKey6
+            ];
             double maxWidth = 0;
 
             for (var key in keys) {
@@ -156,7 +182,8 @@ class DetailScreenState extends State<DetailScreen> {
             rightPadding = leftPadding;
 
             setState(() {
-              opacity = 1.0; // Set opacity to 1 after sizes have been calculated
+              opacity =
+                  1.0; // Set opacity to 1 after sizes have been calculated
             });
           });
 
@@ -176,9 +203,13 @@ class DetailScreenState extends State<DetailScreen> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
-                              padding: EdgeInsets.only(left: leftPadding <= 0 ? leftPadding : leftPadding - 10),
+                              padding: EdgeInsets.only(
+                                  left: leftPadding <= 0
+                                      ? leftPadding
+                                      : leftPadding - 10),
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 300),
+                                constraints:
+                                    const BoxConstraints(maxWidth: 300),
                                 child: Card.outlined(
                                   elevation: 1,
                                   child: Padding(
@@ -189,21 +220,31 @@ class DetailScreenState extends State<DetailScreen> {
                                       TextSpan(
                                         children: [
                                           TextSpan(
-                                            text: fileName.length >= 12 ? '${fileName.substring(0, 12)}...' : fileName,
+                                            text: fileName.length >= 12
+                                                ? '${fileName.substring(0, 12)}...'
+                                                : fileName,
                                             style: TextStyle(
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.primary),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
                                           ),
                                           TextSpan(
                                             text: ' - ',
-                                            style:
-                                                TextStyle(fontSize: 24, color: Theme.of(context).colorScheme.primary),
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
                                           ),
                                           TextSpan(
                                             text: fileSize,
-                                            style:
-                                                TextStyle(fontSize: 24, color: Theme.of(context).colorScheme.primary),
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
                                           ),
                                         ],
                                       ),
@@ -284,7 +325,8 @@ class DetailScreenState extends State<DetailScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(4.5),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(7.75),
+                                          borderRadius:
+                                              BorderRadius.circular(7.75),
                                           child: Image.file(
                                             File(thumbnailPath),
                                             width: 220,
@@ -297,9 +339,11 @@ class DetailScreenState extends State<DetailScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(4.5),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(7.75),
+                                          borderRadius:
+                                              BorderRadius.circular(7.75),
                                           child: const Image(
-                                            image: AssetImage('assets/images/placeholder.png'),
+                                            image: AssetImage(
+                                                'assets/images/placeholder.png'),
                                             width: 220,
                                             height: 220,
                                           ),
@@ -344,7 +388,8 @@ class DetailScreenState extends State<DetailScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           String subdirectory = widget.fileSubdirectory;
-                          ApiService.startPrint(widget.fileLocation, path.join(subdirectory, widget.fileName));
+                          _api.startPrint(widget.fileLocation,
+                              path.join(subdirectory, widget.fileName));
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -356,7 +401,8 @@ class DetailScreenState extends State<DetailScreen> {
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size(
                             0, // Subtract the padding on both sides
-                            Theme.of(context).appBarTheme.toolbarHeight as double,
+                            Theme.of(context).appBarTheme.toolbarHeight
+                                as double,
                           ),
                         ),
                         child: const Text(

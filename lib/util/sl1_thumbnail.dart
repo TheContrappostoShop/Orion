@@ -23,11 +23,12 @@ import 'package:path_provider/path_provider.dart';
 
 class ThumbnailUtil {
   static final _logger = Logger('ThumbnailUtil');
+  static final ApiService _api = ApiService();
 
   static Future<String> extractThumbnail(String location, String subdirectory, String filename) async {
     try {
       String finalLocation = _isDefaultDir(subdirectory) ? filename : [subdirectory, filename].join('/');
-      final bytes = await ApiService.getFileThumbnail(location, finalLocation);
+      final bytes = await _api.getFileThumbnail(location, finalLocation);
 
       final tempDir = await getTemporaryDirectory();
       final orionTmpDir = Directory('${tempDir.path}/oriontmp/$finalLocation');

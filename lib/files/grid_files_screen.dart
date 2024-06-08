@@ -31,6 +31,7 @@ import 'package:orion/files/details_screen.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_directory.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_file.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
+import 'package:orion/util/orion_config.dart';
 import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:path/path.dart' as path;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -44,7 +45,9 @@ class GridFilesScreen extends StatefulWidget {
 }
 
 class GridFilesScreenState extends State<GridFilesScreen> {
-  final _logger = Logger('GridFilesScreen');
+  final _logger = Logger('GridFiles');
+  final ApiService _api = ApiService();
+
   late String _directory = '';
   late String _subdirectory = '';
   late String _defaultDirectory = '';
@@ -52,12 +55,14 @@ class GridFilesScreenState extends State<GridFilesScreen> {
 
   late List<OrionApiItem> _items = [];
   late Future<List<OrionApiItem>> _itemsFuture = Future.value([]);
-  late Completer<List<OrionApiItem>> _itemsCompleter = Completer<List<OrionApiItem>>();
+  late Completer<List<OrionApiItem>> _itemsCompleter =
+      Completer<List<OrionApiItem>>();
 
   String location = '';
   //bool _sortByAlpha = true;
   //bool _sortAscending = true;
   bool _isUSB = false;
+  bool _usbAvailable = false;
   bool _apiErrorState = false;
   bool _isLoading = false;
   bool _isNavigating = false;
@@ -65,6 +70,8 @@ class GridFilesScreenState extends State<GridFilesScreen> {
   @override
   void initState() {
     super.initState();
+    final OrionConfig config = OrionConfig();
+    _isUSB = config.getFlag('useUsbByDefault');
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_defaultDirectory.isEmpty) {
         final items = await _getItems('<init>', true);
@@ -86,7 +93,12 @@ class GridFilesScreenState extends State<GridFilesScreen> {
     //_toggleSortOrder();
   }
 
-  Future<List<OrionApiItem>> _getItems(String directory, [bool init = false]) async {
+  Future<List<OrionApiItem>> _getItems(String directory,
+      [bool init = false]) async {
+    _logger.warning(
+        await _api.usbAvailable() ? 'USB Available' : 'USB Not Available');
+    _usbAvailable = await _api.usbAvailable();
+    if (!_usbAvailable) _isUSB = false;
     try {
       setState(() {
         _isLoading = true;
@@ -100,7 +112,8 @@ class GridFilesScreenState extends State<GridFilesScreen> {
 
       location = _isUSB ? 'Usb' : 'Local';
 
-      final itemResponse = await ApiService.listItems(location, 100, 0, _subdirectory);
+      final itemResponse =
+          await _api.listItems(location, 100, 0, _subdirectory);
 
       final List<OrionApiFile> files = (itemResponse['files'] as List)
           .where((item) => item != null)
@@ -117,13 +130,13 @@ class GridFilesScreenState extends State<GridFilesScreen> {
         _parentPath = items.first.parentPath;
       }
 
-      if (kDebugMode) {
+      /*if (kDebugMode) {
         print('---------------------------------------');
         print("Device: ${_isUSB ? 'USB' : 'Internal'}");
         print("Parent Path: $_parentPath");
         print("Subdirectory: $_subdirectory");
         print("Fetched: ${files.length} files and ${dirs.length} directories.");
-      }
+      }*/
 
       setState(() {
         _isLoading = false;
@@ -159,7 +172,10 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Close'),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(fontSize: 20),
+                    ),
                   ),
                 ],
               );
@@ -267,7 +283,8 @@ class GridFilesScreenState extends State<GridFilesScreen> {
           ? const Center(child: CircularProgressIndicator())
           : FutureBuilder<List<OrionApiItem>>(
               future: _itemsCompleter.future,
-              builder: (BuildContext context, AsyncSnapshot<List<OrionApiItem>> snapshot) {
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<OrionApiItem>> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting ||
                     snapshot.connectionState == ConnectionState.none) {
                   return const Center(
@@ -280,14 +297,18 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                 } else {
                   _items = snapshot.data!;
                   return Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                    padding:
+                        const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                     child: GridView.builder(
                       controller: _scrollController,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           childAspectRatio: 1.03,
                           mainAxisSpacing: 5,
                           crossAxisSpacing: 5,
-                          crossAxisCount: MediaQuery.of(context).orientation == Orientation.landscape ? 4 : 2),
+                          crossAxisCount: MediaQuery.of(context).orientation ==
+                                  Orientation.landscape
+                              ? 4
+                              : 2),
                       itemCount: _items.length + 1,
                       itemBuilder: (BuildContext context, int index) {
                         if (index == 0) {
@@ -296,44 +317,54 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                             elevation: 1,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(10),
-                              onTap: _directory == _defaultDirectory
-                                  ? () async {
-                                      _isUSB = !_isUSB;
-                                      _itemsFuture = _getItems(_directory);
-                                      _itemsCompleter = Completer<List<OrionApiItem>>();
-                                      final items = await _itemsFuture;
-                                      _itemsCompleter.complete(items);
-                                      setState(() {
-                                        _items = items;
-                                      });
-                                    }
-                                  : () async {
-                                      try {
-                                        _scrollController.jumpTo(0);
-                                        final parentDirectory = path.dirname(_directory);
-                                        _directory = parentDirectory;
-                                        setState(() {
-                                          _isNavigating = true;
-                                        });
-                                        _itemsFuture = _getItems(parentDirectory);
-                                        _itemsCompleter = Completer<List<OrionApiItem>>();
-                                        final items = await _itemsFuture;
-                                        _itemsCompleter.complete(items);
-                                        setState(() {
-                                          _items = items;
-                                          _isNavigating = false;
-                                        });
-                                      } catch (e) {
-                                        _logger.severe('Failed to navigate to parent directory', e);
-                                        if (e is FileSystemException) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                              content: Text('Operation not permitted'),
-                                            ),
-                                          );
+                              onTap: !_usbAvailable && !_isUSB
+                                  ? null
+                                  : _directory == _defaultDirectory
+                                      ? () async {
+                                          _isUSB = !_isUSB;
+                                          _itemsFuture = _getItems(_directory);
+                                          _itemsCompleter =
+                                              Completer<List<OrionApiItem>>();
+                                          final items = await _itemsFuture;
+                                          _itemsCompleter.complete(items);
+                                          setState(() {
+                                            _items = items;
+                                          });
                                         }
-                                      }
-                                    },
+                                      : () async {
+                                          try {
+                                            _scrollController.jumpTo(0);
+                                            final parentDirectory =
+                                                path.dirname(_directory);
+                                            _directory = parentDirectory;
+                                            setState(() {
+                                              _isNavigating = true;
+                                            });
+                                            _itemsFuture =
+                                                _getItems(parentDirectory);
+                                            _itemsCompleter =
+                                                Completer<List<OrionApiItem>>();
+                                            final items = await _itemsFuture;
+                                            _itemsCompleter.complete(items);
+                                            setState(() {
+                                              _items = items;
+                                              _isNavigating = false;
+                                            });
+                                          } catch (e) {
+                                            _logger.severe(
+                                                'Failed to navigate to parent directory',
+                                                e);
+                                            if (e is FileSystemException) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                      'Operation not permitted'),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
                               child: GridTile(
                                 footer: Card(
                                   color: Colors.transparent,
@@ -343,13 +374,16 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                     title: AutoSizeText(
                                       _directory == _defaultDirectory
                                           ? _isUSB == false
-                                              ? 'Switch to USB'
+                                              ? _usbAvailable
+                                                  ? 'Switch to USB'
+                                                  : 'USB unavailable'
                                               : 'Switch to Internal'
                                           : 'Parent Directory',
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
                                       minFontSize: 18,
-                                      style: const TextStyle(fontSize: 24, color: Colors.grey),
+                                      style: const TextStyle(
+                                          fontSize: 24, color: Colors.grey),
                                     ),
                                   ),
                                 ),
@@ -358,7 +392,9 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                   child: PhosphorIcon(
                                       _directory == _defaultDirectory
                                           ? _isUSB == false
-                                              ? PhosphorIcons.usb()
+                                              ? _usbAvailable
+                                                  ? PhosphorIcons.usb()
+                                                  : PhosphorIcons.xCircle()
                                               : PhosphorIcons.hardDrives()
                                           : PhosphorIcons.arrowUUpLeft(),
                                       size: 75,
@@ -385,7 +421,8 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                     _isNavigating = true;
                                   });
                                   _itemsFuture = _getItems(item.path);
-                                  _itemsCompleter = Completer<List<OrionApiItem>>();
+                                  _itemsCompleter =
+                                      Completer<List<OrionApiItem>>();
                                   final items = await _itemsFuture;
                                   _itemsCompleter.complete(items);
                                   setState(() {
@@ -407,7 +444,8 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                               },
                               // File name that hovers over the file
                               child: _isNavigating
-                                  ? const Center(child: CircularProgressIndicator())
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
                                   : GridTile(
                                       footer: Card(
                                         shape: const RoundedRectangleBorder(
@@ -417,7 +455,9 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                           ),
                                         ),
                                         color: item is OrionApiFile
-                                            ? Theme.of(context).cardColor.withOpacity(0.65)
+                                            ? Theme.of(context)
+                                                .cardColor
+                                                .withOpacity(0.65)
                                             : Colors.transparent,
                                         elevation: item is OrionApiFile ? 2 : 0,
                                         child: GridTileBar(
@@ -428,38 +468,56 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                             minFontSize: 20,
                                             style: TextStyle(
                                               fontSize: 24,
-                                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge!
+                                                  .color,
                                             ),
                                           ),
                                         ),
                                       ),
                                       child: item is OrionApiDirectory
                                           ? IconTheme(
-                                              data: const IconThemeData(color: Colors.grey),
+                                              data: const IconThemeData(
+                                                  color: Colors.grey),
                                               child: Padding(
-                                                padding: const EdgeInsets.only(bottom: 15),
-                                                child: PhosphorIcon(PhosphorIcons.folder(), size: 75),
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 15),
+                                                child: PhosphorIcon(
+                                                    PhosphorIcons.folder(),
+                                                    size: 75),
                                               ),
                                             )
                                           : Padding(
-                                              padding: const EdgeInsets.all(4.5),
+                                              padding:
+                                                  const EdgeInsets.all(4.5),
                                               child: FutureBuilder<String>(
-                                                future: ThumbnailUtil.extractThumbnail(
+                                                future: ThumbnailUtil
+                                                    .extractThumbnail(
                                                   location,
                                                   _subdirectory,
                                                   fileName,
                                                 ),
-                                                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                                builder: (BuildContext context,
+                                                    AsyncSnapshot<String>
+                                                        snapshot) {
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
                                                     return const Padding(
-                                                        padding: EdgeInsets.all(60),
-                                                        child: CircularProgressIndicator());
-                                                  } else if (snapshot.error != null) {
-                                                    return const Icon(Icons.error);
+                                                        padding:
+                                                            EdgeInsets.all(60),
+                                                        child:
+                                                            CircularProgressIndicator());
+                                                  } else if (snapshot.error !=
+                                                      null) {
+                                                    return const Icon(
+                                                        Icons.error);
                                                   } else {
                                                     return ClipRRect(
-                                                      borderRadius: BorderRadius.circular(
-                                                          7.75), // Adjust the border radius as needed
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              7.75), // Adjust the border radius as needed
                                                       child: Image.file(
                                                         File(snapshot.data!),
                                                         fit: BoxFit
