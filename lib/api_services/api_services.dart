@@ -218,7 +218,7 @@ class ApiService {
     _logger.info("move height=$height");
 
     final response = await odysseyPost('/manual', {'z': height});
-    return json.decode(response.body);
+    return json.decode(response.body == '' ? '{}' : response.body);
   }
 
   // Toggle cure
@@ -227,7 +227,7 @@ class ApiService {
     _logger.info("manualCure cure=$cure");
 
     final response = await odysseyPost('/manual', {'cure': cure});
-    return json.decode(response.body);
+    return json.decode(response.body == '' ? '{}' : response.body);
   }
 
   // Home Z axis
@@ -235,7 +235,7 @@ class ApiService {
     _logger.info("manualHome");
 
     final response = await odysseyPost('/manual/home', {});
-    return json.decode(response.body);
+    return json.decode(response.body == '' ? '{}' : response.body);
   }
 
   // Issue hardware-layer command
@@ -245,7 +245,7 @@ class ApiService {
 
     final response =
         await odysseyPost('/manual/hardware_command', {'command': command});
-    return json.decode(response.body);
+    return json.decode(response.body == '' ? '{}' : response.body);
   }
 
   ///
