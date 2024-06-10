@@ -17,19 +17,29 @@
 */
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:orion/api_services/api_services.dart';
+import 'package:orion/main.dart';
+import 'package:orion/util/orion_config.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  HomeScreenState createState() => HomeScreenState();
+}
+
+class HomeScreenState extends State<HomeScreen> {
+  final ApiService _api = ApiService();
+  final OrionConfig _config = OrionConfig();
+  bool isRemote = false;
+
   @override
   Widget build(BuildContext context) {
     Size homeBtnSize = const Size(double.infinity, double.infinity);
-    double iconSize =
-        MediaQuery.of(context).size.width * 0.1; // 10% of screen width
-    double textSize =
-        MediaQuery.of(context).size.width * 0.05; // 5% of screen width
 
     final theme = Theme.of(context).copyWith(
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -52,26 +62,114 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Stack(
-          alignment: Alignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                      left: MediaQuery.of(context).size.width * 0.02),
-                  child: const LiveClock(),
-                ),
-              ],
-            ),
-            const Text(
-              'Prometheus mSLA',
-              textAlign: TextAlign.center,
-            ),
-          ],
+        title: const Text(
+          'Prometheus mSLA',
+          textAlign: TextAlign.center,
         ),
         centerTitle: true,
+        leadingWidth: 120,
+        leading: const Center(
+          child: Padding(
+            padding: EdgeInsets.only(left: 15),
+            child: LiveClock(),
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 25),
+            child: InkWell(
+              onTap: () {
+                isRemote =
+                    _config.getFlag('useCustomUrl', category: 'advanced');
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Dialog(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width *
+                            0.5, // 80% of screen width
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            const SizedBox(height: 10),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Power Options ${isRemote ? '(Remote)' : '(Local)'}',
+                                style: const TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 20, right: 20),
+                              child: SizedBox(
+                                height: 65,
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    _api.manualCommand('FIRMWARE_RESTART');
+                                  },
+                                  child: const Text(
+                                    'Firmware Restart',
+                                    style: TextStyle(fontSize: 24),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                                height:
+                                    20), // Add some spacing between the buttons
+                            if (!isRemote)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 20, right: 20),
+                                child: SizedBox(
+                                  height: 65,
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Process.run('sudo', ['reboot', 'now']);
+                                    },
+                                    child: const Text(
+                                      'Reboot System',
+                                      style: TextStyle(fontSize: 24),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            if (!isRemote) const SizedBox(height: 20),
+                            if (!isRemote)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 20, right: 20),
+                                child: SizedBox(
+                                  height: 65,
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Process.run('sudo', ['shutdown', 'now']);
+                                    },
+                                    child: const Text(
+                                      'Shutdown System',
+                                      style: TextStyle(fontSize: 24),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            if (!isRemote) const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+              child: const Icon(Icons.power_settings_new_outlined, size: 38),
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: LayoutBuilder(
@@ -182,7 +280,7 @@ class LiveClockState extends State<LiveClock> {
   @override
   Widget build(BuildContext context) {
     return Text(
-      '${_dateTime.hour.toString().padLeft(2, '0')}:${_dateTime.minute.toString().padLeft(2, '0')}',
-    );
+        '${_dateTime.hour.toString().padLeft(2, '0')}:${_dateTime.minute.toString().padLeft(2, '0')}',
+        style: const TextStyle(fontSize: 28));
   }
 }
