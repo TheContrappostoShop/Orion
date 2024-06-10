@@ -66,6 +66,9 @@ class StatusScreenState extends State<StatusScreen>
     super.initState();
     _initStatusDetailsFuture = getStatus();
     newPrintNotifier = ValueNotifier<bool>(widget.newPrint);
+    if (widget.newPrint == true) {
+      isThumbnailFetched = false;
+    }
     timer = Timer.periodic(const Duration(seconds: 1),
         (Timer t) => getStatus()); // Fetch status every second
   }
