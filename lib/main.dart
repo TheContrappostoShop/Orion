@@ -29,7 +29,7 @@ import 'package:orion/settings/calibrate_screen.dart';
 import 'package:orion/settings/wifi_screen.dart';
 import 'package:orion/settings/about_screen.dart';
 import 'package:orion/themes/themes.dart';
-import 'package:orion/util/error_handler.dart';
+import 'package:orion/util/error_handling/error_handler.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
