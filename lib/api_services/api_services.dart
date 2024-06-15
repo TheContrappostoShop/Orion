@@ -217,7 +217,7 @@ class ApiService {
   Future<Map<String, dynamic>> move(double height) async {
     _logger.info("move height=$height");
 
-    final response = await odysseyPost('/manual', {'z': height});
+    final response = await odysseyPost('/manual', {'z': height.toString()});
     return json.decode(response.body == '' ? '{}' : response.body);
   }
 
@@ -226,7 +226,7 @@ class ApiService {
   Future<Map<String, dynamic>> manualCure(bool cure) async {
     _logger.info("manualCure cure=$cure");
 
-    final response = await odysseyPost('/manual', {'cure': cure});
+    final response = await odysseyPost('/manual', {'cure': cure.toString()});
     return json.decode(response.body == '' ? '{}' : response.body);
   }
 
@@ -246,6 +246,18 @@ class ApiService {
     final response =
         await odysseyPost('/manual/hardware_command', {'command': command});
     return json.decode(response.body == '' ? '{}' : response.body);
+  }
+
+  // Display a test pattern on the screen
+  // Takes 1 param test [String] which holds the test to display
+  Future<void> displayTest(String test) async {
+    _logger.info("displayTest test=$test");
+
+    final queryParams = {
+      'test': test,
+    };
+
+    await odysseyPost('/manual/display_test', queryParams);
   }
 
   ///
