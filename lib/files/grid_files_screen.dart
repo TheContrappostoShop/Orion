@@ -23,11 +23,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/files/details_screen.dart';
+import 'package:orion/util/error_handling/error_dialog.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_directory.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_file.dart';
 import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
@@ -51,7 +51,6 @@ class GridFilesScreenState extends State<GridFilesScreen> {
   late String _directory = '';
   late String _subdirectory = '';
   late String _defaultDirectory = '';
-  late String _parentPath = '';
 
   late List<OrionApiItem> _items = [];
   late Future<List<OrionApiItem>> _itemsFuture = Future.value([]);
@@ -126,9 +125,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
           .toList();
 
       final List<OrionApiItem> items = [...dirs, ...files];
-      if (items.isNotEmpty) {
-        _parentPath = items.first.parentPath;
-      }
+      if (items.isNotEmpty) {}
 
       /*if (kDebugMode) {
         print('---------------------------------------');
@@ -148,39 +145,8 @@ class GridFilesScreenState extends State<GridFilesScreen> {
         _isLoading = false;
       });
       _apiErrorState = true;
-      _showErrorDialog();
+      showErrorDialog(context, 'PINK-CARROT');
       return [];
-    }
-  }
-
-  void _showErrorDialog() {
-    if (_apiErrorState) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Odyssey API Error'),
-                content: const Text(
-                    'An Error has occurred while fetching files!\n'
-                    'Please ensure that Odyssey is running and accessible.\n\n'
-                    'If the issue persists, please contact support.\n'
-                    'Error Code: PINK-CARROT',
-                    style: TextStyle(color: Colors.grey)),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Close',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ],
-              );
-            });
-      });
     }
   }
 
@@ -212,8 +178,6 @@ class GridFilesScreenState extends State<GridFilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //_showErrorDialog();
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
