@@ -16,30 +16,29 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
-import 'package:orion/api_services/api_services.dart';
+import 'package:orion/tools/exposure_screen.dart';
+import 'package:orion/tools/move_z_screen.dart';
 
 class ToolsScreen extends StatefulWidget {
   const ToolsScreen({super.key});
 
   @override
-  _ToolsScreenState createState() => _ToolsScreenState();
+  ToolsScreenState createState() => ToolsScreenState();
 }
 
-class _ToolsScreenState extends State<ToolsScreen> {
-  final Logger _logger = Logger('ToolsScreen');
-  final ApiService _api = ApiService();
+class ToolsScreenState extends State<ToolsScreen> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 
   @override
@@ -48,15 +47,31 @@ class _ToolsScreenState extends State<ToolsScreen> {
       appBar: AppBar(
         title: const Text('Tools'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[
-            Text(
-              'Tools Screen',
-            ),
-          ],
-        ),
+      body: _selectedIndex == 0
+          ? const MoveZScreen()
+          : _selectedIndex == 1
+              ? const ExposureScreen()
+              : const MoveZScreen(),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.height),
+            label: 'Move Z',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.lightbulb),
+            label: 'Exposure',
+          ),
+          /*BottomNavigationBarItem(
+            icon: Icon(Icons.check),
+            label: 'Self Test',
+          ),*/
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        onTap: _onItemTapped,
+        unselectedItemColor: Theme.of(context).colorScheme.secondary,
       ),
     );
   }
