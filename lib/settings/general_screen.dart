@@ -64,8 +64,8 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
   }
 
   bool shouldDestruct() {
-    final _rand = Random();
-    if (selfDestructMode && _rand.nextInt(100) < 2) {
+    final rand = Random();
+    if (selfDestructMode && rand.nextInt(100) < 2) {
       setState(() {
         selfDestructMode = false;
       });
@@ -85,7 +85,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
 
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.only(left: 5, right: 5, top: 5),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 5),
         child: ListView(
           controller: _scrollController,
           children: <Widget>[
