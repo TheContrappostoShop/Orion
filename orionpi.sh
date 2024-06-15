@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Orion - An open-source user interface for the Odyssey 3d-printing engine.
-# Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+# Copyright (C) 2024 TheContrappostoShop
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
