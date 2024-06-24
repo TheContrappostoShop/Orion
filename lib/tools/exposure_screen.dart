@@ -46,7 +46,7 @@ class ExposureScreenState extends State<ExposureScreen> {
       _logger.info('Testing exposure for $exposureTime seconds');
       _api.displayTest(type);
       _api.manualCure(true);
-      showExposureDialog(context, exposureTime);
+      showExposureDialog(context, exposureTime, type: type);
       _exposureCompleter = Completer<void>();
       _exposureOperation = CancelableOperation.fromFuture(
         Future.any([
@@ -65,7 +65,8 @@ class ExposureScreenState extends State<ExposureScreen> {
     }
   }
 
-  void showExposureDialog(BuildContext context, int countdownTime) {
+  void showExposureDialog(BuildContext context, int countdownTime,
+      {String? type}) {
     _logger.info('Showing countdown dialog');
 
     showDialog(
@@ -98,9 +99,13 @@ class ExposureScreenState extends State<ExposureScreen> {
                       mainAxisSize: MainAxisSize
                           .min, // To make the dialog as big as its children
                       children: [
-                        const Text(
-                          'Exposing',
-                          style: TextStyle(
+                        Text(
+                          type == 'White'
+                              ? 'Cleaning'
+                              : type != null
+                                  ? 'Testing $type'
+                                  : 'Exposing',
+                          style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight
                                   .bold), // Title with larger, bold text
@@ -130,8 +135,9 @@ class ExposureScreenState extends State<ExposureScreen> {
                                 padding: const EdgeInsets.all(10.0),
                                 child: (snapshot.data! / 1000) < 999
                                     ? Text(
-                                        '${(snapshot.data! / 1000).toStringAsFixed(0)} / $countdownTime',
-                                        style: const TextStyle(fontSize: 36),
+                                        (snapshot.data! / 1000)
+                                            .toStringAsFixed(0),
+                                        style: const TextStyle(fontSize: 50),
                                       )
                                     : const Text(
                                         'Testing',
@@ -143,17 +149,22 @@ class ExposureScreenState extends State<ExposureScreen> {
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(0, 70)),
                           onPressed: () {
-                            _exposureOperation?.cancel();
-                            _exposureCompleter?.complete();
+                            try {
+                              _exposureOperation?.cancel();
+                              _exposureCompleter?.complete();
+                            } catch (e) {
+                              _logger.severe('Failed to stop exposure: $e');
+                            }
                             Navigator.of(context, rootNavigator: true)
                                 .pop(true);
                           },
-                          child: const Text(
-                            'Stop Exposure',
-                            style: TextStyle(fontSize: 20),
+                          child: const Padding(
+                            padding: EdgeInsets.all(15.0),
+                            child: Text(
+                              'Stop Exposure',
+                              style: TextStyle(fontSize: 24),
+                            ),
                           ),
                         ),
                       ],
@@ -169,15 +180,34 @@ class ExposureScreenState extends State<ExposureScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    getApiStatus();
+  }
+
+  Future<void> getApiStatus() async {
+    try {
+      Map<String, dynamic> config = await _api.getConfig();
+    } catch (e) {
+      setState(() {
+        _apiErrorState = true;
+        showErrorDialog(context, 'PINK-CARROT');
+      });
+      _logger.severe('Failed to get config: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).copyWith(
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
           shape: MaterialStateProperty.resolveWith<OutlinedBorder?>(
             (Set<MaterialState> states) {
               return RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              );
+                  borderRadius: BorderRadius.circular(15),
+                  side: const BorderSide(color: Colors.transparent));
             },
           ),
           minimumSize: MaterialStateProperty.resolveWith<Size?>(
@@ -267,6 +297,7 @@ class ExposureScreenState extends State<ExposureScreen> {
                   const SizedBox(height: 20),
                   Expanded(
                     child: Card.outlined(
+                      elevation: 1,
                       child: ElevatedButton(
                         onPressed:
                             _apiErrorState ? null : () => exposeScreen('White'),
