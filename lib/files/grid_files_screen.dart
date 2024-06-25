@@ -86,10 +86,28 @@ class GridFilesScreenState extends State<GridFilesScreen> {
     });
   }
 
-  void refresh() async {
-    await _getItems(_directory);
+  Future<void> refresh() async {
     //_sortAscending = !_sortAscending;
     //_toggleSortOrder();
+    setState(() {
+      _isLoading = true; // Indicate loading state
+    });
+    try {
+      final items =
+          await _getItems(_directory, false); // Fetch latest items from API
+      _itemsCompleter = Completer<List<OrionApiItem>>(); // Reset the completer
+      _itemsCompleter.complete(items); // Complete with new items
+      setState(() {
+        _items = items; // Update items
+        _isLoading = false; // Reset loading state
+      });
+    } catch (e) {
+      setState(() {
+        _apiErrorState = true;
+        showErrorDialog(context, 'PINK-CARROT');
+        _isLoading = false;
+      });
+    }
   }
 
   Future<List<OrionApiItem>> _getItems(String directory,
