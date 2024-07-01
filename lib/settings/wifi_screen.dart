@@ -19,6 +19,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously, library_private_types_in_public_api, unused_field
 
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,6 +41,9 @@ class _WifiScreenState extends State<WifiScreen> {
   Color? _standardColor = Colors.white.withOpacity(0.0);
   final Logger _logger = Logger('Wifi');
 
+  final ValueNotifier<bool> _isConnecting = ValueNotifier(false);
+  bool _connectionFailed = false;
+
   final GlobalKey<SpawnOrionTextFieldState> wifiPasswordKey =
       GlobalKey<SpawnOrionTextFieldState>();
 
@@ -59,9 +63,13 @@ class _WifiScreenState extends State<WifiScreen> {
     try {
       final List<NetworkInterface> networkInterfaces =
           await NetworkInterface.list(type: InternetAddressType.IPv4);
-      ipAddress = networkInterfaces.first.addresses.first.address;
+      if (networkInterfaces.isNotEmpty) {
+        ipAddress = networkInterfaces.first.addresses.first.address;
+      } else {
+        throw Exception('No network interfaces found.');
+      }
     } on PlatformException catch (e) {
-      print('Failed to get IP Address: $e');
+      _logger.warning('Failed to get IP Address: $e');
       ipAddress = 'Failed to get IP Address';
     }
     return ipAddress;
@@ -73,7 +81,7 @@ class _WifiScreenState extends State<WifiScreen> {
     try {
       signalStrength = int.parse(signalStrengthReceived);
     } catch (e) {
-      print(e);
+      _logger.warning(e);
       return const Icon(Icons.warning_rounded);
     }
 
@@ -115,14 +123,15 @@ class _WifiScreenState extends State<WifiScreen> {
   }
 
   late String platform;
+
   Future<List<Map<String, String>>> _getWifiNetworks(
       {bool alreadyConnected = false}) async {
     wifiNetworks.clear();
     try {
-      if (Theme.of(context).platform == TargetPlatform.macOS &&
+      /*if (Theme.of(context).platform == TargetPlatform.macOS &&
           !alreadyConnected) {
         currentWifiSSID = 'test';
-      }
+      }*/
       ProcessResult? result;
       switch (Theme.of(context).platform) {
         case TargetPlatform.macOS:
@@ -130,8 +139,9 @@ class _WifiScreenState extends State<WifiScreen> {
           final List<Map<String, String>> networks = [];
           // Generate fake output
           for (int i = 0; i < 10; i++) {
+            int rand = Random().nextInt(100);
             networks.add({
-              'SSID': 'Network $i',
+              'SSID': 'Network $rand',
               'SIGNAL':
                   '${-30 - i * 5}', // Signal strength decreases with each network
               'BSSID': '00:0a:95:9d:68:1$i',
@@ -161,6 +171,7 @@ class _WifiScreenState extends State<WifiScreen> {
             _logger.info(activeNetworkSSID);
           } catch (e) {
             _logger.severe('Failed to get current Wi-Fi network: $e');
+            setState(() {});
           }
           _logger.info('Getting Wi-Fi networks');
           break;
@@ -191,10 +202,10 @@ class _WifiScreenState extends State<WifiScreen> {
           final RegExpMatch? match = pattern.firstMatch(lines[i]);
 
           if (match != null) {
-            print('---------------------------');
+            /*print('---------------------------');
             for (int i = 1; i < match.groupCount; i++) {
               print('Group $i: ${match.group(i)}');
-            }
+            }*/
 
             if (platform == 'macos') {
               networks.add({
@@ -236,6 +247,9 @@ class _WifiScreenState extends State<WifiScreen> {
   }
 
   void connectToNetwork(String ssid, String password) async {
+    setState(() {
+      _isConnecting.value = true; // Start of connection attempt
+    });
     try {
       final result = await Process.run('sudo',
           ['nmcli', 'dev', 'wifi', 'connect', ssid, 'password', password]);
@@ -245,11 +259,25 @@ class _WifiScreenState extends State<WifiScreen> {
           _networksFuture = _getWifiNetworks(alreadyConnected: true);
         });
         _logger.info('Connected to $ssid');
+        Navigator.of(context).pop();
+        _isConnecting.value = false;
       } else {
         _logger.warning('Failed to connect to $ssid');
+        setState(() {
+          _isConnecting.value = false;
+          _connectionFailed = true;
+        });
       }
     } catch (e) {
       _logger.warning('Failed to connect to Wi-Fi network: $e');
+      setState(() {
+        _isConnecting.value = false;
+        _connectionFailed = true;
+      });
+    } finally {
+      setState(() {
+        _isConnecting.value = false; // End of connection attempt
+      });
     }
   }
 
@@ -367,7 +395,14 @@ class _WifiScreenState extends State<WifiScreen> {
                                       ElevatedButton(
                                         onPressed: () async {
                                           try {
-                                            //await Process.run('nmcli', ['dev', 'disconnect', 'iface', 'wlan0']);
+                                            _logger.info('Disconnecting Wi-Fi');
+                                            await Process.run('sudo', [
+                                              'nmcli',
+                                              'dev',
+                                              'disconnect',
+                                              'iface',
+                                              'wlan0'
+                                            ]);
                                             setState(() {
                                               currentWifiSSID = null;
                                               _networksFuture =
@@ -375,7 +410,7 @@ class _WifiScreenState extends State<WifiScreen> {
                                                       alreadyConnected: true);
                                             });
                                           } catch (e) {
-                                            print(
+                                            _logger.warning(
                                                 'Failed to disconnect Wi-Fi: $e');
                                           }
                                         },
@@ -401,119 +436,174 @@ class _WifiScreenState extends State<WifiScreen> {
                   },
                 );
               } else {
-                return ListView.builder(
-                  itemCount: networks.length,
-                  itemBuilder: (context, index) {
-                    final network = networks[index];
-                    return Padding(
-                      padding:
-                          const EdgeInsets.only(left: 16, right: 16, top: 5),
-                      child: Card.outlined(
-                        elevation: 1,
-                        child: ListTile(
-                          key: ValueKey(network['SSID']),
-                          title: Text(
-                            '${network['SSID']}',
-                            style: TextStyle(
-                              fontSize: 22,
-                              color: network['SSID'] == currentSSID
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withAlpha(130)
-                                  : null,
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      _networksFuture = _getWifiNetworks();
+                    });
+                  },
+                  child: ListView.builder(
+                    itemCount: networks.length,
+                    itemBuilder: (context, index) {
+                      final network = networks[index];
+                      return Padding(
+                        padding:
+                            const EdgeInsets.only(left: 16, right: 16, top: 5),
+                        child: Card.outlined(
+                          elevation: 1,
+                          child: ListTile(
+                            key: ValueKey(network['SSID']),
+                            title: Text(
+                              '${network['SSID']}',
+                              style: TextStyle(
+                                fontSize: 22,
+                                color: network['SSID'] == currentSSID
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withAlpha(130)
+                                    : null,
+                              ),
                             ),
-                          ),
-                          subtitle: Text(
-                            'Signal Strength: ${network['SIGNAL']} dBm',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: network['SSID'] == currentSSID
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withAlpha(130)
-                                  : null,
+                            subtitle: Text(
+                              'Signal Strength: ${network['SIGNAL']} dBm',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: network['SSID'] == currentSSID
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withAlpha(130)
+                                    : null,
+                              ),
                             ),
-                          ),
-                          trailing: getSignalStrengthIcon(
-                              network['SIGNAL']!, platform),
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Center(
-                                      child: Text(
-                                          'Connect to ${network['SSID']}')),
-                                  content: SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.5,
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        children: [
-                                          SpawnOrionTextField(
-                                            key: wifiPasswordKey,
-                                            keyboardHint: 'Enter Password',
-                                            locale:
-                                                Localizations.localeOf(context)
-                                                    .toString(),
-                                          ),
-                                          OrionKbExpander(
-                                              textFieldKey: wifiPasswordKey),
-                                        ],
+                            trailing: getSignalStrengthIcon(
+                                network['SIGNAL']!, platform),
+                            onTap: () {
+                              showDialog(
+                                barrierDismissible: false,
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Center(
+                                        child: Text(
+                                            'Connect to ${network['SSID']}')),
+                                    content: SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.5,
+                                      child: ValueListenableBuilder<bool>(
+                                        valueListenable:
+                                            _isConnecting, // Listen to _isConnecting ValueNotifier
+                                        builder:
+                                            (context, isConnecting, child) {
+                                          // Based on isConnecting value, show CircularProgressIndicator or form
+                                          return Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Opacity(
+                                                opacity:
+                                                    isConnecting ? 0.0 : 1.0,
+                                                child: SingleChildScrollView(
+                                                  child: Column(
+                                                    children: [
+                                                      SpawnOrionTextField(
+                                                        key: wifiPasswordKey,
+                                                        keyboardHint:
+                                                            'Enter Password',
+                                                        locale: Localizations
+                                                                .localeOf(
+                                                                    context)
+                                                            .toString(),
+                                                      ),
+                                                      if (_connectionFailed)
+                                                        const SizedBox(
+                                                          height: 20,
+                                                        ),
+                                                      if (_connectionFailed)
+                                                        const Text(
+                                                          'Connection failed. Please try again.',
+                                                          style: TextStyle(
+                                                            color: Colors.red,
+                                                            fontSize: 20,
+                                                          ),
+                                                        ),
+                                                      OrionKbExpander(
+                                                          textFieldKey:
+                                                              wifiPasswordKey),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              IgnorePointer(
+                                                child: Opacity(
+                                                  opacity:
+                                                      isConnecting ? 1.0 : 0.0,
+                                                  child: const SizedBox(
+                                                    height: 60,
+                                                    width: 60,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
                                       ),
                                     ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Close',
-                                          style: TextStyle(fontSize: 20)),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        connectToNetwork(
-                                            network['SSID']!,
-                                            wifiPasswordKey.currentState!
-                                                .getCurrentText());
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Confirm',
-                                          style: TextStyle(fontSize: 20)),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          setState(() {
+                                            _isConnecting.value = false;
+                                            _connectionFailed = false;
+                                          });
+                                        },
+                                        child: const Text('Close',
+                                            style: TextStyle(fontSize: 20)),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          if (!_isConnecting.value) {
+                                            _isConnecting.value =
+                                                true; // Indicate that a connection attempt is starting
+                                            if (Theme.of(context).platform ==
+                                                TargetPlatform.linux) {
+                                              connectToNetwork(
+                                                network['SSID']!,
+                                                wifiPasswordKey.currentState!
+                                                    .getCurrentText(),
+                                              );
+                                            } else {
+                                              Future.delayed(
+                                                  const Duration(seconds: 3),
+                                                  () {
+                                                Navigator.of(context).pop();
+                                                _isConnecting.value = false;
+                                              });
+                                            }
+                                          }
+                                        },
+                                        child: const Text('Confirm',
+                                            style: TextStyle(fontSize: 20)),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               }
             }
           }
         },
       ),
-      floatingActionButton: currentWifiSSID != null
-          ? null
-          : SizedBox(
-              height: 70,
-              width: 70,
-              child: FloatingActionButton(
-                onPressed: () async {
-                  await Future.delayed(const Duration(milliseconds: 100));
-                  setState(() {
-                    _networksFuture = _getWifiNetworks();
-                  });
-                },
-                child: const Icon(Icons.refresh_rounded, size: 40),
-              ),
-            ),
     );
   }
 }
