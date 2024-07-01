@@ -363,15 +363,24 @@ class DetailScreenState extends State<DetailScreen> {
               opacity: opacity,
               child: Padding(
                 padding: EdgeInsets.only(
-                    left: (leftPadding - 10) < 0 ? 0 : leftPadding - 10,
-                    right: (rightPadding - 10) < 0 ? 0 : rightPadding - 10,
-                    bottom: 40,
-                    top: 20),
+                  left: (leftPadding - 10) < 0 ? 0 : leftPadding - 10,
+                  right: (rightPadding - 10) < 0 ? 0 : rightPadding - 10,
+                  bottom: 40,
+                  top: 20,
+                ),
                 child: Row(
                   children: [
                     ElevatedButton(
-                      onPressed: null,
-                      // TODO: Add delete logic here
+                      onPressed: () {
+                        String subdirectory = widget.fileSubdirectory;
+                        try {
+                          _api.deleteFile(widget.fileLocation,
+                              path.join(subdirectory, widget.fileName));
+                        } catch (e) {
+                          _logger.severe('Failed to delete file', e);
+                        }
+                        Navigator.pop(context);
+                      },
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(
                           120, // Subtract the padding on both sides
@@ -387,16 +396,20 @@ class DetailScreenState extends State<DetailScreen> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          String subdirectory = widget.fileSubdirectory;
-                          _api.startPrint(widget.fileLocation,
-                              path.join(subdirectory, widget.fileName));
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const StatusScreen(
-                                  newPrint: true,
-                                ),
-                              ));
+                          try {
+                            String subdirectory = widget.fileSubdirectory;
+                            _api.startPrint(widget.fileLocation,
+                                path.join(subdirectory, widget.fileName));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const StatusScreen(
+                                    newPrint: true,
+                                  ),
+                                ));
+                          } catch (e) {
+                            _logger.severe('Failed to start print', e);
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size(
