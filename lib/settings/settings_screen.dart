@@ -70,10 +70,13 @@ class SettingsScreenState extends State<SettingsScreen> {
                     values: {
                       'version': Pubspec.version,
                       'buildNumber': Pubspec.versionBuild.toString(),
+                      'commit': Pubspec.versionFull.toString().split('+')[1] ==
+                              'SELFCOMPILED'
+                          ? 'Local Build'
+                          : 'Commit ${Pubspec.versionFull.toString().split('+')[1]}',
                       'year': DateTime.now().year.toString(),
                     },
-                    applicationVersion:
-                        'Version {{ version }}, Build {{ buildNumber }}',
+                    applicationVersion: 'Version {{ version }} - {{ commit }}',
                     applicationName: 'Orion',
                     applicationLegalese:
                         'GPLv3 - Copyright © TheContrappostoShop {{ year }}',
