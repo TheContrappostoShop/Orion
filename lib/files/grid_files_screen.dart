@@ -367,7 +367,9 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                       maxLines: 2,
                                       minFontSize: 18,
                                       style: const TextStyle(
-                                          fontSize: 24, color: Colors.grey),
+                                          fontSize: 24,
+                                          color: Colors.grey,
+                                          fontFamily: 'AtkinsonHyperlegible'),
                                     ),
                                   ),
                                 ),
@@ -451,12 +453,13 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                             maxLines: 2,
                                             minFontSize: 20,
                                             style: TextStyle(
-                                              fontSize: 24,
-                                              color: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyLarge!
-                                                  .color,
-                                            ),
+                                                fontSize: 24,
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyLarge!
+                                                    .color,
+                                                fontFamily:
+                                                    'AtkinsonHyperlegible'),
                                           ),
                                         ),
                                       ),
