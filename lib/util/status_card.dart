@@ -59,7 +59,7 @@ class StatusCardState extends State<StatusCard> {
             ? null
             : widget.progress == 0.0
                 ? 1.0
-                : widget.progress;
+                : 1.0;
 
     // If the print is active, not paused, canceled or finished, it is active.
     final isActive = (widget.isPausing == false &&
@@ -73,9 +73,9 @@ class StatusCardState extends State<StatusCard> {
         ? Stack(
             children: <Widget>[
               Text(
-                '${(widget.progress * 100).toStringAsFixed(0)}%',
+                (widget.progress * 100).toStringAsFixed(0),
                 style: TextStyle(
-                  fontSize: 38,
+                  fontSize: 75,
                   foreground: Paint()
                     ..style = PaintingStyle.stroke
                     ..strokeWidth = 5
@@ -83,17 +83,20 @@ class StatusCardState extends State<StatusCard> {
                 ),
               ),
               Text(
-                '${(widget.progress * 100).toStringAsFixed(0)}%',
+                (widget.progress * 100).toStringAsFixed(0),
                 style: TextStyle(
-                  fontSize: 38,
+                  fontSize: 75,
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ],
           )
-        : Card.outlined(
+        : Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(5.0),
+              padding: const EdgeInsets.all(2.0),
               child: Stack(
                 children: [
                   Positioned(
@@ -102,7 +105,7 @@ class StatusCardState extends State<StatusCard> {
                     left: 0,
                     right: 0,
                     child: Padding(
-                      padding: const EdgeInsets.all(7),
+                      padding: const EdgeInsets.all(10),
                       child: CircularProgressIndicator(
                         value: circleProgress,
                         strokeWidth: 6,
@@ -113,11 +116,11 @@ class StatusCardState extends State<StatusCard> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(25),
                     child: Icon(
                       cardIcon.icon,
                       color: widget.statusColor,
-                      size: 42,
+                      size: 70,
                     ),
                   )
                 ],
