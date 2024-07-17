@@ -58,70 +58,77 @@ class SettingsScreenState extends State<SettingsScreen> {
         title: const Text('Settings'),
         actions: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(right: 15.0),
-            child: IconButton(
-              icon: const Icon(
-                Icons.info,
-              ),
-              iconSize: 35,
-              onPressed: () {
-                showAboutPage(
-                    context: context,
-                    values: {
-                      'version': Pubspec.version,
-                      'buildNumber': Pubspec.versionBuild.toString(),
-                      'commit': Pubspec.versionFull.toString().split('+')[1] ==
-                              'SELFCOMPILED'
-                          ? 'Local Build'
-                          : 'Commit ${Pubspec.versionFull.toString().split('+')[1]}',
-                      'year': DateTime.now().year.toString(),
-                    },
-                    applicationVersion: 'Version {{ version }} - {{ commit }}',
-                    applicationName: 'Orion',
-                    applicationLegalese:
-                        'GPLv3 - Copyright © TheContrappostoShop {{ year }}',
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                        child: Card(
-                            child: ListTile(
-                          leading: const Icon(Icons.list, size: 30),
-                          title: const Text(
-                            'Changelog',
-                            style: TextStyle(fontSize: 24),
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MarkdownScreen(
-                                    filename: 'CHANGELOG.md'),
-                              ),
-                            );
+            padding: const EdgeInsets.only(right: 16.0),
+            child: _selectedIndex == 2
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.info,
+                    ),
+                    iconSize: 35,
+                    onPressed: () {
+                      showAboutPage(
+                          context: context,
+                          values: {
+                            'version': Pubspec.version,
+                            'buildNumber': Pubspec.versionBuild.toString(),
+                            'commit': Pubspec.versionFull
+                                        .toString()
+                                        .split('+')[1] ==
+                                    'SELFCOMPILED'
+                                ? 'Local Build'
+                                : 'Commit ${Pubspec.versionFull.toString().split('+')[1]}',
+                            'year': DateTime.now().year.toString(),
                           },
-                        )),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Card(
-                          child: LicensesPageListTile(
-                            title: Text(
-                              'Open-Source Licenses',
-                              style: TextStyle(fontSize: 24),
+                          applicationVersion:
+                              'Version {{ version }} - {{ commit }}',
+                          applicationName: 'Orion',
+                          applicationLegalese:
+                              'GPLv3 - Copyright © TheContrappostoShop {{ year }}',
+                          children: <Widget>[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 10, right: 10),
+                              child: Card(
+                                  child: ListTile(
+                                leading: const Icon(Icons.list, size: 30),
+                                title: const Text(
+                                  'Changelog',
+                                  style: TextStyle(fontSize: 24),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const MarkdownScreen(
+                                              filename: 'CHANGELOG.md'),
+                                    ),
+                                  );
+                                },
+                              )),
                             ),
-                            icon: Icon(
-                              Icons.favorite,
-                              size: 30,
+                            const Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Card(
+                                child: LicensesPageListTile(
+                                  title: Text(
+                                    'Open-Source Licenses',
+                                    style: TextStyle(fontSize: 24),
+                                  ),
+                                  icon: Icon(
+                                    Icons.favorite,
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    applicationIcon: const FlutterLogo(
-                      size: 100,
-                    ));
-              },
-            ),
+                          ],
+                          applicationIcon: const FlutterLogo(
+                            size: 100,
+                          ));
+                    },
+                  )
+                : null,
           ),
         ],
       ),
