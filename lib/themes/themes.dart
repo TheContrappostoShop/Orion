@@ -19,22 +19,31 @@
 import 'package:flutter/material.dart';
 
 final ThemeData themeLight = ThemeData(
+  fontFamily: 'AtkinsonHyperlegible',
   colorScheme: ColorScheme.fromSeed(
     seedColor: const Color(0xff6750a4),
     brightness: Brightness.light,
   ),
   appBarTheme: const AppBarTheme(
-    titleTextStyle: TextStyle(fontSize: 30, color: Colors.black),
+    titleTextStyle: TextStyle(
+      fontFamily: 'AtkinsonHyperlegible',
+      fontSize: 30,
+      color: Colors.black,
+    ),
     centerTitle: true,
     toolbarHeight: 65,
     iconTheme: IconThemeData(size: 30),
   ),
   textTheme: const TextTheme(
-    bodyMedium: TextStyle(fontSize: 20),
+    bodyMedium: TextStyle(fontFamily: 'AtkinsonHyperlegible', fontSize: 20),
+    titleLarge: TextStyle(
+        fontFamily: 'AtkinsonHyperlegible', fontSize: 20), // For AppBar title
   ),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-    selectedLabelStyle: TextStyle(fontSize: 18),
-    unselectedLabelStyle: TextStyle(fontSize: 18),
+    selectedLabelStyle:
+        TextStyle(fontFamily: 'AtkinsonHyperlegible', fontSize: 18),
+    unselectedLabelStyle:
+        TextStyle(fontFamily: 'AtkinsonHyperlegible', fontSize: 18),
     selectedIconTheme: IconThemeData(size: 30),
     unselectedIconTheme: IconThemeData(size: 30),
   ),
@@ -48,22 +57,31 @@ final ThemeData themeLight = ThemeData(
 );
 
 final ThemeData themeDark = ThemeData(
+  fontFamily: 'AtkinsonHyperlegible',
   colorScheme: ColorScheme.fromSeed(
     seedColor: const Color(0xff6750a4),
     brightness: Brightness.dark,
   ),
   appBarTheme: const AppBarTheme(
-    titleTextStyle: TextStyle(fontSize: 30, color: Colors.white),
+    titleTextStyle: TextStyle(
+      fontFamily: 'AtkinsonHyperlegible',
+      fontSize: 30,
+      color: Colors.white,
+    ),
     centerTitle: true,
     toolbarHeight: 65,
     iconTheme: IconThemeData(size: 30),
   ),
   textTheme: const TextTheme(
-    bodyMedium: TextStyle(fontSize: 20),
+    bodyMedium: TextStyle(fontFamily: 'AtkinsonHyperlegible', fontSize: 20),
+    titleLarge: TextStyle(
+        fontFamily: 'AtkinsonHyperlegible', fontSize: 20), // For AppBar title
   ),
   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-    selectedLabelStyle: TextStyle(fontSize: 18),
-    unselectedLabelStyle: TextStyle(fontSize: 18),
+    selectedLabelStyle:
+        TextStyle(fontFamily: 'AtkinsonHyperlegible', fontSize: 18),
+    unselectedLabelStyle:
+        TextStyle(fontFamily: 'AtkinsonHyperlegible', fontSize: 18),
     selectedIconTheme: IconThemeData(size: 30),
     unselectedIconTheme: IconThemeData(size: 30),
   ),
