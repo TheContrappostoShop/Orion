@@ -274,7 +274,12 @@ class ApiService {
       'file_path': filePath,
     };
 
-    final response = await odysseyDelete('/files', queryParams);
-    return json.decode(response.body);
+    try {
+      final response = await odysseyDelete('/file', queryParams);
+      return json.decode(response.body);
+    } catch (e) {
+      _logger.severe('Failed to delete file: $e');
+      throw Exception('Failed to delete file: $e');
+    }
   }
 }
