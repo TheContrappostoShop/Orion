@@ -41,15 +41,14 @@ class StatusScreenState extends State<StatusScreen>
   final _logger = Logger('StatusScreen');
   final ApiService _api = ApiService();
 
-  double leftPadding = 0;
-  double rightPadding = 0;
+  String fileName = '';
 
-  final GlobalKey textKey1 = GlobalKey();
-  final GlobalKey textKey2 = GlobalKey();
-  final GlobalKey textKey3 = GlobalKey();
-  final GlobalKey textKey4 = GlobalKey();
-  final GlobalKey textKey5 = GlobalKey();
-  final GlobalKey previewKey = GlobalKey();
+  int totalSeconds = 0;
+  Duration duration = const Duration();
+  String twoDigits = '';
+  String twoDigitHours = '';
+  String twoDigitMinutes = '';
+  String twoDigitSeconds = '';
 
   final ValueNotifier<String?> thumbnailNotifier = ValueNotifier<String?>(null);
   late ValueNotifier<bool> newPrintNotifier = ValueNotifier<bool>(false);
@@ -88,13 +87,11 @@ class StatusScreenState extends State<StatusScreen>
               status!['print_data']['file_data'] != null) {
             String? thumbnailFullPath =
                 status!['print_data']['file_data']['path'];
-            String? fileName = status!['print_data']['file_data']['name'];
+            fileName = status!['print_data']['file_data']['name'];
             String location = status!['print_data']['file_data']
                     ['location_category'] ??
                 'Local';
-            if (thumbnailFullPath != null &&
-                fileName != null &&
-                !isThumbnailFetched) {
+            if (thumbnailFullPath != null && !isThumbnailFetched) {
               String thumbnailSubdir = '/';
               if (thumbnailFullPath.contains('/')) {
                 thumbnailSubdir = thumbnailFullPath.substring(
@@ -236,44 +233,17 @@ class StatusScreenState extends State<StatusScreen>
             if (status != null && status!['status'] == 'Printing') {
               newPrintNotifier.value = false;
             }
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              final keys = [
-                textKey1,
-                textKey2,
-                textKey3,
-                textKey4,
-                textKey5,
-              ];
-              double maxWidth = 0;
 
-              for (var key in keys) {
-                final width = key.currentContext?.size?.width ?? 0;
-                if (width > maxWidth) {
-                  maxWidth = width;
-                }
-              }
+            bool isLandScape =
+                MediaQuery.of(context).orientation == Orientation.landscape;
 
-              final previewWidth = previewKey.currentContext?.size?.width ?? 0;
+            totalSeconds = status!['print_data']['print_time'].toInt();
+            duration = Duration(seconds: totalSeconds);
+            twoDigits(int n) => n.toString().padLeft(2, "0");
 
-              final screenWidth = MediaQuery.of(context).size.width;
-              leftPadding = (screenWidth - maxWidth - previewWidth) / 3;
-              if (leftPadding < 0) leftPadding = 0;
-              rightPadding = leftPadding;
-
-              setState(() {
-                opacity =
-                    1.0; // Set opacity to 1 after sizes have been calculated
-              });
-            });
-
-            int totalSeconds = status!['print_data']['print_time'].toInt();
-            Duration duration = Duration(seconds: totalSeconds);
-
-            String twoDigits(int n) => n.toString().padLeft(2, "0");
-            String twoDigitMinutes =
-                twoDigits(duration.inMinutes.remainder(60));
-            String twoDigitSeconds =
-                twoDigits(duration.inSeconds.remainder(60));
+            twoDigitHours = twoDigits(duration.inHours.remainder(24));
+            twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+            twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
 
             return Scaffold(
               appBar: AppBar(
@@ -306,399 +276,420 @@ class StatusScreenState extends State<StatusScreen>
                   ),
                 ),
               ),
-              body: Opacity(
-                opacity: opacity,
+              body: Center(
                 child: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
-                    return Stack(
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            if (status!['status'] == 'Printing' ||
-                                status!['status'] == 'Idle') ...[
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                      left: leftPadding <= 0
-                                          ? leftPadding
-                                          : leftPadding - 10),
-                                  child: ConstrainedBox(
-                                    constraints:
-                                        const BoxConstraints(maxWidth: 300),
-                                    child: Card.outlined(
-                                      key: textKey1,
-                                      elevation: 1,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: AutoSizeText(
-                                          maxLines: 2,
-                                          minFontSize: 16,
-                                          '${status!['print_data']['file_data']['name']}',
-                                          style: TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: getStatusColor()),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: leftPadding),
-                                  child: Text(
-                                    'Z Position: ${(status!['physical_state']['z'] as double).toStringAsFixed(3)} mm',
-                                    style: const TextStyle(fontSize: 20),
-                                    key: textKey2,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: leftPadding),
-                                  child: Text(
-                                    'Layer: ${status!['layer'] == null ? '-' : status!['layer'] + 1 ?? '-'} / ${status!['print_data']['layer_count'] + 1}',
-                                    style: const TextStyle(fontSize: 20),
-                                    key: textKey3,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: leftPadding),
-                                  child: Text(
-                                    'Printing Time: ${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds',
-                                    style: const TextStyle(fontSize: 20),
-                                    key: textKey4,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: leftPadding),
-                                  child: Text(
-                                    'Material: ${(status!['print_data']['used_material'] as double).toStringAsFixed(2)} mL',
-                                    style: const TextStyle(fontSize: 20),
-                                    key: textKey5,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: rightPadding),
-                            child: ValueListenableBuilder<String?>(
-                              valueListenable: thumbnailNotifier,
-                              builder: (BuildContext context, String? thumbnail,
-                                  Widget? child) {
-                                double progress = 0.0;
-                                if (status!['layer'] != null &&
-                                    status!['print_data']['layer_count'] !=
-                                        null) {
-                                  progress = status!['layer'] /
-                                      status!['print_data']['layer_count'];
-                                }
-                                return thumbnail != null
-                                    ? Stack(
-                                        children: [
-                                          Card(
-                                            key: previewKey,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(4.5),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(7.75),
-                                                child: Image.file(
-                                                  File(thumbnail),
-                                                  width: 220,
-                                                  height: 220,
-                                                  color: Colors.black,
-                                                  colorBlendMode:
-                                                      BlendMode.saturation,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Card(
-                                            //key: previewKey,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(4.5),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(7.75),
-                                                child: Stack(
-                                                  children: [
-                                                    Image.file(
-                                                      File(thumbnail),
-                                                      width: 220,
-                                                      height: 220,
-                                                    ),
-                                                    Container(
-                                                      width: 220,
-                                                      height: 220,
-                                                      decoration: BoxDecoration(
-                                                        gradient:
-                                                            LinearGradient(
-                                                          begin: Alignment
-                                                              .bottomCenter,
-                                                          end: Alignment
-                                                              .topCenter,
-                                                          colors: [
-                                                            Colors.transparent,
-                                                            Colors.black
-                                                                .withOpacity(
-                                                                    0.65),
-                                                          ],
-                                                          stops: [
-                                                            (progress),
-                                                            (progress)
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Positioned(
-                                                      top: 0,
-                                                      bottom: 0,
-                                                      left: 0,
-                                                      right: 0,
-                                                      child: Center(
-                                                        child: StatusCard(
-                                                          isCanceling:
-                                                              isCanceling,
-                                                          isPausing: isPausing,
-                                                          progress: progress,
-                                                          statusColor:
-                                                              getStatusColor(),
-                                                          status: status!,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    : Card(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4.5),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(7.75),
-                                            child: const Image(
-                                              image: AssetImage(
-                                                  'assets/images/placeholder.png'),
-                                              width: 220,
-                                              height: 220,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
+                    return isLandScape
+                        ? Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 20),
+                            child: buildLandscapeLayout(context))
+                        : Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 20),
+                            child: buildPortraitLayout(context));
                   },
-                ),
-              ),
-              bottomNavigationBar: Opacity(
-                opacity: opacity,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      left: (leftPadding - 10) < 0 ? 0 : leftPadding - 10,
-                      right: (rightPadding - 10) < 0 ? 0 : rightPadding - 10,
-                      bottom: 40,
-                      top: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: isCanceling == true &&
-                                  status!['layer'] != null
-                              ? null
-                              : status!['layer'] == null ||
-                                      status!['status'] == 'Idle'
-                                  ? null
-                                  : () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Dialog(
-                                            child: SizedBox(
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.5, // 80% of screen width
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: <Widget>[
-                                                  const SizedBox(height: 10),
-                                                  const Padding(
-                                                    padding:
-                                                        EdgeInsets.all(8.0),
-                                                    child: Text(
-                                                      'Options',
-                                                      style: TextStyle(
-                                                          fontSize: 24,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 10),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 20,
-                                                            right: 20),
-                                                    child: SizedBox(
-                                                      height: 65,
-                                                      width: double.infinity,
-                                                      child: ElevatedButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        const SettingsScreen()),
-                                                          );
-                                                        },
-                                                        child: const Text(
-                                                          'Settings',
-                                                          style: TextStyle(
-                                                              fontSize: 24),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(
-                                                      height:
-                                                          20), // Add some spacing between the buttons
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 20,
-                                                            right: 20),
-                                                    child: SizedBox(
-                                                      height: 65,
-                                                      width: double.infinity,
-                                                      child: ElevatedButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                          _api.cancelPrint();
-                                                          setState(() {
-                                                            isCanceling = true;
-                                                          });
-                                                        },
-                                                        child: const Text(
-                                                          'Cancel Print',
-                                                          style: TextStyle(
-                                                              fontSize: 24),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 20),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(
-                              0, // Subtract the padding on both sides
-                              Theme.of(context).appBarTheme.toolbarHeight
-                                  as double,
-                            ),
-                          ),
-                          child: const Text(
-                            'Options',
-                            style: TextStyle(fontSize: 24),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: isCanceling == true &&
-                                  status!['layer'] != null
-                              ? null
-                              : isPausing == true && status!['paused'] == false
-                                  ? null
-                                  : status!['layer'] == null
-                                      ? () {
-                                          Navigator.popUntil(context,
-                                              ModalRoute.withName('/'));
-                                        }
-                                      : status!['status'] == 'Idle'
-                                          ? () {
-                                              Navigator.pop(context);
-                                            }
-                                          : () {
-                                              if (status!['paused'] == true) {
-                                                _api.resumePrint();
-                                                setState(() {
-                                                  isPausing = false;
-                                                });
-                                              } else {
-                                                _api.pausePrint();
-                                                setState(() {
-                                                  isPausing = true;
-                                                });
-                                              }
-                                            },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(
-                              0, // Subtract the padding on both sides
-                              Theme.of(context).appBarTheme.toolbarHeight
-                                  as double,
-                            ),
-                          ),
-                          child: Text(
-                            status!['layer'] == null ||
-                                    status!['status'] == 'Idle'
-                                ? 'Return to Home'
-                                : status!['paused'] == true
-                                    ? 'Resume'
-                                    : 'Pause',
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             );
           }
         }
       },
+    );
+  }
+
+  Widget buildPortraitLayout(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildNameCard(fileName),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Column(
+                  children: [
+                    buildThumbnailView(context),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: buildInfoCard('Current Z Position',
+                              '${(status!['physical_state']['z'] as double).toStringAsFixed(3)} mm'),
+                        ),
+                        Expanded(
+                          child: buildInfoCard('Print Layers',
+                              '${status!['layer'] == null ? '-' : status!['layer'] + 1 ?? '-'} / ${status!['print_data']['layer_count'] + 1}'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    buildInfoCard('Estimated Print Time',
+                        '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds'),
+                    const SizedBox(height: 5),
+                    buildInfoCard('Estimated Volume',
+                        '${(status!['print_data']['used_material'] as double).toStringAsFixed(2)} mL'),
+                    const Spacer(),
+                    buildButtons(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget buildLandscapeLayout(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: ListView(
+                  children: [
+                    buildNameCard(fileName),
+                    buildInfoCard('Current Z Position',
+                        '${(status!['physical_state']['z'] as double).toStringAsFixed(3)} mm'),
+                    buildInfoCard('Print Layers',
+                        '${status!['layer'] == null ? '-' : status!['layer'] + 1 ?? '-'} / ${status!['print_data']['layer_count'] + 1}'),
+                    buildInfoCard('Estimated Print Time',
+                        '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds'),
+                    buildInfoCard('Estimated Volume',
+                        '${(status!['print_data']['used_material'] as double).toStringAsFixed(2)} mL')
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16.0),
+              Flexible(
+                flex: 0,
+                child: buildThumbnailView(context),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.only(left: 5, right: 5),
+          child: buildButtons(),
+        ),
+      ],
+    );
+  }
+
+  Widget buildInfoCard(String title, String subtitle) {
+    return Card.outlined(
+      elevation: 1.0,
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(subtitle),
+      ),
+    );
+  }
+
+  Widget buildNameCard(String title) {
+    return Card.outlined(
+      elevation: 1.0,
+      child: ListTile(
+        title: AutoSizeText.rich(
+          maxLines: 1,
+          minFontSize: 16,
+          TextSpan(
+            children: [
+              TextSpan(
+                text: fileName.length >= 12
+                    ? '${fileName.substring(0, 12)}...'
+                    : fileName,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: getStatusColor(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildThumbnailView(BuildContext context) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: thumbnailNotifier,
+      builder: (BuildContext context, String? thumbnail, Widget? child) {
+        double progress = 0.0;
+        if (status!['layer'] != null &&
+            status!['print_data']['layer_count'] != null) {
+          progress = status!['layer'] / status!['print_data']['layer_count'];
+        }
+        return Center(
+          child: Stack(
+            children: [
+              Card.outlined(
+                elevation: 1.0,
+                child: Padding(
+                  padding: const EdgeInsets.all(4.5),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(7.75),
+                    child: Stack(
+                      children: [
+                        // Grayscale image
+                        ColorFiltered(
+                          colorFilter: const ColorFilter.matrix(<double>[
+                            0.2126, 0.7152, 0.0722, 0, 0, //
+                            0.2126, 0.7152, 0.0722, 0, 0,
+                            0.2126, 0.7152, 0.0722, 0, 0,
+                            0, 0, 0, 1, 0,
+                          ]),
+                          child:
+                              false //thumbnail != null && thumbnail.isNotEmpty
+                                  ? Image.file(
+                                      File(thumbnail!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.asset(
+                                      'assets/images/thumbnail800x480.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                        ),
+                        Positioned.fill(
+                          child: Container(
+                            color: Colors.black.withOpacity(0.2),
+                          ),
+                        ),
+                        // Colored image revealed based on progress
+                        Positioned.fill(
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: ClipRect(
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                heightFactor: progress,
+                                child:
+                                    false //thumbnail != null && thumbnail.isNotEmpty
+                                        ? Image.file(
+                                            File(thumbnail!),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.asset(
+                                            'assets/images/thumbnail800x480.png',
+                                            fit: BoxFit.cover,
+                                          ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                right: 15,
+                child: Center(
+                  child: StatusCard(
+                    isCanceling: isCanceling,
+                    isPausing: isPausing,
+                    progress: progress,
+                    statusColor: getStatusColor(),
+                    status: status!,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Card(
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(9.75),
+                        bottomRight: Radius.circular(9.75),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.5),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(7.75),
+                          bottomRight: Radius.circular(7.75),
+                        ),
+                        child: RotatedBox(
+                          quarterTurns: 3,
+                          child: LinearProgressIndicator(
+                            minHeight: 30,
+                            color: getStatusColor(),
+                            value: progress,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget buildButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: isCanceling == true && status!['layer'] != null
+                ? null
+                : status!['layer'] == null || status!['status'] == 'Idle'
+                    ? null
+                    : () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Dialog(
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width *
+                                    0.5, // 80% of screen width
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    const SizedBox(height: 10),
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'Options',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 20, right: 20),
+                                      child: SizedBox(
+                                        height: 65,
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const SettingsScreen()),
+                                            );
+                                          },
+                                          child: const Text(
+                                            'Settings',
+                                            style: TextStyle(fontSize: 24),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        height:
+                                            20), // Add some spacing between the buttons
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 20, right: 20),
+                                      child: SizedBox(
+                                        height: 65,
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            _api.cancelPrint();
+                                            setState(() {
+                                              isCanceling = true;
+                                            });
+                                          },
+                                          child: const Text(
+                                            'Cancel Print',
+                                            style: TextStyle(fontSize: 24),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              minimumSize: Size(
+                0, // Subtract the padding on both sides
+                Theme.of(context).appBarTheme.toolbarHeight as double,
+              ),
+            ),
+            child: const Text(
+              'Options',
+              style: TextStyle(fontSize: 24),
+            ),
+          ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: isCanceling == true && status!['layer'] != null
+                ? null
+                : isPausing == true && status!['paused'] == false
+                    ? null
+                    : status!['layer'] == null
+                        ? () {
+                            Navigator.popUntil(
+                                context, ModalRoute.withName('/'));
+                          }
+                        : status!['status'] == 'Idle'
+                            ? () {
+                                Navigator.pop(context);
+                              }
+                            : () {
+                                if (status!['paused'] == true) {
+                                  _api.resumePrint();
+                                  setState(() {
+                                    isPausing = false;
+                                  });
+                                } else {
+                                  _api.pausePrint();
+                                  setState(() {
+                                    isPausing = true;
+                                  });
+                                }
+                              },
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              minimumSize: Size(
+                0, // Subtract the padding on both sides
+                Theme.of(context).appBarTheme.toolbarHeight as double,
+              ),
+            ),
+            child: Text(
+              status!['layer'] == null || status!['status'] == 'Idle'
+                  ? 'Return to Home'
+                  : status!['paused'] == true
+                      ? 'Resume'
+                      : 'Pause',
+              style: const TextStyle(fontSize: 24),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
