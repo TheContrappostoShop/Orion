@@ -166,9 +166,15 @@ class ApiService {
 
   // Get file thumbnail
   // Takes 2 parameters : location [string] and filePath [String]
-  Future<Uint8List> getFileThumbnail(String location, String filePath) async {
-    _logger.info("getFileThumbnail location=$location filePath=$filePath");
-    final queryParams = {"location": location, "file_path": filePath};
+  Future<Uint8List> getFileThumbnail(
+      String location, String filePath, String size) async {
+    _logger.info(
+        "getFileThumbnail location=$location filePath=$filePath size=$size");
+    final queryParams = {
+      "location": location,
+      "file_path": filePath,
+      "size": size
+    };
 
     final response = await odysseyGet('/file/thumbnail', queryParams);
     return response.bodyBytes;
