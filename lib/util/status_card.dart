@@ -73,7 +73,7 @@ class StatusCardState extends State<StatusCard> {
         ? Stack(
             children: <Widget>[
               Text(
-                (widget.progress * 100).toStringAsFixed(0),
+                '${(widget.progress * 100).toStringAsFixed(0)}%',
                 style: TextStyle(
                   fontSize: 75,
                   foreground: Paint()
@@ -83,7 +83,7 @@ class StatusCardState extends State<StatusCard> {
                 ),
               ),
               Text(
-                (widget.progress * 100).toStringAsFixed(0),
+                '${(widget.progress * 100).toStringAsFixed(0)}%',
                 style: TextStyle(
                   fontSize: 75,
                   color: Theme.of(context).colorScheme.primary,
