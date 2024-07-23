@@ -91,7 +91,9 @@ class StatusScreenState extends State<StatusScreen>
             String location = status!['print_data']['file_data']
                     ['location_category'] ??
                 'Local';
-            if (thumbnailFullPath != null && !isThumbnailFetched) {
+            if (thumbnailFullPath != null &&
+                !isThumbnailFetched &&
+                status!['status'] == 'Printing') {
               String thumbnailSubdir = '/';
               if (thumbnailFullPath.contains('/')) {
                 thumbnailSubdir = thumbnailFullPath.substring(
@@ -101,6 +103,7 @@ class StatusScreenState extends State<StatusScreen>
                 location,
                 thumbnailSubdir,
                 fileName,
+                size: 'Large',
               );
               isThumbnailFetched = true;
             }
@@ -310,7 +313,10 @@ class StatusScreenState extends State<StatusScreen>
               Expanded(
                 child: Column(
                   children: [
+                    const Spacer(),
                     buildThumbnailView(context),
+                    const Spacer(),
+                    buildNameCard(fileName),
                     const Spacer(),
                     Row(
                       children: [
@@ -401,7 +407,7 @@ class StatusScreenState extends State<StatusScreen>
           TextSpan(
             children: [
               TextSpan(
-                text: fileName.length >= 12
+                text: fileName.length >= 4
                     ? '${fileName.substring(0, 12)}...'
                     : fileName,
                 style: TextStyle(
@@ -445,20 +451,18 @@ class StatusScreenState extends State<StatusScreen>
                             0.2126, 0.7152, 0.0722, 0, 0,
                             0, 0, 0, 1, 0,
                           ]),
-                          child:
-                              false //thumbnail != null && thumbnail.isNotEmpty
-                                  ? Image.file(
-                                      File(thumbnail!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.asset(
-                                      'assets/images/thumbnail800x480.png',
-                                      fit: BoxFit.cover,
-                                    ),
+                          child: thumbnail != null && thumbnail.isNotEmpty
+                              ? Image.file(
+                                  File(thumbnail),
+                                  fit: BoxFit.cover,
+                                )
+                              : const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
                         ),
                         Positioned.fill(
                           child: Container(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withOpacity(0.35),
                           ),
                         ),
                         // Colored image revealed based on progress
@@ -469,16 +473,14 @@ class StatusScreenState extends State<StatusScreen>
                               child: Align(
                                 alignment: Alignment.bottomCenter,
                                 heightFactor: progress,
-                                child:
-                                    false //thumbnail != null && thumbnail.isNotEmpty
-                                        ? Image.file(
-                                            File(thumbnail!),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Image.asset(
-                                            'assets/images/thumbnail800x480.png',
-                                            fit: BoxFit.cover,
-                                          ),
+                                child: thumbnail != null && thumbnail.isNotEmpty
+                                    ? Image.file(
+                                        File(thumbnail),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
                               ),
                             ),
                           ),

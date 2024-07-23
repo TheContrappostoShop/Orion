@@ -98,9 +98,8 @@ class DetailScreenState extends State<DetailScreen> {
       String tempMaterialName =
           'N/A'; // this information is not provided by the API
       String tempThumbnailPath = await ThumbnailUtil.extractThumbnail(
-          widget.fileLocation,
-          widget.fileSubdirectory,
-          widget.fileName); // fetch thumbnail from API
+          widget.fileLocation, widget.fileSubdirectory, widget.fileName,
+          size: 'Large'); // fetch thumbnail from API
       double tempPrintTimeInSeconds = fileDetails['print_time'];
       Duration printDuration =
           Duration(seconds: tempPrintTimeInSeconds.toInt());
@@ -283,10 +282,10 @@ class DetailScreenState extends State<DetailScreen> {
           padding: const EdgeInsets.all(4.5),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(7.75),
-            child: false //thumbnailPath.isNotEmpty
+            child: thumbnailPath.isNotEmpty
                 ? Image.file(File(thumbnailPath))
-                : Image.asset(
-                    'assets/images/thumbnail800x480.png',
+                : const Center(
+                    child: CircularProgressIndicator(),
                   ),
           ),
         ),
