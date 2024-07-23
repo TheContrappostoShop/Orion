@@ -21,6 +21,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/status/status_screen.dart';
+import 'package:orion/util/hold_button.dart';
 import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
@@ -296,7 +297,7 @@ class DetailScreenState extends State<DetailScreen> {
   Widget buildPrintButtons() {
     return Row(
       children: [
-        ElevatedButton(
+        HoldButton(
           onPressed: () {
             String subdirectory = widget.fileSubdirectory;
             try {

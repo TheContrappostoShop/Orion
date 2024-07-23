@@ -25,6 +25,7 @@ import 'package:orion/api_services/api_services.dart';
 import 'package:orion/files/grid_files_screen.dart';
 import 'package:orion/settings/settings_screen.dart';
 import 'package:orion/themes/themes.dart';
+import 'package:orion/util/hold_button.dart';
 import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:orion/util/status_card.dart';
 
@@ -407,8 +408,8 @@ class StatusScreenState extends State<StatusScreen>
           TextSpan(
             children: [
               TextSpan(
-                text: fileName.length >= 4
-                    ? '${fileName.substring(0, 12)}...'
+                text: fileName.length >= 14
+                    ? '${fileName.substring(0, 14)}...'
                     : fileName,
                 style: TextStyle(
                   fontSize: 24,
@@ -605,7 +606,8 @@ class StatusScreenState extends State<StatusScreen>
                                       child: SizedBox(
                                         height: 65,
                                         width: double.infinity,
-                                        child: ElevatedButton(
+                                        child: HoldButton(
+                                          duration: const Duration(seconds: 5),
                                           onPressed: () {
                                             Navigator.pop(context);
                                             _api.cancelPrint();

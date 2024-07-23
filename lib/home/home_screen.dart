@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/main.dart';
+import 'package:orion/util/hold_button.dart';
 import 'package:orion/util/orion_config.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -107,7 +108,7 @@ class HomeScreenState extends State<HomeScreen> {
                               child: SizedBox(
                                 height: 65,
                                 width: double.infinity,
-                                child: ElevatedButton(
+                                child: HoldButton(
                                   onPressed: () {
                                     _api.manualCommand('FIRMWARE_RESTART');
                                   },
@@ -128,7 +129,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 child: SizedBox(
                                   height: 65,
                                   width: double.infinity,
-                                  child: ElevatedButton(
+                                  child: HoldButton(
                                     onPressed: () {
                                       Process.run('sudo', ['reboot', 'now']);
                                     },
@@ -147,7 +148,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 child: SizedBox(
                                   height: 65,
                                   width: double.infinity,
-                                  child: ElevatedButton(
+                                  child: HoldButton(
                                     onPressed: () {
                                       Process.run('sudo', ['shutdown', 'now']);
                                     },

@@ -18,6 +18,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:orion/util/hold_button.dart';
 import 'package:orion/util/orion_kb/orion_keyboard_expander.dart';
 import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
 
@@ -145,6 +146,12 @@ class DebugScreenState extends State<DebugScreen> {
                           style: TextStyle(fontSize: 18),
                         ),
                       ),
+                    ),
+                    HoldButton(
+                      onPressed: () {
+                        print("onHoldComplete");
+                      },
+                      child: const Text('Hold Button Test'),
                     ),
                     OrionKbExpander(textFieldKey: debugTextFieldKey)
                   ],
