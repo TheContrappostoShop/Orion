@@ -26,12 +26,13 @@ class ThumbnailUtil {
   static final ApiService _api = ApiService();
 
   static Future<String> extractThumbnail(
-      String location, String subdirectory, String filename) async {
+      String location, String subdirectory, String filename,
+      {String size = "Small"}) async {
     try {
       String finalLocation = _isDefaultDir(subdirectory)
           ? filename
           : [subdirectory, filename].join('/');
-      final bytes = await _api.getFileThumbnail(location, finalLocation);
+      final bytes = await _api.getFileThumbnail(location, finalLocation, size);
 
       final tempDir = await getTemporaryDirectory();
       final orionTmpDir = Directory('${tempDir.path}/oriontmp/$finalLocation');
@@ -39,7 +40,9 @@ class ThumbnailUtil {
         await orionTmpDir.create(recursive: true);
       }
 
-      final filePath = '${orionTmpDir.path}/thumbnail400x400.png';
+      final filePath = size == "Small"
+          ? '${orionTmpDir.path}/thumbnail400x400.png'
+          : '${orionTmpDir.path}/thumbnail840x400.png';
       final outputFile = File(filePath);
       outputFile.writeAsBytesSync(bytes);
 
