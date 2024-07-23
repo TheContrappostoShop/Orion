@@ -425,7 +425,11 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                         fileLocation: location,
                                       ),
                                     ),
-                                  );
+                                  ).then((result) {
+                                    if (result == true) {
+                                      refresh();
+                                    }
+                                  });
                                 }
                               },
                               // File name that hovers over the file

@@ -303,10 +303,11 @@ class DetailScreenState extends State<DetailScreen> {
               _api.deleteFile(widget.fileLocation,
                   path.join(subdirectory, widget.fileName));
               _logger.info('File deleted successfully');
+              Navigator.pop(context, true);
             } catch (e) {
               _logger.severe('Failed to delete file', e);
+              Navigator.pop(context, false);
             }
-            Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(
