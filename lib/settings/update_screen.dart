@@ -517,8 +517,8 @@ class UpdateScreenState extends State<UpdateScreen> {
         await orionDir.create(recursive: true);
 
         // Extract the downloaded orion_aarch64.tar.gz to /home/pi/orion/
-        final result =
-            await Process.run('tar', ['-xzf', downloadPath, '-C', orionFolder]);
+        final result = await Process.run('sudo',
+            ['tar', '--overwrite', '-xzf', downloadPath, '-C', orionFolder]);
         if (result.exitCode == 0) {
           _logger.info('Update script executed successfully');
 
