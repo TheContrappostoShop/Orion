@@ -22,7 +22,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orion/api_services/api_services.dart';
-import 'package:orion/main.dart';
 import 'package:orion/util/hold_button.dart';
 import 'package:orion/util/orion_config.dart';
 
