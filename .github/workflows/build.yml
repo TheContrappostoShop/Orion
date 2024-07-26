@@ -13,7 +13,7 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@master
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # or: 'beta', 'dev', 'master' (or 'main')
+          channel: "stable" # or: 'beta', 'dev', 'master' (or 'main')
       - run: sudo apt-get update && sudo apt-get install -y gtk+-3.0
       - run: flutter pub global activate flutterpi_tool
       - run: flutter build linux
@@ -24,6 +24,17 @@ jobs:
         with:
           cmd: yq '.version' pubspec.yaml
 
+      - name: Update Version with Commit Hash
+        run: |
+          VERSION=$(yq '.version' pubspec.yaml)
+          COMMIT_HASH=${GITHUB_SHA::7}
+          NEW_VERSION=${VERSION/+SELFCOMPILED/+${COMMIT_HASH}}
+          yq -i ".version = \"$NEW_VERSION\"" pubspec.yaml
+          echo "Updated version to $NEW_VERSION"
+
+      - name: Run pubspec_extract
+        run: flutter pub run pubspec_extract
+
       - name: Build, Copy, and Compress armv7
         run: |
           BUILD_NAME=orion_armv7
@@ -31,12 +42,10 @@ jobs:
           mv build/flutter_assets $BUILD_NAME
           ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
           cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
-
       - uses: actions/upload-artifact@v4.3.1
         with:
           name: orion_armv7
           path: orion_armv7/*
-
       - name: Build, Copy, and Compress aarch64
         run: |
           BUILD_NAME=orion_aarch64
@@ -44,12 +53,10 @@ jobs:
           mv build/flutter_assets $BUILD_NAME
           ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
           cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
-
       - uses: actions/upload-artifact@v4.3.1
         with:
           name: orion_aarch64
           path: orion_aarch64/*
-
       - name: Build, Copy, and Compress x64
         run: |
           BUILD_NAME=orion_x64
@@ -57,12 +64,10 @@ jobs:
           mv build/flutter_assets $BUILD_NAME
           ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
           cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
-
       - uses: actions/upload-artifact@v4.3.1
         with:
           name: orion_x64
           path: orion_x64/*
-
       - uses: ncipollo/release-action@v1.14.0
         if: github.ref == 'refs/heads/main'
         with:
