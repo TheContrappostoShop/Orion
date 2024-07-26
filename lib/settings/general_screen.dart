@@ -17,14 +17,15 @@
 */
 
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import 'package:orion/util/orion_config.dart';
 import 'package:orion/util/orion_kb/orion_keyboard_expander.dart';
 import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
 import 'package:orion/util/orion_list_tile.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:provider/provider.dart';
 
 class GeneralCfgScreen extends StatefulWidget {
   const GeneralCfgScreen({super.key});
@@ -39,6 +40,9 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
   late bool useCustomUrl;
   late String customUrl;
   late bool developerMode;
+  late bool betaOverride;
+  late bool overrideUpdateCheck;
+  late String overrideBranch;
   late bool verboseLogging;
   late bool selfDestructMode;
 
@@ -47,6 +51,8 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
   final OrionConfig config = OrionConfig();
 
   final GlobalKey<SpawnOrionTextFieldState> urlTextFieldKey =
+      GlobalKey<SpawnOrionTextFieldState>();
+  final GlobalKey<SpawnOrionTextFieldState> branchTextFieldKey =
       GlobalKey<SpawnOrionTextFieldState>();
 
   @override
@@ -58,6 +64,10 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
     useCustomUrl = config.getFlag('useCustomUrl', category: 'advanced');
     customUrl = config.getString('customUrl', category: 'advanced');
     developerMode = config.getFlag('developerMode', category: 'advanced');
+    betaOverride = config.getFlag('betaOverride', category: 'developer');
+    overrideUpdateCheck =
+        config.getFlag('overrideUpdateCheck', category: 'developer');
+    overrideBranch = config.getString('overrideBranch', category: 'developer');
     verboseLogging = config.getFlag('verboseLogging', category: 'developer');
     selfDestructMode =
         config.getFlag('selfDestructMode', category: 'topsecret');
@@ -349,18 +359,146 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                       ),
                       const SizedBox(height: 20.0),
                       OrionListTile(
+                        title: 'Beta Override',
+                        icon: PhosphorIcons.download(),
+                        value: betaOverride,
+                        onChanged: (bool value) {
+                          setState(() {
+                            betaOverride = value;
+                            config.setFlag('betaOverride', betaOverride,
+                                category: 'developer');
+                          });
+                        },
+                      ),
+                      if (betaOverride) const SizedBox(height: 20.0),
+                      if (betaOverride)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 55,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(elevation: 3),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: const Center(
+                                              child: Text('Override Branch')),
+                                          content: SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.5,
+                                            child: SingleChildScrollView(
+                                              child: Column(
+                                                children: [
+                                                  SpawnOrionTextField(
+                                                    key: branchTextFieldKey,
+                                                    keyboardHint:
+                                                        'Enter Branch',
+                                                    locale:
+                                                        Localizations.localeOf(
+                                                                context)
+                                                            .toString(),
+                                                    scrollController:
+                                                        _scrollController,
+                                                  ),
+                                                  OrionKbExpander(
+                                                      textFieldKey:
+                                                          branchTextFieldKey),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text('Close'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  overrideBranch =
+                                                      branchTextFieldKey
+                                                          .currentState!
+                                                          .getCurrentText();
+                                                  config.setString(
+                                                      'overrideBranch',
+                                                      overrideBranch,
+                                                      category: 'developer');
+                                                });
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text('Confirm'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Text(
+                                      overrideBranch == ''
+                                          ? 'Set Branch'
+                                          : overrideBranch,
+                                      style: const TextStyle(fontSize: 22)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: SizedBox(
+                                height: 55,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(elevation: 3),
+                                  onPressed: overrideBranch == ''
+                                      ? null
+                                      : () {
+                                          setState(() {
+                                            overrideBranch = '';
+                                            config.setString('overrideBranch',
+                                                overrideBranch,
+                                                category: 'developer');
+                                          });
+                                        },
+                                  child: const Text('Clear Branch',
+                                      style: TextStyle(fontSize: 22)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 20.0),
+                      OrionListTile(
+                        title: 'Ignore Update Check',
+                        icon: PhosphorIcons.warning(),
+                        value: overrideUpdateCheck,
+                        onChanged: (bool value) {
+                          setState(() {
+                            overrideUpdateCheck = value;
+                            config.setFlag(
+                                'overrideUpdateCheck', overrideUpdateCheck,
+                                category: 'developer');
+                          });
+                        },
+                      ),
+                      /*const SizedBox(height: 20.0),
+                      OrionListTile(
                         title: 'Verbose Logging [WIP]',
                         icon: PhosphorIcons.bug,
                         value: verboseLogging,
                         onChanged: (bool value) {
                           null;
-                          /*setState(() {
+                          setState(() {
                             verboseLogging = value;
                             config.setFlag('verboseLogging', developerMode,
                                 category: 'developer');
-                          });*/
+                          });
                         },
-                      ),
+                      ),*/
                     ],
                   ),
                 ),
