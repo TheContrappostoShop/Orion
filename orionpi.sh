@@ -168,7 +168,7 @@ if [ "$run_only" != true ]; then
     start_msg="Copying Files to Target"
     printf "%s" "$start_msg"
     start_time=$(date +%s)
-    (sshpass -p "$password" scp -r ./build/flutter_assets $user@$ip:/home/$user/orionpi & show_scroller $! "$start_msg")
+    (sshpass -p "$password" scp -r ./build/flutter_assets $user@$ip:/home/$user/orion & show_scroller $! "$start_msg")
     wait $!
     end_time=$(date +%s)
     print_done "Done. [$((end_time - start_time))s]" $((end_time - start_time))
@@ -178,7 +178,7 @@ fi
 printf "\n\r[\033[0;32m✓\033[0m]\033[0;32m%s\033[0m\n" "  Running OrionPi on Raspberry Pi!"
 printf "\r[i]""  Press \033[0;31mCtrl+C\033[0m to disconnect.\n\n"
 if [ "$release" = true ]; then
-    sshpass -p "$password" ssh $user@$ip 'flutter-pi --release --pixelformat=RGB565 /home/pi/orionpi/flutter_assets'
+    sshpass -p "$password" ssh $user@$ip 'flutter-pi --release --pixelformat=RGB565 /home/pi/orion'
 else
-    sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 /home/pi/orionpi/flutter_assets'
+    sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 /home/pi/orion'
 fi
