@@ -210,7 +210,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                   color: Color.fromARGB(255, 99, 99, 99)),
               iconSize: 35,
               onPressed: () {
-                // TODO: Re-implement search
+                // TODO (?): Re-implement search
                 /*Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -227,7 +227,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                   color: Color.fromARGB(255, 99, 99, 99)),
               iconSize: 35,
               onPressed: () {
-                // TODO: Implement in API
+                // TODO: Implement Alpha Sorting in API
                 /*_sortByAlpha = true;
                 _toggleSortOrder();*/
               },
@@ -240,7 +240,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                   color: Color.fromARGB(255, 99, 99, 99)),
               iconSize: 35,
               onPressed: () {
-                // TODO: Implement in API
+                // TODO: Implement Date Sorting in API
                 /*_sortByAlpha = false;
                 _toggleSortOrder();*/
               },
