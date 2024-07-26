@@ -149,7 +149,7 @@ class DebugScreenState extends State<DebugScreen> {
                     ),
                     HoldButton(
                       onPressed: () {
-                        print("onHoldComplete");
+                        //print("onHoldComplete");
                       },
                       child: const Text('Hold Button Test'),
                     ),
