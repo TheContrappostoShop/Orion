@@ -18,14 +18,17 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:about/about.dart';
+
 import 'package:orion/pubspec.dart';
+import 'package:orion/settings/about_screen.dart';
 import 'package:orion/settings/debug_screen.dart';
 import 'package:orion/settings/general_screen.dart';
-import 'package:orion/util/markdown_screen.dart';
+import 'package:orion/settings/update_screen.dart';
 import 'package:orion/settings/wifi_screen.dart';
-import 'package:orion/settings/about_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:about/about.dart';
+import 'package:orion/util/markdown_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -138,7 +141,9 @@ class SettingsScreenState extends State<SettingsScreen> {
               ? const WifiScreen()
               : _selectedIndex == 2
                   ? const AboutScreen()
-                  : DebugScreen(changeThemeMode: changeThemeMode),
+                  : _selectedIndex == 3
+                      ? const UpdateScreen()
+                      : DebugScreen(changeThemeMode: changeThemeMode),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
@@ -154,6 +159,7 @@ class SettingsScreenState extends State<SettingsScreen> {
             icon: Icon(Icons.info),
             label: 'About',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.update), label: 'Updates'),
           if (kDebugMode)
             BottomNavigationBarItem(
               icon: Icon(Icons.bug_report),
