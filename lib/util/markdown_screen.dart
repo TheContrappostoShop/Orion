@@ -21,46 +21,57 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class MarkdownScreen extends StatelessWidget {
-  final String filename;
+  final String? filename;
+  final String? changelog;
 
-  const MarkdownScreen({super.key, required this.filename});
+  const MarkdownScreen({super.key, this.filename, this.changelog});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(filename),
+        title: Text(filename ?? 'Changelog'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: FutureBuilder(
-          future: rootBundle.loadString(filename),
-          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Markdown(
-                data: snapshot.data ?? '',
-                styleSheet: Theme.of(context).brightness == Brightness.dark
-                    ? MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                        code: const TextStyle(
-                          color: Colors.limeAccent,
-                          backgroundColor: Colors.black,
-                          fontFamily: 'monospace',
-                        ),
-                      )
-                    : MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                        code: const TextStyle(
-                          color: Colors.deepPurple,
-                          backgroundColor: Colors.white,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-              );
-            } else {
-              return const CircularProgressIndicator();
-            }
-          },
-        ),
+        child: changelog != null
+            ? Markdown(
+                data: changelog!,
+                styleSheet: _getMarkdownStyleSheet(context),
+              )
+            : FutureBuilder(
+                future: rootBundle.loadString(filename!),
+                builder:
+                    (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return Markdown(
+                      data: snapshot.data ?? '',
+                      styleSheet: _getMarkdownStyleSheet(context),
+                    );
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
+              ),
       ),
     );
+  }
+
+  MarkdownStyleSheet _getMarkdownStyleSheet(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+            code: const TextStyle(
+              color: Colors.limeAccent,
+              backgroundColor: Colors.black,
+              fontFamily: 'monospace',
+            ),
+          )
+        : MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+            code: const TextStyle(
+              color: Colors.deepPurple,
+              backgroundColor: Colors.white,
+              fontFamily: 'monospace',
+            ),
+          );
   }
 }
