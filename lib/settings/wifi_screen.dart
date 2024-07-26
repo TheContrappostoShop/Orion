@@ -20,7 +20,6 @@
 
 import 'dart:io';
 import 'dart:math';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
@@ -447,8 +446,7 @@ class _WifiScreenState extends State<WifiScreen> {
                     itemBuilder: (context, index) {
                       final network = networks[index];
                       return Padding(
-                        padding:
-                            const EdgeInsets.only(left: 16, right: 16, top: 5),
+                        padding: const EdgeInsets.only(left: 16, right: 16),
                         child: Card.outlined(
                           elevation: 1,
                           child: ListTile(
