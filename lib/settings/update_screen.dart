@@ -150,6 +150,13 @@ class UpdateScreenState extends State<UpdateScreen> {
     }
   }
 
+  bool isCurrentCommitUpToDate(String commitSha) {
+    _logger.info('Current commit SHA: ${_currentVersion.split('+')[1]}');
+    _logger.info('Latest commit SHA: $commitSha');
+    if (_isFirmwareSpoofingEnabled) return false;
+    return commitSha == _currentVersion.split('+')[1];
+  }
+
   Future<void> _checkForBERUpdates(String branch) async {
     if (branch.isEmpty) {
       _logger.warning('Branch name is empty');
@@ -184,13 +191,23 @@ class UpdateScreenState extends State<UpdateScreen> {
               final String commitDate = commitJson['commit']['committer']
                   ['date']; // Fetch commit date
 
+              if (isCurrentCommitUpToDate(shortCommitSha)) {
+                _logger.info(
+                    'Current version is up-to-date with the latest pre-release.');
+                setState(() {
+                  _isLoading = false;
+                  _isUpdateAvailable = false;
+                  _rateLimitExceeded = false;
+                });
+                return; // Exit the function if the current version is up-to-date
+              }
+
               // Find the asset URL for orion_aarch64.tar.gz
               final asset = preRelease['assets'].firstWhere(
                   (asset) => asset['name'] == 'orion_aarch64.tar.gz',
                   orElse: () => null);
               final String assetUrl =
                   asset != null ? asset['browser_download_url'] : '';
-
               _logger.info('Latest pre-release version: $latestVersion');
               setState(() {
                 _latestVersion =
@@ -252,6 +269,7 @@ class UpdateScreenState extends State<UpdateScreen> {
   bool _isNewerVersion(String latestVersion, String currentVersion) {
     _logger.info('Firmware spoofing enabled: $_isFirmwareSpoofingEnabled');
     if (_isFirmwareSpoofingEnabled) return true;
+
     // Split the version and build numbers
     List<String> latestVersionParts = latestVersion.split('+')[0].split('.');
     List<String> currentVersionParts = currentVersion.split('+')[0].split('.');
@@ -269,7 +287,6 @@ class UpdateScreenState extends State<UpdateScreen> {
       }
     }
 
-    // If versions are equal, compare build numbers if present
     if (latestVersion.contains('+') && currentVersion.contains('+')) {
       String latestBuild = latestVersion;
       String currentBuild = currentVersion.split('+')[1];
@@ -391,17 +408,24 @@ class UpdateScreenState extends State<UpdateScreen> {
                       ],
                     ),
                   ] else ...[
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.check_circle, color: Colors.green, size: 30),
-                        SizedBox(width: 10),
-                        Text('Orion is up to date!',
-                            style: TextStyle(
+                        const Icon(Icons.check_circle,
+                            color: Colors.green, size: 30),
+                        const SizedBox(width: 10),
+                        Text(
+                            _betaUpdatesOverride
+                                ? 'Bleeding Edge is up to date!'
+                                : 'Orion is up to date!',
+                            style: const TextStyle(
                                 fontSize: 26, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     const Divider(),
-                    Text('Current Version: ${_currentVersion.split('+')[0]}',
+                    Text(
+                        _betaUpdatesOverride
+                            ? 'Current Version: $_currentVersion (BRANCH_$_branch)'
+                            : 'Current Version: ${_currentVersion.split('+')[0]}',
                         style: const TextStyle(fontSize: 20)),
                   ],
                 ],
@@ -435,9 +459,10 @@ class UpdateScreenState extends State<UpdateScreen> {
   }
 
   Future<void> _performUpdate() async {
-    const String upgradeFolder = '/home/pi/orion/upgrade/';
-    const String upgradeScript = '/home/pi/orion/upgrade.sh';
+    const String upgradeFolder = '/home/pi/orion_upgrade/';
     const String downloadPath = '$upgradeFolder/orion_aarch64.tar.gz';
+    const String orionFolder = '/home/pi/orion/';
+    const String backupFolder = '/home/pi/orion_backup/';
 
     if (_assetUrl.isEmpty) {
       _logger.warning('Asset URL is empty');
@@ -464,12 +489,50 @@ class UpdateScreenState extends State<UpdateScreen> {
         final file = File(downloadPath);
         await file.writeAsBytes(response.bodyBytes);
 
-        // Execute the upgrade script
-        final result = await Process.run(upgradeScript, []);
+        // Copy /home/pi/orion/ to /home/pi/orion_backup/
+        final orionDir = Directory(orionFolder);
+        final backupDir = Directory(backupFolder);
+        if (await backupDir.exists()) {
+          final deleteResult =
+              await Process.run('sudo', ['rm', '-R', '-rf', backupFolder]);
+          if (deleteResult.exitCode != 0) {
+            _logger.warning(
+                'Failed to delete backup directory: ${deleteResult.stderr}');
+            return;
+          }
+        }
+        if (await orionDir.exists()) {
+          final renameResult = await Process.run(
+              'sudo', ['cp', '-r', orionFolder, backupFolder]);
+          if (renameResult.exitCode != 0) {
+            _logger.warning(
+                'Failed to rename Orion directory: ${renameResult.stderr}');
+            return;
+          }
+        } else {
+          _logger.warning('Orion directory does not exist, skipping backup');
+        }
+
+        // Ensure the orion directory exists
+        await orionDir.create(recursive: true);
+
+        // Extract the downloaded orion_aarch64.tar.gz to /home/pi/orion/
+        final result =
+            await Process.run('tar', ['-xzf', downloadPath, '-C', orionFolder]);
         if (result.exitCode == 0) {
           _logger.info('Update script executed successfully');
+
+          // Restart the orion.service
+          final restartResult = await Process.run(
+              'sudo', ['systemctl', 'restart', 'orion.service']);
+          if (restartResult.exitCode == 0) {
+            _logger.info('Orion service restarted successfully');
+          } else {
+            _logger.warning(
+                'Failed to restart Orion service: ${restartResult.stderr}');
+          }
         } else {
-          _logger.warning('Update script failed: ${result.stderr}');
+          _logger.warning('Failed to extract update file: ${result.stderr}');
         }
       } else {
         _logger.warning('Failed to download update file');
