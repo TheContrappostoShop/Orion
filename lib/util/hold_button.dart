@@ -94,7 +94,11 @@ class HoldButtonState extends State<HoldButton>
                           value: _controller.value,
                           backgroundColor: Colors.transparent,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.black.withOpacity(0.5)),
+                            Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.5),
+                          ),
                         ),
                       ),
                     ),
