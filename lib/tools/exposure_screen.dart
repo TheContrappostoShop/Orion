@@ -187,7 +187,7 @@ class ExposureScreenState extends State<ExposureScreen> {
 
   Future<void> getApiStatus() async {
     try {
-      Map<String, dynamic> config = await _api.getConfig();
+      await _api.getConfig();
     } catch (e) {
       setState(() {
         _apiErrorState = true;
@@ -202,7 +202,6 @@ class ExposureScreenState extends State<ExposureScreen> {
     final theme = Theme.of(context).copyWith(
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
           shape: MaterialStateProperty.resolveWith<OutlinedBorder?>(
             (Set<MaterialState> states) {
               return RoundedRectangleBorder(
@@ -254,7 +253,19 @@ class ExposureScreenState extends State<ExposureScreen> {
                                     onPressed: _apiErrorState
                                         ? null
                                         : () => exposeScreen('Grid'),
-                                    style: theme.elevatedButtonTheme.style,
+                                    style: theme.elevatedButtonTheme.style
+                                        ?.copyWith(
+                                      shape: MaterialStateProperty.resolveWith<
+                                          OutlinedBorder?>(
+                                        (Set<MaterialState> states) {
+                                          return const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(15),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                     child: const PhosphorIcon(
                                         PhosphorIconsFill.checkerboard,
                                         size: 40),
@@ -268,7 +279,17 @@ class ExposureScreenState extends State<ExposureScreen> {
                                     onPressed: _apiErrorState
                                         ? null
                                         : () => exposeScreen('Dimensions'),
-                                    style: theme.elevatedButtonTheme.style,
+                                    style: theme.elevatedButtonTheme.style
+                                        ?.copyWith(
+                                      shape: MaterialStateProperty.resolveWith<
+                                          OutlinedBorder?>(
+                                        (Set<MaterialState> states) {
+                                          return RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(0));
+                                        },
+                                      ),
+                                    ),
                                     child: const PhosphorIcon(
                                         PhosphorIconsFill.ruler,
                                         size: 40),
@@ -282,7 +303,19 @@ class ExposureScreenState extends State<ExposureScreen> {
                                     onPressed: _apiErrorState
                                         ? null
                                         : () => exposeScreen('Blank'),
-                                    style: theme.elevatedButtonTheme.style,
+                                    style: theme.elevatedButtonTheme.style
+                                        ?.copyWith(
+                                      shape: MaterialStateProperty.resolveWith<
+                                          OutlinedBorder?>(
+                                        (Set<MaterialState> states) {
+                                          return const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.only(
+                                              bottomRight: Radius.circular(15),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                     child: PhosphorIcon(PhosphorIcons.square(),
                                         size: 40),
                                   ),
