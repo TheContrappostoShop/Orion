@@ -103,9 +103,9 @@ class UpdateScreenState extends State<UpdateScreen> {
             final String releaseNotes = jsonResponse['body'];
             _logger.info('Latest version: $latestVersion');
             if (_isNewerVersion(latestVersion, _currentVersion)) {
-              // Find the asset URL for orion_aarch64.tar.gz
+              // Find the asset URL for orion_armv7.tar.gz
               final asset = jsonResponse['assets'].firstWhere(
-                  (asset) => asset['name'] == 'orion_aarch64.tar.gz',
+                  (asset) => asset['name'] == 'orion_armv7.tar.gz',
                   orElse: () => null);
               final String assetUrl =
                   asset != null ? asset['browser_download_url'] : '';
@@ -202,9 +202,9 @@ class UpdateScreenState extends State<UpdateScreen> {
                 return; // Exit the function if the current version is up-to-date
               }
 
-              // Find the asset URL for orion_aarch64.tar.gz
+              // Find the asset URL for orion_armv7.tar.gz
               final asset = preRelease['assets'].firstWhere(
-                  (asset) => asset['name'] == 'orion_aarch64.tar.gz',
+                  (asset) => asset['name'] == 'orion_armv7.tar.gz',
                   orElse: () => null);
               final String assetUrl =
                   asset != null ? asset['browser_download_url'] : '';
@@ -460,7 +460,7 @@ class UpdateScreenState extends State<UpdateScreen> {
 
   Future<void> _performUpdate() async {
     const String upgradeFolder = '/home/pi/orion_upgrade/';
-    const String downloadPath = '$upgradeFolder/orion_aarch64.tar.gz';
+    const String downloadPath = '$upgradeFolder/orion_armv7.tar.gz';
     const String orionFolder = '/home/pi/orion/';
     const String backupFolder = '/home/pi/orion_backup/';
 
@@ -503,7 +503,7 @@ class UpdateScreenState extends State<UpdateScreen> {
         }
         if (await orionDir.exists()) {
           final renameResult = await Process.run(
-              'sudo', ['cp', '-r', orionFolder, backupFolder]);
+              'sudo', ['cp', '-R', orionFolder, backupFolder]);
           if (renameResult.exitCode != 0) {
             _logger.warning(
                 'Failed to rename Orion directory: ${renameResult.stderr}');
@@ -516,13 +516,14 @@ class UpdateScreenState extends State<UpdateScreen> {
         // Ensure the orion directory exists
         await orionDir.create(recursive: true);
 
-        // Extract the downloaded orion_aarch64.tar.gz to /home/pi/orion/
+        // Extract the downloaded orion_armv7.tar.gz to /home/pi/orion/
         final result = await Process.run('sudo',
             ['tar', '--overwrite', '-xzf', downloadPath, '-C', orionFolder]);
         if (result.exitCode == 0) {
           _logger.info('Update script executed successfully');
 
           // Restart the orion.service
+          _logger.info('Restarting Orion service...');
           final restartResult = await Process.run(
               'sudo', ['systemctl', 'restart', 'orion.service']);
           if (restartResult.exitCode == 0) {
