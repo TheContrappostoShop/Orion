@@ -19,14 +19,13 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:orion/files/grid_files_screen.dart';
 
 import 'package:orion/home/home_screen.dart';
+import 'package:orion/settings/wifi_screen.dart';
 import 'package:orion/status/status_screen.dart';
 import 'package:orion/files/files_screen.dart';
+import 'package:orion/files/grid_files_screen.dart';
 import 'package:orion/settings/settings_screen.dart';
-import 'package:orion/settings/calibrate_screen.dart';
-import 'package:orion/settings/wifi_screen.dart';
 import 'package:orion/settings/about_screen.dart';
 import 'package:orion/themes/themes.dart';
 import 'package:orion/util/error_handling/error_handler.dart';
@@ -101,12 +100,6 @@ final GoRouter _router = GoRouter(
             return const SettingsScreen();
           },
           routes: <RouteBase>[
-            GoRoute(
-              path: 'calibrate',
-              builder: (BuildContext context, GoRouterState state) {
-                return const CalibrateScreen();
-              },
-            ),
             GoRoute(
               path: 'wifi',
               builder: (BuildContext context, GoRouterState state) {
