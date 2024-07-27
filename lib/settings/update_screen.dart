@@ -399,7 +399,9 @@ class UpdateScreenState extends State<UpdateScreen> {
                               minimumSize:
                                   const Size.fromHeight(65), // Set height to 65
                             ),
-                            onPressed: _performUpdate,
+                            onPressed: () async {
+                              _performUpdate(context);
+                            },
                             icon: const Icon(Icons.download),
                             label: const Text('Download Update',
                                 style: TextStyle(fontSize: 24)),
@@ -458,11 +460,14 @@ class UpdateScreenState extends State<UpdateScreen> {
     return '2023-10-01';
   }
 
-  Future<void> _performUpdate() async {
-    const String upgradeFolder = '/home/pi/orion_upgrade/';
-    const String downloadPath = '$upgradeFolder/orion_armv7.tar.gz';
-    const String orionFolder = '/home/pi/orion/';
-    const String backupFolder = '/home/pi/orion_backup/';
+  Future<void> _performUpdate(BuildContext context) async {
+    final String localUser = Platform.environment['USER'] ??
+        'pi'; // Fallback to 'pi' if the USER environment variable is not found
+
+    final String upgradeFolder = '/home/$localUser/orion_upgrade/';
+    final String downloadPath = '$upgradeFolder/orion_armv7.tar.gz';
+    final String orionFolder = '/home/$localUser/orion/';
+    final String backupFolder = '/home/$localUser/orion_backup/';
 
     if (_assetUrl.isEmpty) {
       _logger.warning('Asset URL is empty');
@@ -470,6 +475,9 @@ class UpdateScreenState extends State<UpdateScreen> {
     }
 
     _logger.info('Downloading from $_assetUrl');
+
+    // Show the update dialog
+    _showUpdateDialog(context, 'Starting update...');
 
     try {
       // Purge and recreate the upgrade folder
@@ -483,11 +491,21 @@ class UpdateScreenState extends State<UpdateScreen> {
       }
       await upgradeDir.create(recursive: true);
 
+      // Update dialog text
+      _updateDialogText(context, 'Downloading update file...');
+
+      Future.delayed(const Duration(seconds: 1));
+
       // Download the update file
       final response = await http.get(Uri.parse(_assetUrl));
       if (response.statusCode == 200) {
         final file = File(downloadPath);
         await file.writeAsBytes(response.bodyBytes);
+
+        // Update dialog text
+        _updateDialogText(context, 'Backing up current installation...');
+
+        Future.delayed(const Duration(seconds: 1));
 
         // Copy /home/pi/orion/ to /home/pi/orion_backup/
         final orionDir = Directory(orionFolder);
@@ -498,6 +516,7 @@ class UpdateScreenState extends State<UpdateScreen> {
           if (deleteResult.exitCode != 0) {
             _logger.warning(
                 'Failed to delete backup directory: ${deleteResult.stderr}');
+            _dismissUpdateDialog(context);
             return;
           }
         }
@@ -507,6 +526,7 @@ class UpdateScreenState extends State<UpdateScreen> {
           if (renameResult.exitCode != 0) {
             _logger.warning(
                 'Failed to rename Orion directory: ${renameResult.stderr}');
+            _dismissUpdateDialog(context);
             return;
           }
         } else {
@@ -516,14 +536,23 @@ class UpdateScreenState extends State<UpdateScreen> {
         // Ensure the orion directory exists
         await orionDir.create(recursive: true);
 
+        // Update dialog text
+        _updateDialogText(context, 'Extracting update file...');
+
+        Future.delayed(const Duration(seconds: 2));
+
         // Extract the downloaded orion_armv7.tar.gz to /home/pi/orion/
         final result = await Process.run('sudo',
             ['tar', '--overwrite', '-xzf', downloadPath, '-C', orionFolder]);
         if (result.exitCode == 0) {
           _logger.info('Update script executed successfully');
 
+          // Update dialog text
+          _updateDialogText(context, 'Restarting Orion service...');
+
+          Future.delayed(const Duration(seconds: 2));
+
           // Restart the orion.service
-          _logger.info('Restarting Orion service...');
           final restartResult = await Process.run(
               'sudo', ['systemctl', 'restart', 'orion.service']);
           if (restartResult.exitCode == 0) {
@@ -540,6 +569,69 @@ class UpdateScreenState extends State<UpdateScreen> {
       }
     } catch (e) {
       _logger.warning('Update failed: $e');
+    } finally {
+      // Dismiss the update dialog
+      _dismissUpdateDialog(context);
+    }
+  }
+
+  Future<void> _showUpdateDialog(BuildContext context, String message) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: EdgeInsets.zero,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              color: Theme.of(context).colorScheme.background,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const SizedBox(
+                    height: 75,
+                    width: 75,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 60),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 32),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _updateDialogText(BuildContext context, String message) {
+    if (Navigator.of(context).canPop()) {
+      // Show the new dialog first
+      _showUpdateDialog(context, message).then((_) {
+        // Pop the old dialog after the new one has been rendered
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      });
+    } else {
+      // If there's no dialog to pop, just show the new one
+      _showUpdateDialog(context, message);
+    }
+  }
+
+  void _dismissUpdateDialog(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
     }
   }
 }
