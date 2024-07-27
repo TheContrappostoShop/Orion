@@ -461,13 +461,13 @@ class UpdateScreenState extends State<UpdateScreen> {
   }
 
   Future<void> _performUpdate(BuildContext context) async {
-    final String localUser = Platform.environment['USER'] ??
-        'pi'; // Fallback to 'pi' if the USER environment variable is not found
-
+    final String localUser = Platform.environment['USER'] ?? 'pi';
     final String upgradeFolder = '/home/$localUser/orion_upgrade/';
     final String downloadPath = '$upgradeFolder/orion_armv7.tar.gz';
     final String orionFolder = '/home/$localUser/orion/';
+    final String newOrionFolder = '/home/$localUser/orion_new/';
     final String backupFolder = '/home/$localUser/orion_backup/';
+    final String scriptPath = '$upgradeFolder/update_orion.sh';
 
     if (_assetUrl.isEmpty) {
       _logger.warning('Asset URL is empty');
@@ -491,6 +491,16 @@ class UpdateScreenState extends State<UpdateScreen> {
       }
       await upgradeDir.create(recursive: true);
 
+      final newDir = Directory(newOrionFolder);
+      if (await newDir.exists()) {
+        try {
+          await newDir.delete(recursive: true);
+        } catch (e) {
+          _logger.warning('Could not purge new Orion directory');
+        }
+      }
+      await newDir.create(recursive: true);
+
       // Update dialog text
       _updateDialogText(context, 'Downloading update file...');
 
@@ -503,79 +513,68 @@ class UpdateScreenState extends State<UpdateScreen> {
         await file.writeAsBytes(response.bodyBytes);
 
         // Update dialog text
-        _updateDialogText(context, 'Backing up current installation...');
+        _updateDialogText(context, 'Extracting update file...');
 
         await Future.delayed(const Duration(seconds: 1));
 
-        // Copy /home/pi/orion/ to /home/pi/orion_backup/
-        final orionDir = Directory(orionFolder);
-        final backupDir = Directory(backupFolder);
-        if (await backupDir.exists()) {
-          final deleteResult =
-              await Process.run('sudo', ['rm', '-R', '-rf', backupFolder]);
-          if (deleteResult.exitCode != 0) {
-            _logger.warning(
-                'Failed to delete backup directory: ${deleteResult.stderr}');
-            _dismissUpdateDialog(context);
-            return;
-          }
-        }
-        if (await orionDir.exists()) {
-          final renameResult = await Process.run(
-              'sudo', ['cp', '-R', orionFolder, backupFolder]);
-          if (renameResult.exitCode != 0) {
-            _logger.warning(
-                'Failed to rename Orion directory: ${renameResult.stderr}');
-            _dismissUpdateDialog(context);
-            return;
-          }
-        } else {
-          _logger.warning('Orion directory does not exist, skipping backup');
+        // Extract the update to the new directory
+        final extractResult = await Process.run('sudo',
+            ['tar', '--overwrite', '-xzf', downloadPath, '-C', newOrionFolder]);
+        if (extractResult.exitCode != 0) {
+          _logger.warning(
+              'Failed to extract update file: ${extractResult.stderr}');
+          _dismissUpdateDialog(context);
+          return;
         }
 
-        // Ensure the orion directory exists
-        await orionDir.create(recursive: true);
+        // Create the update script
+        final scriptContent = '''
+#!/bin/bash
+
+# Variables
+local_user=$localUser
+orion_folder=$orionFolder
+new_orion_folder=$newOrionFolder
+upgrade_folder=$upgradeFolder
+backup_folder=$backupFolder
+
+# Backup the current Orion directory
+sudo cp -R \$orion_folder \$backup_folder
+
+# Remove the old Orion directory
+sudo rm -R \$orion_folder
+
+# Restore config file
+sudo cp \$backup_folder/orion.cfg \$new_orion_folder
+
+# Move the new Orion directory to the original location
+sudo mv \$new_orion_folder \$orion_folder
+
+# Delete the upgrade and new folder
+sudo rm -R \$upgrade_folder
+
+# Fix permissions
+sudo chown -R \$local_user:\$local_user \$orion_folder
+
+# Restart the Orion service
+sudo systemctl restart orion.service
+''';
+
+        final scriptFile = File(scriptPath);
+        await scriptFile.writeAsString(scriptContent);
+        await Process.run('chmod', ['+x', scriptPath]);
 
         // Update dialog text
-        _updateDialogText(context, 'Extracting update file...');
+        _updateDialogText(context, 'Executing update script...');
 
         await Future.delayed(const Duration(seconds: 2));
 
-        // Extract the downloaded orion_armv7.tar.gz to /home/pi/orion/
-        final result = await Process.run('sudo',
-            ['tar', '--overwrite', '-xzf', downloadPath, '-C', orionFolder]);
+        // Execute the update script
+        final result = await Process.run('nohup', ['sudo', scriptPath]);
         if (result.exitCode == 0) {
           _logger.info('Update script executed successfully');
-
-          _updateDialogText(context, 'Setting permissions...');
-
-          await Future.delayed(const Duration(seconds: 2));
-
-          final chownResult = await Process.run(
-              'sudo', ['chown', '-R', '$localUser:$localUser', orionFolder]);
-          if (chownResult.exitCode == 0) {
-            // Ensure extraction has fully finished
-            await Future.delayed(const Duration(seconds: 2));
-
-            // Update dialog text
-            _updateDialogText(context, 'Restarting Orion service...');
-
-            await Future.delayed(const Duration(seconds: 2));
-
-            // Restart the orion.service
-            final restartResult = await Process.run(
-                'sudo', ['systemctl', 'restart', 'orion.service']);
-            if (restartResult.exitCode == 0) {
-              _logger.info('Orion service restarted successfully');
-            } else {
-              _logger.warning(
-                  'Failed to restart Orion service: ${restartResult.stderr}');
-            }
-          } else {
-            _logger.warning('Failed to set permissions: ${chownResult.stderr}');
-          }
         } else {
-          _logger.warning('Failed to extract update file: ${result.stderr}');
+          _logger.warning('Failed to execute update script: ${result.stderr}');
         }
       } else {
         _logger.warning('Failed to download update file');
