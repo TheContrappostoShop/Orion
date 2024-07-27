@@ -494,7 +494,7 @@ class UpdateScreenState extends State<UpdateScreen> {
       // Update dialog text
       _updateDialogText(context, 'Downloading update file...');
 
-      Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
 
       // Download the update file
       final response = await http.get(Uri.parse(_assetUrl));
@@ -505,7 +505,7 @@ class UpdateScreenState extends State<UpdateScreen> {
         // Update dialog text
         _updateDialogText(context, 'Backing up current installation...');
 
-        Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
 
         // Copy /home/pi/orion/ to /home/pi/orion_backup/
         final orionDir = Directory(orionFolder);
@@ -539,7 +539,7 @@ class UpdateScreenState extends State<UpdateScreen> {
         // Update dialog text
         _updateDialogText(context, 'Extracting update file...');
 
-        Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
 
         // Extract the downloaded orion_armv7.tar.gz to /home/pi/orion/
         final result = await Process.run('sudo',
@@ -547,19 +547,32 @@ class UpdateScreenState extends State<UpdateScreen> {
         if (result.exitCode == 0) {
           _logger.info('Update script executed successfully');
 
-          // Update dialog text
-          _updateDialogText(context, 'Restarting Orion service...');
+          _updateDialogText(context, 'Setting permissions...');
 
-          Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2));
 
-          // Restart the orion.service
-          final restartResult = await Process.run(
-              'sudo', ['systemctl', 'restart', 'orion.service']);
-          if (restartResult.exitCode == 0) {
-            _logger.info('Orion service restarted successfully');
+          final chownResult = await Process.run(
+              'sudo', ['chown', '-R', '$localUser:$localUser', orionFolder]);
+          if (chownResult.exitCode == 0) {
+            // Ensure extraction has fully finished
+            await Future.delayed(const Duration(seconds: 2));
+
+            // Update dialog text
+            _updateDialogText(context, 'Restarting Orion service...');
+
+            await Future.delayed(const Duration(seconds: 2));
+
+            // Restart the orion.service
+            final restartResult = await Process.run(
+                'sudo', ['systemctl', 'restart', 'orion.service']);
+            if (restartResult.exitCode == 0) {
+              _logger.info('Orion service restarted successfully');
+            } else {
+              _logger.warning(
+                  'Failed to restart Orion service: ${restartResult.stderr}');
+            }
           } else {
-            _logger.warning(
-                'Failed to restart Orion service: ${restartResult.stderr}');
+            _logger.warning('Failed to set permissions: ${chownResult.stderr}');
           }
         } else {
           _logger.warning('Failed to extract update file: ${result.stderr}');
