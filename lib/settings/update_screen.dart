@@ -48,7 +48,7 @@ class UpdateScreenState extends State<UpdateScreen> {
   String _commitDate = '';
   String _releaseNotes = '';
   String _currentVersion = '';
-  String _branch = 'dev';
+  String _release = 'RELEASE_dev';
   String _assetUrl = '';
 
   final Logger _logger = Logger('UpdateScreen');
@@ -62,15 +62,15 @@ class UpdateScreenState extends State<UpdateScreen> {
         _config.getFlag('overrideUpdateCheck', category: 'developer');
     _betaUpdatesOverride =
         _config.getFlag('betaOverride', category: 'developer');
-    _branch = _config.getString('overrideBranch', category: 'developer');
+    _release = _config.getString('overrideBranch', category: 'developer');
     _logger.info('Firmware spoofing enabled: $_isFirmwareSpoofingEnabled');
     _logger.info('Beta updates override enabled: $_betaUpdatesOverride');
-    _logger.info('Branch override: $_branch');
+    _logger.info('Release channel override: $_release');
   }
 
   Future<void> _initUpdateCheck() async {
     await _getCurrentAppVersion();
-    await _checkForUpdates(_branch);
+    await _checkForUpdates(_release);
   }
 
   Future<void> _getCurrentAppVersion() async {
@@ -86,9 +86,9 @@ class UpdateScreenState extends State<UpdateScreen> {
     }
   }
 
-  Future<void> _checkForUpdates(String branch) async {
+  Future<void> _checkForUpdates(String release) async {
     if (_betaUpdatesOverride) {
-      await _checkForBERUpdates(branch);
+      await _checkForBERUpdates(release);
     } else {
       const String url =
           'https://api.github.com/repos/thecontrappostoshop/orion/releases/latest';
@@ -159,10 +159,10 @@ class UpdateScreenState extends State<UpdateScreen> {
     return commitSha == _currentVersion.split('+')[1];
   }
 
-  Future<void> _checkForBERUpdates(String branch) async {
-    if (branch.isEmpty) {
-      _logger.warning('Branch name is empty');
-      branch = 'dev';
+  Future<void> _checkForBERUpdates(String release) async {
+    if (release.isEmpty) {
+      _logger.warning('release name is empty');
+      release = 'BRANCH_dev';
     }
     String url =
         'https://api.github.com/repos/thecontrappostoshop/orion/releases';
@@ -176,8 +176,7 @@ class UpdateScreenState extends State<UpdateScreen> {
           final jsonResponse = json.decode(response.body) as List;
           final preRelease = jsonResponse.firstWhere(
               (release) =>
-                  release['prerelease'] == true &&
-                  release['tag_name'].contains(branch),
+                  release['tag_name'].equals(release),
               orElse: () => null);
           if (preRelease != null) {
             final String latestVersion = preRelease['tag_name'];
@@ -213,7 +212,7 @@ class UpdateScreenState extends State<UpdateScreen> {
               _logger.info('Latest pre-release version: $latestVersion');
               setState(() {
                 _latestVersion =
-                    '$shortCommitSha (BRANCH_$branch)'; // Append branch name
+                    '$shortCommitSha ($release)'; // Append release name
                 _releaseNotes = commitMessage;
                 _commitDate = commitDate; // Store commit date
                 _isLoading = false;
@@ -232,7 +231,7 @@ class UpdateScreenState extends State<UpdateScreen> {
               return; // Exit the function after failure
             }
           } else {
-            _logger.warning('No pre-release found for branch: $branch');
+            _logger.warning('No release found named $release');
             setState(() {
               _isLoading = false;
               _rateLimitExceeded = false;
@@ -428,7 +427,7 @@ class UpdateScreenState extends State<UpdateScreen> {
                     const Divider(),
                     Text(
                         _betaUpdatesOverride
-                            ? 'Current Version: $_currentVersion (BRANCH_$_branch)'
+                            ? 'Current Version: $_currentVersion ($_release)'
                             : 'Current Version: ${_currentVersion.split('+')[0]}',
                         style: const TextStyle(fontSize: 20)),
                   ],
