@@ -48,7 +48,7 @@ class UpdateScreenState extends State<UpdateScreen> {
   String _commitDate = '';
   String _releaseNotes = '';
   String _currentVersion = '';
-  String _release = 'RELEASE_dev';
+  String _release = 'BRANCH_dev';
   String _assetUrl = '';
 
   final Logger _logger = Logger('UpdateScreen');
