@@ -125,9 +125,12 @@ class OrionConfig {
                   backgroundColor: Theme.of(context).colorScheme.background,
                   child: const Center(
                     child: SizedBox(
-                        height: 75,
-                        width: 75,
-                        child: CircularProgressIndicator()),
+                      height: 75,
+                      width: 75,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 6,
+                      ),
+                    ),
                   ),
                 ),
               );
