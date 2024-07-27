@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 /*
 * Orion - Update Screen
 * Copyright (C) 2024 TheContrappostoShop
@@ -537,6 +539,11 @@ orion_folder=$orionFolder
 new_orion_folder=$newOrionFolder
 upgrade_folder=$upgradeFolder
 backup_folder=$backupFolder
+
+# If previous backup exists, delete it
+if [ -d \$backup_folder ]; then
+  sudo rm -R \$backup_folder
+fi
 
 # Backup the current Orion directory
 sudo cp -R \$orion_folder \$backup_folder
