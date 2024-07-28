@@ -43,9 +43,11 @@ class UpdateScreenState extends State<UpdateScreen> {
   bool _isFirmwareSpoofingEnabled = false;
   bool _betaUpdatesOverride = false;
   bool _rateLimitExceeded = false;
+  bool _preRelease = false;
 
   String _latestVersion = '';
   String _commitDate = '';
+  String _releaseDate = '';
   String _releaseNotes = '';
   String _currentVersion = '';
   String _release = 'BRANCH_dev';
@@ -103,6 +105,7 @@ class UpdateScreenState extends State<UpdateScreen> {
             final String latestVersion = jsonResponse['tag_name']
                 .replaceAll('v', ''); // Remove 'v' prefix if present
             final String releaseNotes = jsonResponse['body'];
+            final String releaseDate = jsonResponse['published_at'];
             _logger.info('Latest version: $latestVersion');
             if (_isNewerVersion(latestVersion, _currentVersion)) {
               // Find the asset URL for orion_armv7.tar.gz
@@ -114,6 +117,7 @@ class UpdateScreenState extends State<UpdateScreen> {
               setState(() {
                 _latestVersion = latestVersion;
                 _releaseNotes = releaseNotes;
+                _releaseDate = releaseDate;
                 _isLoading = false;
                 _isUpdateAvailable = true;
                 _assetUrl = assetUrl; // Set the asset URL
@@ -174,13 +178,13 @@ class UpdateScreenState extends State<UpdateScreen> {
         final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
           final jsonResponse = json.decode(response.body) as List;
-          final preRelease = jsonResponse.firstWhere(
-              (release) =>
-                  release['tag_name'].equals(release),
+          final releaseItem = jsonResponse.firstWhere(
+              (releaseItem) => releaseItem['tag_name'] == release,
               orElse: () => null);
-          if (preRelease != null) {
-            final String latestVersion = preRelease['tag_name'];
-            final String commitSha = preRelease['target_commitish'];
+
+          if (releaseItem != null) {
+            final String latestVersion = releaseItem['tag_name'];
+            final String commitSha = releaseItem['target_commitish'];
             final commitUrl =
                 'https://api.github.com/repos/thecontrappostoshop/orion/commits/$commitSha';
             final commitResponse = await http.get(Uri.parse(commitUrl));
@@ -204,21 +208,25 @@ class UpdateScreenState extends State<UpdateScreen> {
               }
 
               // Find the asset URL for orion_armv7.tar.gz
-              final asset = preRelease['assets'].firstWhere(
+              final asset = releaseItem['assets'].firstWhere(
                   (asset) => asset['name'] == 'orion_armv7.tar.gz',
                   orElse: () => null);
               final String assetUrl =
                   asset != null ? asset['browser_download_url'] : '';
               _logger.info('Latest pre-release version: $latestVersion');
+              final bool preRelease = releaseItem['prerelease'];
+              _logger.info('Pre-release: $preRelease');
               setState(() {
                 _latestVersion =
                     '$shortCommitSha ($release)'; // Append release name
-                _releaseNotes = commitMessage;
+                _releaseNotes =
+                    preRelease ? commitMessage : releaseItem['body'];
                 _commitDate = commitDate; // Store commit date
                 _isLoading = false;
                 _isUpdateAvailable = true;
                 _rateLimitExceeded = false;
                 _assetUrl = assetUrl; // Set the asset URL
+                _preRelease = preRelease;
               });
               return; // Exit the function after successful fetch
             } else {
@@ -348,14 +356,26 @@ class UpdateScreenState extends State<UpdateScreen> {
                     Row(
                       children: [
                         _betaUpdatesOverride
-                            ? PhosphorIcon(PhosphorIcons.knife())
+                            ? _preRelease
+                                ? PhosphorIcon(
+                                    PhosphorIcons.knife(),
+                                    color: Colors.red,
+                                    size: 30,
+                                  )
+                                : PhosphorIcon(
+                                    PhosphorIcons.arrowCounterClockwise(),
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    size: 30)
                             : Icon(Icons.system_update,
                                 color: Theme.of(context).colorScheme.primary,
                                 size: 30),
                         const SizedBox(width: 10),
                         Text(
                             _betaUpdatesOverride
-                                ? 'Bleeding Edge Available!'
+                                ? _preRelease
+                                    ? 'Bleeding Edge Available!'
+                                    : 'Rollback Available!'
                                 : 'UI Update Available!',
                             style: const TextStyle(
                                 fontSize: 26, fontWeight: FontWeight.bold)),
@@ -364,14 +384,16 @@ class UpdateScreenState extends State<UpdateScreen> {
                     const Divider(),
                     Text(
                         _betaUpdatesOverride
-                            ? 'Latest Commit: $_latestVersion'
+                            ? _preRelease
+                                ? 'Latest Commit: $_latestVersion'
+                                : 'Rollback to: ${_latestVersion.split('(')[1].split(')')[0]}'
                             : 'Latest Version: ${_latestVersion.split('+')[0]}',
                         style: const TextStyle(fontSize: 22)),
                     const SizedBox(height: 10),
                     Text(
                       _betaUpdatesOverride
                           ? 'Commit Date: ${_commitDate.split('T')[0]}' // Display commit date if beta updates are enabled
-                          : 'Release Date: ${_getFormattedDate()}',
+                          : 'Release Date: ${_releaseDate.split('T')[0]}',
                       style: const TextStyle(fontSize: 20, color: Colors.grey),
                     ),
                     const SizedBox(height: 10),
@@ -454,11 +476,6 @@ class UpdateScreenState extends State<UpdateScreen> {
         ],
       ),
     );
-  }
-
-  String _getFormattedDate() {
-    // Placeholder function to return a formatted date
-    return '2023-10-01';
   }
 
   Future<void> _performUpdate(BuildContext context) async {
