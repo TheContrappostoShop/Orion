@@ -20,9 +20,11 @@ jobs:
 
       - name: Get Version
         id: get_version
-        uses: mikefarah/yq@master
-        with:
-          cmd: yq '.version' pubspec.yaml
+        run: |
+          VERSION=$(yq '.version' pubspec.yaml)
+          # Strip build metadata if it exists
+          VERSION=$(echo $VERSION | sed 's/+.*//')
+          echo "::set-output name=result::$VERSION"
 
       - name: Update Version with Commit Hash
         run: |
