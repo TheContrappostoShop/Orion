@@ -40,9 +40,9 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
   late bool useCustomUrl;
   late String customUrl;
   late bool developerMode;
-  late bool betaOverride;
+  late bool releaseOverride;
   late bool overrideUpdateCheck;
-  late String overrideBranch;
+  late String overrideRelease;
   late bool verboseLogging;
   late bool selfDestructMode;
 
@@ -64,10 +64,11 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
     useCustomUrl = config.getFlag('useCustomUrl', category: 'advanced');
     customUrl = config.getString('customUrl', category: 'advanced');
     developerMode = config.getFlag('developerMode', category: 'advanced');
-    betaOverride = config.getFlag('betaOverride', category: 'developer');
+    releaseOverride = config.getFlag('releaseOverride', category: 'developer');
     overrideUpdateCheck =
         config.getFlag('overrideUpdateCheck', category: 'developer');
-    overrideBranch = config.getString('overrideBranch', category: 'developer');
+    overrideRelease =
+        config.getString('overrideRelease', category: 'developer');
     verboseLogging = config.getFlag('verboseLogging', category: 'developer');
     selfDestructMode =
         config.getFlag('selfDestructMode', category: 'topsecret');
@@ -275,7 +276,8 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                             onPressed: () {
                                               Navigator.of(context).pop();
                                             },
-                                            child: const Text('Close'),
+                                            child: const Text('Close',
+                                                style: TextStyle(fontSize: 20)),
                                           ),
                                           TextButton(
                                             onPressed: () {
@@ -289,7 +291,8 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                               });
                                               Navigator.of(context).pop();
                                             },
-                                            child: const Text('Confirm'),
+                                            child: const Text('Confirm',
+                                                style: TextStyle(fontSize: 20)),
                                           ),
                                         ],
                                       );
@@ -359,19 +362,19 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                       ),
                       const SizedBox(height: 20.0),
                       OrionListTile(
-                        title: 'Beta Override',
+                        title: 'Release Tag Override',
                         icon: PhosphorIcons.download(),
-                        value: betaOverride,
+                        value: releaseOverride,
                         onChanged: (bool value) {
                           setState(() {
-                            betaOverride = value;
-                            config.setFlag('betaOverride', betaOverride,
+                            releaseOverride = value;
+                            config.setFlag('releaseOverride', releaseOverride,
                                 category: 'developer');
                           });
                         },
                       ),
-                      if (betaOverride) const SizedBox(height: 20.0),
-                      if (betaOverride)
+                      if (releaseOverride) const SizedBox(height: 20.0),
+                      if (releaseOverride)
                         Row(
                           children: [
                             Expanded(
@@ -417,23 +420,27 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                               onPressed: () {
                                                 Navigator.of(context).pop();
                                               },
-                                              child: const Text('Close'),
+                                              child: const Text('Close',
+                                                  style:
+                                                      TextStyle(fontSize: 20)),
                                             ),
                                             TextButton(
                                               onPressed: () {
                                                 setState(() {
-                                                  overrideBranch =
+                                                  overrideRelease =
                                                       branchTextFieldKey
                                                           .currentState!
                                                           .getCurrentText();
                                                   config.setString(
-                                                      'overrideBranch',
-                                                      overrideBranch,
+                                                      'overrideRelease',
+                                                      overrideRelease,
                                                       category: 'developer');
                                                 });
                                                 Navigator.of(context).pop();
                                               },
-                                              child: const Text('Confirm'),
+                                              child: const Text('Confirm',
+                                                  style:
+                                                      TextStyle(fontSize: 20)),
                                             ),
                                           ],
                                         );
@@ -441,9 +448,9 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                     );
                                   },
                                   child: Text(
-                                      overrideBranch == ''
-                                          ? 'Set Branch'
-                                          : overrideBranch,
+                                      overrideRelease == ''
+                                          ? 'Set Release Tag'
+                                          : overrideRelease,
                                       style: const TextStyle(fontSize: 22)),
                                 ),
                               ),
@@ -454,17 +461,17 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                 height: 55,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(elevation: 3),
-                                  onPressed: overrideBranch == ''
+                                  onPressed: overrideRelease == ''
                                       ? null
                                       : () {
                                           setState(() {
-                                            overrideBranch = '';
-                                            config.setString('overrideBranch',
-                                                overrideBranch,
+                                            overrideRelease = '';
+                                            config.setString('overrideRelease',
+                                                overrideRelease,
                                                 category: 'developer');
                                           });
                                         },
-                                  child: const Text('Clear Branch',
+                                  child: const Text('Clear Release Tag',
                                       style: TextStyle(fontSize: 22)),
                                 ),
                               ),
@@ -473,7 +480,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                         ),
                       const SizedBox(height: 20.0),
                       OrionListTile(
-                        title: 'Ignore Update Check',
+                        title: 'Force Update',
                         icon: PhosphorIcons.warning(),
                         value: overrideUpdateCheck,
                         onChanged: (bool value) {

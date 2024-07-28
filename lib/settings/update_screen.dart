@@ -63,8 +63,8 @@ class UpdateScreenState extends State<UpdateScreen> {
     _isFirmwareSpoofingEnabled =
         _config.getFlag('overrideUpdateCheck', category: 'developer');
     _betaUpdatesOverride =
-        _config.getFlag('betaOverride', category: 'developer');
-    _release = _config.getString('overrideBranch', category: 'developer');
+        _config.getFlag('releaseOverride', category: 'developer');
+    _release = _config.getString('overrideRelease', category: 'developer');
     _logger.info('Firmware spoofing enabled: $_isFirmwareSpoofingEnabled');
     _logger.info('Beta updates override enabled: $_betaUpdatesOverride');
     _logger.info('Release channel override: $_release');
