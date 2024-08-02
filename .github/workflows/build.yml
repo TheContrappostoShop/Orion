@@ -24,7 +24,7 @@ jobs:
           VERSION=$(yq '.version' pubspec.yaml)
           # Strip build metadata if it exists
           VERSION=$(echo $VERSION | sed 's/+.*//')
-          echo "::set-output name=result::$VERSION"
+          echo "result=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Update Version with Commit Hash
         run: |
@@ -44,10 +44,12 @@ jobs:
           mv build/flutter_assets $BUILD_NAME
           ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
           cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
+          
       - uses: actions/upload-artifact@v4.3.1
         with:
           name: orion_armv7
           path: orion_armv7/*
+
       - name: Build, Copy, and Compress aarch64
         run: |
           BUILD_NAME=orion_aarch64
@@ -55,10 +57,12 @@ jobs:
           mv build/flutter_assets $BUILD_NAME
           ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
           cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
+
       - uses: actions/upload-artifact@v4.3.1
         with:
           name: orion_aarch64
           path: orion_aarch64/*
+
       - name: Build, Copy, and Compress x64
         run: |
           BUILD_NAME=orion_x64
@@ -66,10 +70,12 @@ jobs:
           mv build/flutter_assets $BUILD_NAME
           ( cd $BUILD_NAME && tar -czvf $BUILD_NAME.tar.gz * )
           cp $BUILD_NAME/$BUILD_NAME.tar.gz $BUILD_NAME.tar.gz
+
       - uses: actions/upload-artifact@v4.3.1
         with:
           name: orion_x64
           path: orion_x64/*
+
       - uses: ncipollo/release-action@v1.14.0
         if: github.ref == 'refs/heads/main'
         with:
@@ -78,6 +84,7 @@ jobs:
           skipIfReleaseExists: true
           generateReleaseNotes: true
           commit: ${{github.sha}}
+
       - uses: ncipollo/release-action@v1.14.0
         if: github.ref != 'refs/heads/main'
         with:
