@@ -145,14 +145,6 @@ class GridFilesScreenState extends State<GridFilesScreen> {
       final List<OrionApiItem> items = [...dirs, ...files];
       if (items.isNotEmpty) {}
 
-      /*if (kDebugMode) {
-        print('---------------------------------------');
-        print("Device: ${_isUSB ? 'USB' : 'Internal'}");
-        print("Parent Path: $_parentPath");
-        print("Subdirectory: $_subdirectory");
-        print("Fetched: ${files.length} files and ${dirs.length} directories.");
-      }*/
-
       setState(() {
         _isLoading = false;
       });
@@ -168,6 +160,7 @@ class GridFilesScreenState extends State<GridFilesScreen> {
     }
   }
 
+  // TODO: Re-implement sorting
   /*void _toggleSortOrder() {
     setState(() {
       _items.sort((a, b) {
