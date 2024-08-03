@@ -95,7 +95,6 @@ flutter:
     - assets/images/opensource.svg
     - assets/images/placeholder.png
     - assets/images/bsod.png
-    - assets/images/thumbnail800x480.png
     - README.md
     - CHANGELOG.md
 
