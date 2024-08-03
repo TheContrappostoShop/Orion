@@ -1,6 +1,6 @@
 /*
 * Orion - Orion Keyboard Expander
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by

@@ -1,6 +1,6 @@
 /*
-* Orion - Seattings Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Orion - Settings Screen
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,17 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:orion/pubspec.dart';
-import 'package:orion/settings/debug_screen.dart';
-import 'package:orion/util/markdown_screen.dart';
 import 'package:provider/provider.dart';
+
 import 'package:about/about.dart';
 
-import 'calibrate_screen.dart';
-import 'wifi_screen.dart';
-import 'about_screen.dart';
+import 'package:orion/pubspec.dart';
+import 'package:orion/settings/about_screen.dart';
+import 'package:orion/settings/debug_screen.dart';
+import 'package:orion/settings/general_screen.dart';
+import 'package:orion/settings/update_screen.dart';
+import 'package:orion/settings/wifi_screen.dart';
+import 'package:orion/util/markdown_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -59,83 +61,95 @@ class SettingsScreenState extends State<SettingsScreen> {
         title: const Text('Settings'),
         actions: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(right: 15.0),
-            child: IconButton(
-              icon: const Icon(
-                Icons.info,
-              ),
-              iconSize: 35,
-              onPressed: () {
-                showAboutPage(
-                    context: context,
-                    values: {
-                      'version': Pubspec.version,
-                      'buildNumber': Pubspec.versionBuild.toString(),
-                      'year': DateTime.now().year.toString(),
-                    },
-                    applicationVersion:
-                        'Version {{ version }}, Build {{ buildNumber }}',
-                    applicationName: 'Orion',
-                    applicationLegalese:
-                        'GPLv3 - Copyright © TheContrappostoShop {{ year buildType }}',
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                        child: Card(
-                            child: ListTile(
-                          leading: const Icon(Icons.list, size: 30),
-                          title: const Text(
-                            'Changelog',
-                            style: TextStyle(fontSize: 24),
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MarkdownScreen(
-                                    filename: 'CHANGELOG.md'),
-                              ),
-                            );
+            padding: const EdgeInsets.only(right: 16.0),
+            child: _selectedIndex == 2
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.info,
+                    ),
+                    iconSize: 35,
+                    onPressed: () {
+                      showAboutPage(
+                          context: context,
+                          values: {
+                            'version': Pubspec.version,
+                            'buildNumber': Pubspec.versionBuild.toString(),
+                            'commit': Pubspec.versionFull
+                                        .toString()
+                                        .split('+')[1] ==
+                                    'SELFCOMPILED'
+                                ? 'Local Build'
+                                : 'Commit ${Pubspec.versionFull.toString().split('+')[1]}',
+                            'year': DateTime.now().year.toString(),
                           },
-                        )),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Card(
-                          child: LicensesPageListTile(
-                            title: Text(
-                              'Open-Source Licenses',
-                              style: TextStyle(fontSize: 24),
+                          applicationVersion:
+                              'Version {{ version }} - {{ commit }}',
+                          applicationName: 'Orion',
+                          applicationLegalese:
+                              'GPLv3 - Copyright © TheContrappostoShop {{ year }}',
+                          children: <Widget>[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 10, right: 10),
+                              child: Card(
+                                  child: ListTile(
+                                leading: const Icon(Icons.list, size: 30),
+                                title: const Text(
+                                  'Changelog',
+                                  style: TextStyle(fontSize: 24),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const MarkdownScreen(
+                                              filename: 'CHANGELOG.md'),
+                                    ),
+                                  );
+                                },
+                              )),
                             ),
-                            icon: Icon(
-                              Icons.favorite,
-                              size: 30,
+                            const Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Card(
+                                child: LicensesPageListTile(
+                                  title: Text(
+                                    'Open-Source Licenses',
+                                    style: TextStyle(fontSize: 24),
+                                  ),
+                                  icon: Icon(
+                                    Icons.favorite,
+                                    size: 30,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    applicationIcon: const FlutterLogo(
-                      size: 100,
-                    ));
-              },
-            ),
+                          ],
+                          applicationIcon: const FlutterLogo(
+                            size: 100,
+                          ));
+                    },
+                  )
+                : null,
           ),
         ],
       ),
       body: _selectedIndex == 0
-          ? const CalibrateScreen()
+          ? const GeneralCfgScreen()
           : _selectedIndex == 1
               ? const WifiScreen()
               : _selectedIndex == 2
                   ? const AboutScreen()
-                  : DebugScreen(changeThemeMode: changeThemeMode),
+                  : _selectedIndex == 3
+                      ? const UpdateScreen()
+                      : DebugScreen(changeThemeMode: changeThemeMode),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Calibrate',
+            label: 'General',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.network_wifi),
@@ -145,6 +159,7 @@ class SettingsScreenState extends State<SettingsScreen> {
             icon: Icon(Icons.info),
             label: 'About',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.update), label: 'Updates'),
           if (kDebugMode)
             BottomNavigationBarItem(
               icon: Icon(Icons.bug_report),

@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.2.0+1
+version: 0.3.0+SELFCOMPILED
 
 environment:
   sdk: ">=2.18.5 <3.0.0"
@@ -63,6 +63,8 @@ dependencies:
   pubspec_extract: ^2.0.5
   flutter_markdown: ^0.6.23
   logging: ^1.2.0
+  toastification: ^2.0.0
+  async: ^2.11.0
 
 dev_dependencies:
   flutter_test:
@@ -92,8 +94,21 @@ flutter:
   assets:
     - assets/images/opensource.svg
     - assets/images/placeholder.png
+    - assets/images/bsod.png
     - README.md
     - CHANGELOG.md
+
+  fonts:
+    - family: AtkinsonHyperlegible
+      fonts:
+        - asset: assets/fonts/AtkinsonHyperlegible-Regular.ttf
+        - asset: assets/fonts/AtkinsonHyperlegible-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/AtkinsonHyperlegible-Italic.ttf
+          style: italic
+        - asset: assets/fonts/AtkinsonHyperlegible-BoldItalic.ttf
+          weight: 700
+          style: italic
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

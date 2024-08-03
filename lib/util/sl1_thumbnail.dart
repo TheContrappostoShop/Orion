@@ -1,6 +1,6 @@
 /*
 * Orion - Thumbnail Util
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,16 @@ import 'package:path_provider/path_provider.dart';
 
 class ThumbnailUtil {
   static final _logger = Logger('ThumbnailUtil');
+  static final ApiService _api = ApiService();
 
-  static Future<String> extractThumbnail(String location, String subdirectory, String filename) async {
+  static Future<String> extractThumbnail(
+      String location, String subdirectory, String filename,
+      {String size = "Small"}) async {
     try {
-      String finalLocation = _isDefaultDir(subdirectory) ? filename : [subdirectory, filename].join('/');
-      final bytes = await ApiService.getFileThumbnail(location, finalLocation);
+      String finalLocation = _isDefaultDir(subdirectory)
+          ? filename
+          : [subdirectory, filename].join('/');
+      final bytes = await _api.getFileThumbnail(location, finalLocation, size);
 
       final tempDir = await getTemporaryDirectory();
       final orionTmpDir = Directory('${tempDir.path}/oriontmp/$finalLocation');
@@ -35,7 +40,9 @@ class ThumbnailUtil {
         await orionTmpDir.create(recursive: true);
       }
 
-      final filePath = '${orionTmpDir.path}/thumbnail400x400.png';
+      final filePath = size == "Small"
+          ? '${orionTmpDir.path}/thumbnail400x400.png'
+          : '${orionTmpDir.path}/thumbnail840x400.png';
       final outputFile = File(filePath);
       outputFile.writeAsBytesSync(bytes);
 
@@ -50,7 +57,8 @@ class ThumbnailUtil {
 
       // If the total size exceeds 100MB, delete the oldest files
       if (totalSize > 100 * 1024 * 1024) {
-        files.sort((a, b) => a.statSync().modified.compareTo(b.statSync().modified));
+        files.sort(
+            (a, b) => a.statSync().modified.compareTo(b.statSync().modified));
         while (totalSize > 100 * 1024 * 1024 && files.isNotEmpty) {
           int fileSize = await (files.first as File).length();
           await files.first.delete();

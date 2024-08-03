@@ -1,6 +1,6 @@
 /*
 * Orion - Odyssey API Service
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,34 @@
 
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:orion/util/orion_config.dart';
 
 class ApiService {
-  // For Debugging Purposes: TheContrappostoShop Internal Debug API URL (Simulated Odyssey)
-  // During production, this will be the actual Odyssey API URL (currently assuming to localhost)
-  static const String apiUrl = kDebugMode ? "https://dev.plyktra.de" : 'http://127.0.0.1:12357';
+  static final _logger = Logger('ApiService');
+
+  late String apiUrl;
+  late String customUrl;
+  late bool useCustomUrl;
+
+  ApiService() {
+    try {
+      OrionConfig config = OrionConfig();
+      customUrl = config.getString('customUrl', category: 'advanced');
+      useCustomUrl = config.getFlag('useCustomUrl', category: 'advanced');
+      apiUrl = useCustomUrl ? customUrl : 'http://localhost:12357';
+    } catch (e) {
+      throw Exception('Failed to load orion.cfg: $e');
+    }
+  }
 
   // Method for creating a Uri object based on http or https protocol
-  static Uri dynUri(String apiUrl, String path, Map<String, dynamic> queryParams) {
+  static Uri dynUri(
+      String apiUrl, String path, Map<String, dynamic> queryParams) {
     if (queryParams.containsKey('file_path')) {
-      queryParams['file_path'] = queryParams['file_path'].toString().replaceAll('//', '');
+      queryParams['file_path'] =
+          queryParams['file_path'].toString().replaceAll('//', '');
     }
 
     if (apiUrl.startsWith('https://')) {
@@ -44,64 +61,123 @@ class ApiService {
   /// GET METHODS TO ODYSSEY
   ///
 
-  // Get current status of the printer
-  static Future<Map<String, dynamic>> getStatus() async {
-    final response = await http.get(
-      dynUri(apiUrl, '/status', {}),
-    );
+  Future<http.Response> odysseyGet(
+      String endpoint, Map<String, dynamic> queryParams) async {
+    var uri = dynUri(apiUrl, endpoint, queryParams);
+    _logger.fine('Odyssey GET $uri');
+
+    final response = await http.get(uri);
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      return response;
     } else {
-      throw Exception('Failed to fetch status');
+      throw Exception('Odyssey GET call failed: $response');
     }
+  }
+
+  Future<http.Response> odysseyPost(
+      String endpoint, Map<String, dynamic> queryParams) async {
+    var uri = dynUri(apiUrl, endpoint, queryParams);
+    _logger.fine('Odyssey POST $uri');
+
+    final response = await http.post(uri);
+
+    if (response.statusCode == 200) {
+      return response;
+    } else {
+      throw Exception('Odyssey POST call failed: $response');
+    }
+  }
+
+  Future<http.Response> odysseyDelete(
+      String endpoint, Map<String, dynamic> queryParams) async {
+    var uri = dynUri(apiUrl, endpoint, queryParams);
+    _logger.fine('Odyssey DELETE $uri');
+
+    final response = await http.delete(uri);
+
+    if (response.statusCode == 200) {
+      return response;
+    } else {
+      throw Exception('Odyssey DELETE call failed: $response');
+    }
+  }
+
+  // Get current status of the printer
+  Future<Map<String, dynamic>> getStatus() async {
+    _logger.info("getStatus");
+    final response = await odysseyGet('/status', {});
+    return json.decode(response.body);
+  }
+
+  // Get current status of the printer
+  Future<Map<String, dynamic>> getConfig() async {
+    _logger.info("getConfig");
+    final response = await odysseyGet('/config', {});
+    return json.decode(response.body);
   }
 
   // Get list of files and directories in a specific location with pagination
   // Takes 3 parameters : location [string], pageSize [int] and pageIndex [int]
-  static Future<Map<String, dynamic>> listItems(
+  Future<Map<String, dynamic>> listItems(
       String location, int pageSize, int pageIndex, String subdirectory) async {
+    _logger.info(
+        "listItems location=$location pageSize=$pageSize pageIndex=$pageIndex subdirectory=$subdirectory");
     final queryParams = {
       "location": location,
       "subdirectory": subdirectory,
       "page_index": pageIndex.toString(),
       "page_size": pageSize.toString(),
     };
-    final response = await http.get(dynUri(apiUrl, '/files', queryParams));
 
-    if (response.statusCode == 200) {
-      // TODO check the response sent by odyssey
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to fetch status');
+    final response = await odysseyGet('/files', queryParams);
+    return json.decode(response.body);
+  }
+
+  // Method to check if USB is available
+  Future<bool> usbAvailable() async {
+    try {
+      await listItems('Local', 1, 0, '');
+    } catch (e) {
+      _logger.severe('Failed to list items on Internal: $e');
+      return false;
+    }
+
+    try {
+      // Try to list items on Usb
+      await listItems('Usb', 1, 0, '');
+      return true; // If successful, return true
+    } catch (e) {
+      _logger.severe('Failed to list items on Usb: $e');
+      return false; // If unsuccessful, return false
     }
   }
 
   // Get file metadata
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<Map<String, dynamic>> getFileMetadata(String location, String filePath) async {
+  Future<Map<String, dynamic>> getFileMetadata(
+      String location, String filePath) async {
+    _logger.info("getFileMetadata location=$location filePath=$filePath");
     final queryParams = {"location": location, "file_path": filePath};
-    final response = await http.get(dynUri(apiUrl, '/file/metadata', queryParams));
 
-    if (response.statusCode == 200) {
-      // TODO check the response sent by odyssey
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to fetch status');
-    }
+    final response = await odysseyGet('/file/metadata', queryParams);
+    return json.decode(response.body);
   }
 
   // Get file thumbnail
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<Uint8List> getFileThumbnail(String location, String filePath) async {
-    final queryParams = {"location": location, "file_path": filePath};
-    final response = await http.get(dynUri(apiUrl, '/file/thumbnail', queryParams));
+  Future<Uint8List> getFileThumbnail(
+      String location, String filePath, String size) async {
+    _logger.info(
+        "getFileThumbnail location=$location filePath=$filePath size=$size");
+    final queryParams = {
+      "location": location,
+      "file_path": filePath,
+      "size": size
+    };
 
-    if (response.statusCode == 200) {
-      return response.bodyBytes;
-    } else {
-      throw Exception('Failed to fetch thumbnail');
-    }
+    final response = await odysseyGet('/file/thumbnail', queryParams);
+    return response.bodyBytes;
   }
 
   ///
@@ -110,99 +186,106 @@ class ApiService {
 
   // Start printing a given file
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<void> startPrint(String location, String filePath) async {
-    final response = await http.post(
-      dynUri(apiUrl, '/print/start', {
-        'location': location,
-        'file_path': filePath,
-      }),
-    );
+  Future<void> startPrint(String location, String filePath) async {
+    _logger.info("startPrint location=$location filePath=$filePath");
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to post data');
-    }
+    final queryParams = {
+      'location': location,
+      'file_path': filePath,
+    };
+
+    await odysseyPost('/print/start', queryParams);
   }
 
   // Cancel the print
-  static Future<Null> cancelPrint() async {
-    final response = await http.post(dynUri(apiUrl, '/print/cancel', {}));
+  Future<void> cancelPrint() async {
+    _logger.info("cancelPrint");
 
-    if (response.statusCode != 200) {
-      // TODO check the response sent by odyssey
-      throw Exception('Failed to post data');
-    }
+    await odysseyPost('/print/cancel', {});
   }
 
   // Pause the print
-  static Future<Null> pausePrint() async {
-    final response = await http.post(dynUri(apiUrl, '/print/pause', {}));
+  Future<void> pausePrint() async {
+    _logger.info("pausePrint");
 
-    if (response.statusCode != 200) {
-      // TODO check the response sent by odyssey
-      throw Exception('Failed to post data');
-    }
+    await odysseyPost('/print/pause', {});
   }
 
   // Resume the print
-  static Future<Null> resumePrint() async {
-    final response = await http.post(dynUri(apiUrl, '/print/resume', {}));
+  Future<void> resumePrint() async {
+    _logger.info("resumePrint");
 
-    if (response.statusCode != 200) {
-      // TODO check the response sent by odyssey
-      throw Exception('Failed to post data');
-    }
+    await odysseyPost('/print/resume', {});
   }
 
   // Move the Z axis
   // Takes 1 param height [double] which is the desired position of the Z axis
-  static Future<Map<String, dynamic>> move(double height) async {
-    final response = await http.post(
-      dynUri(apiUrl, '/manual', {}),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({'z': height}),
-    );
+  Future<Map<String, dynamic>> move(double height) async {
+    _logger.info("move height=$height");
 
-    if (response.statusCode == 200) {
-      // TODO check the response sent by odyssey
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to post data');
-    }
+    final response = await odysseyPost('/manual', {'z': height.toString()});
+    return json.decode(response.body == '' ? '{}' : response.body);
   }
 
   // Toggle cure
   // Takes 1 param cure [bool] which define if we start or stop the curing
-  static Future<Map<String, dynamic>> manualCure(bool cure) async {
-    final response = await http.post(
-      dynUri(apiUrl, '/manual', {}),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({'cure': cure}),
-    );
+  Future<Map<String, dynamic>> manualCure(bool cure) async {
+    _logger.info("manualCure cure=$cure");
 
-    if (response.statusCode == 200) {
-      // TODO check the response sent by odyssey
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to post data');
-    }
+    final response = await odysseyPost('/manual', {'cure': cure.toString()});
+    return json.decode(response.body == '' ? '{}' : response.body);
+  }
+
+  // Home Z axis
+  Future<Map<String, dynamic>> manualHome() async {
+    _logger.info("manualHome");
+
+    final response = await odysseyPost('/manual/home', {});
+    return json.decode(response.body == '' ? '{}' : response.body);
+  }
+
+  // Issue hardware-layer command
+  // Takes 1 param command [String] which holds the command to run
+  Future<Map<String, dynamic>> manualCommand(String command) async {
+    _logger.info("manualCommand");
+
+    final response =
+        await odysseyPost('/manual/hardware_command', {'command': command});
+    return json.decode(response.body == '' ? '{}' : response.body);
+  }
+
+  // Display a test pattern on the screen
+  // Takes 1 param test [String] which holds the test to display
+  Future<void> displayTest(String test) async {
+    _logger.info("displayTest test=$test");
+
+    final queryParams = {
+      'test': test,
+    };
+
+    await odysseyPost('/manual/display_test', queryParams);
   }
 
   ///
   /// DELETE METHODS TO ODYSSEY
   ///
 
-  // TODO: Implement deleteFile method properly
   // Delete a file
   // Takes 2 parameters : location [string] and filePath [String]
-  static Future<Map<String, dynamic>> deleteFile(String location, String filename) async {
-    final queryParams = {"location": location, "filename": filename};
-    final response = await http.delete(dynUri(apiUrl, '/files', queryParams));
+  Future<Map<String, dynamic>> deleteFile(
+      String location, String filePath) async {
+    _logger.info("deleteFile location=$location fileName=$filePath");
+    final queryParams = {
+      'location': location,
+      'file_path': filePath,
+    };
 
-    if (response.statusCode == 200) {
-      // TODO check the response sent by odyssey
+    try {
+      final response = await odysseyDelete('/file', queryParams);
       return json.decode(response.body);
-    } else {
-      throw Exception('Failed to fetch status');
+    } catch (e) {
+      _logger.severe('Failed to delete file: $e');
+      throw Exception('Failed to delete file: $e');
     }
   }
 }

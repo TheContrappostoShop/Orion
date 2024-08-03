@@ -13,16 +13,29 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@master
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # or: 'beta', 'dev', 'master' (or 'main')
+          channel: "stable" # or: 'beta', 'dev', 'master' (or 'main')
       - run: sudo apt-get update && sudo apt-get install -y gtk+-3.0
       - run: flutter pub global activate flutterpi_tool
       - run: flutter build linux
 
       - name: Get Version
         id: get_version
-        uses: mikefarah/yq@master
-        with:
-          cmd: yq '.version' pubspec.yaml
+        run: |
+          VERSION=$(yq '.version' pubspec.yaml)
+          # Strip build metadata if it exists
+          VERSION=$(echo $VERSION | sed 's/+.*//')
+          echo "result=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update Version with Commit Hash
+        run: |
+          VERSION=$(yq '.version' pubspec.yaml)
+          COMMIT_HASH=${GITHUB_SHA::7}
+          NEW_VERSION=${VERSION/+SELFCOMPILED/+${COMMIT_HASH}}
+          yq -i ".version = \"$NEW_VERSION\"" pubspec.yaml
+          echo "Updated version to $NEW_VERSION"
+
+      - name: Run pubspec_extract
+        run: flutter pub run pubspec_extract
 
       - name: Build, Copy, and Compress armv7
         run: |
@@ -71,6 +84,7 @@ jobs:
           skipIfReleaseExists: true
           generateReleaseNotes: true
           commit: ${{github.sha}}
+
       - uses: ncipollo/release-action@v1.14.0
         if: github.ref != 'refs/heads/main'
         with:

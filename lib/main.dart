@@ -1,6 +1,6 @@
 /*
 * Orion - An open-source user interface for the Odyssey 3d-printing engine.
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,21 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:orion/files/grid_files_screen.dart';
 
 import 'package:orion/home/home_screen.dart';
+import 'package:orion/settings/wifi_screen.dart';
 import 'package:orion/status/status_screen.dart';
 import 'package:orion/files/files_screen.dart';
+import 'package:orion/files/grid_files_screen.dart';
 import 'package:orion/settings/settings_screen.dart';
-import 'package:orion/settings/calibrate_screen.dart';
-import 'package:orion/settings/wifi_screen.dart';
 import 'package:orion/settings/about_screen.dart';
 import 'package:orion/themes/themes.dart';
+import 'package:orion/util/error_handling/error_handler.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:orion/tools/tools_screen.dart';
+import 'package:orion/util/orion_config.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:window_size/window_size.dart';
 import 'package:provider/provider.dart';
@@ -39,13 +41,25 @@ import 'package:logging/logging.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    ErrorHandler.onErrorDetails(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    ErrorHandler.onError(error, stack);
+    return true;
+  };
+
   Logger.root.level = Level.ALL; // Log all log levels
   Logger.root.onRecord.listen((record) async {
-    Directory logDir = await getApplicationDocumentsDirectory();
+    Directory logDir = await getApplicationSupportDirectory();
     File logFile = File('${logDir.path}/app.log');
 
+    stdout.writeln(
+        '${record.time}\t[${record.loggerName}]\t${record.level.name}\t${record.message}');
     final sink = logFile.openWrite(mode: FileMode.append);
-    sink.writeln('${record.level.name}: ${record.time}: ${record.message}');
+    sink.writeln(
+        '${record.time}\t[${record.loggerName}]\t${record.level.name}\t${record.message}');
     await sink.close();
   });
   runApp(const Orion());
@@ -87,12 +101,6 @@ final GoRouter _router = GoRouter(
           },
           routes: <RouteBase>[
             GoRoute(
-              path: 'calibrate',
-              builder: (BuildContext context, GoRouterState state) {
-                return const CalibrateScreen();
-              },
-            ),
-            GoRoute(
               path: 'wifi',
               builder: (BuildContext context, GoRouterState state) {
                 return const WifiScreen();
@@ -114,6 +122,11 @@ final GoRouter _router = GoRouter(
             );
           },
         ),
+        GoRoute(
+            path: 'tools',
+            builder: (BuildContext context, GoRouterState state) {
+              return const ToolsScreen();
+            }),
       ],
     ),
   ],
@@ -129,12 +142,21 @@ class Orion extends StatefulWidget {
 }
 
 class OrionState extends State<Orion> {
-  ThemeMode _themeMode = ThemeMode.system;
+  late ThemeMode _themeMode;
+  late OrionConfig _config;
+
+  @override
+  void initState() {
+    super.initState();
+    _config = OrionConfig();
+    _themeMode = _config.getThemeMode();
+  }
 
   void changeThemeMode(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;
     });
+    _config.setThemeMode(themeMode);
   }
 
   @override

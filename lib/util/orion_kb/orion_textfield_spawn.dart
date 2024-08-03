@@ -1,6 +1,6 @@
 /*
 * Orion - Orion Textfield Spawner
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ class SpawnOrionTextField extends StatefulWidget {
   final bool isHidden;
   final bool noShove;
   final Function(String) onChanged;
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
 
   const SpawnOrionTextField({
     super.key,
@@ -36,7 +36,7 @@ class SpawnOrionTextField extends StatefulWidget {
     this.isHidden = false,
     this.noShove = false,
     this.onChanged = _defaultOnChanged,
-    required this.scrollController,
+    this.scrollController,
   });
 
   // Do nothing

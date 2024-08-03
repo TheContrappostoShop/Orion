@@ -3,7 +3,7 @@
 // ignore_for_file: public_member_api_docs, constant_identifier_names, avoid_classes_with_only_static_members
 
 mixin Pubspec {
-  static final buildDate = DateTime.utc(2024, 5, 7, 18, 3, 6);
+  static final buildDate = DateTime.utc(2024, 6, 25, 23, 41, 21);
 
   static const name = 'orion';
 
@@ -12,19 +12,19 @@ mixin Pubspec {
 
   static const publish_to = 'none';
 
-  static const versionFull = '0.2.0+1';
+  static const versionFull = '0.3.0+SELFCOMPILED';
 
-  static const version = '0.2.0';
+  static const version = '0.3.0';
 
-  static const versionSmall = '0.2';
+  static const versionSmall = '0.3';
 
   static const versionMajor = 0;
 
-  static const versionMinor = 2;
+  static const versionMinor = 3;
 
   static const versionPatch = 0;
 
-  static const versionBuild = 1;
+  static const versionBuild = 0;
 
   static const versionPreRelease = '';
 
@@ -39,11 +39,10 @@ mixin Pubspec {
       'sdk': 'flutter',
     },
     'cupertino_icons': '^1.0.2',
-    'device_preview': '^1.1.0',
     'english_words': '^4.0.0',
     'flutter_svg': '^2.0.9',
     'glob': '^2.1.2',
-    'go_router': '^12.1.3',
+    'go_router': '^14.1.2',
     'http': '^1.2.1',
     'ini': '^2.1.0',
     'intl': '^0.18.1',
@@ -69,13 +68,16 @@ mixin Pubspec {
     'about': '^2.1.3',
     'pubspec_extract': '^2.0.5',
     'flutter_markdown': '^0.6.23',
+    'logging': '^1.2.0',
+    'toastification': '^2.0.0',
+    'async': '^2.11.0',
   };
 
   static const dev_dependencies = <dynamic, dynamic>{
     'flutter_test': <dynamic, dynamic>{
       'sdk': 'flutter',
     },
-    'flutter_lints': '^3.0.1',
+    'flutter_lints': '^4.0.0',
   };
 
   static const flutter = <dynamic, dynamic>{
@@ -83,6 +85,7 @@ mixin Pubspec {
     'assets': <dynamic>[
       'assets/images/opensource.svg',
       'assets/images/placeholder.png',
+      'assets/images/bsod.png',
       'README.md',
       'CHANGELOG.md',
     ],

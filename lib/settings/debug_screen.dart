@@ -1,6 +1,6 @@
 /*
 * Orion - Debug Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:orion/util/hold_button.dart';
 import 'package:orion/util/orion_kb/orion_keyboard_expander.dart';
 import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
 
@@ -36,13 +38,9 @@ class DebugScreenState extends State<DebugScreen> {
       GlobalKey<SpawnOrionTextFieldState>();
   final ScrollController _scrollController = ScrollController();
 
-  bool themeToggle = true;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final brightness = MediaQuery.of(context).platformBrightness;
-    themeToggle = brightness == Brightness.dark;
   }
 
   @override
@@ -78,20 +76,23 @@ class DebugScreenState extends State<DebugScreen> {
                         isHidden: true,
                       ),
                     ),
-                    /*Padding(
+                    Padding(
                       padding: const EdgeInsets.all(10),
                       child: ElevatedButton(
-                          onPressed: () {
-                            String text = debugTextFieldKey.currentState!
-                                .getCurrentText();
-                            if (kDebugMode) {
-                              print("[Debug]: DebugTestField content: $text");
-                            }
-                            debugTextFieldKey.currentState!.clearText();
-                          },
-                          child:
-                              const Text('[Debug] Read TextField to Console')),
-                    ),*/
+                        onPressed: () {
+                          String text =
+                              debugTextFieldKey.currentState!.getCurrentText();
+                          if (kDebugMode) {
+                            print("[Debug]: DebugTestField content: $text");
+                          }
+                          debugTextFieldKey.currentState!.clearText();
+                        },
+                        child: const Text(
+                          '[Debug] Read TextField to Console',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.all(10),
                       child: ElevatedButton(
@@ -146,21 +147,11 @@ class DebugScreenState extends State<DebugScreen> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Switch(
-                        value: themeToggle,
-                        onChanged: (bool value) {
-                          setState(
-                            () {
-                              themeToggle = value;
-                              widget.changeThemeMode(themeToggle
-                                  ? ThemeMode.dark
-                                  : ThemeMode.light);
-                            },
-                          );
-                        },
-                      ),
+                    HoldButton(
+                      onPressed: () {
+                        //print("onHoldComplete");
+                      },
+                      child: const Text('Hold Button Test'),
                     ),
                     OrionKbExpander(textFieldKey: debugTextFieldKey)
                   ],

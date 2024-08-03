@@ -1,6 +1,6 @@
 /*
-* Orion - Calibrate Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Orion - Error Handler
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,20 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 
-/// The calibrate screen
-class CalibrateScreen extends StatelessWidget {
-  /// Constructs a [CalibrateScreen]
-  const CalibrateScreen({super.key});
+class ErrorHandler {
+  static final _logger = Logger('ErrorHandler');
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Calibrate',
-        style: TextStyle(fontSize: 24),
-      ),
-    );
+  static void onError(Object error, StackTrace stackTrace) {
+    _logger.severe("Error encountered:", error, stackTrace);
+    return;
+  }
+
+  static void onErrorDetails(FlutterErrorDetails details) {
+    _logger.severe(
+        "Flutter error encountered:", details.exception, details.stack);
+    return;
   }
 }

@@ -1,6 +1,6 @@
 /*
 * Orion - Detail Screen
-* Copyright (C) 2024 TheContrappostoShop (PaulGD0, shifubrams)
+* Copyright (C) 2024 TheContrappostoShop
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:orion/status/status_screen.dart';
+import 'package:orion/util/hold_button.dart';
 import 'package:orion/util/sl1_thumbnail.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
@@ -30,7 +31,12 @@ class DetailScreen extends StatefulWidget {
   final String fileSubdirectory;
   final String fileLocation;
 
-  const DetailScreen({super.key, required this.fileName, required this.fileSubdirectory, required this.fileLocation});
+  const DetailScreen({
+    super.key,
+    required this.fileName,
+    required this.fileSubdirectory,
+    required this.fileLocation,
+  });
 
   @override
   DetailScreenState createState() => DetailScreenState();
@@ -42,16 +48,7 @@ class DetailScreen extends StatefulWidget {
 
 class DetailScreenState extends State<DetailScreen> {
   final _logger = Logger('DetailScreen');
-  double leftPadding = 0;
-  double rightPadding = 0;
-
-  final GlobalKey textKey1 = GlobalKey();
-  final GlobalKey textKey2 = GlobalKey();
-  final GlobalKey textKey3 = GlobalKey();
-  final GlobalKey textKey4 = GlobalKey();
-  final GlobalKey textKey5 = GlobalKey();
-  final GlobalKey textKey6 = GlobalKey();
-  final GlobalKey previewKey = GlobalKey();
+  final ApiService _api = ApiService();
 
   FileStat? fileStat;
   String fileName = ''; // path.basename(widget.file.path)
@@ -67,8 +64,8 @@ class DetailScreenState extends State<DetailScreen> {
   double materialVolumeInMilliliters = 0; // usedMaterial in milliliters
 
   late ValueNotifier<Future<String>> thumbnailFutureNotifier;
+  // ignore: unused_field
   Future<void>? _initFileDetailsFuture;
-  double opacity = 0.0;
 
   @override
   void initState() {
@@ -78,28 +75,40 @@ class DetailScreenState extends State<DetailScreen> {
 
   Future<void> _initFileDetails() async {
     try {
-      final fileDetails = await ApiService.getFileMetadata(
+      final fileDetails = await _api.getFileMetadata(
         widget.fileLocation,
-        [(DetailScreen._isDefaultDir(widget.fileSubdirectory) ? '' : widget.fileSubdirectory), widget.fileName]
-            .join(DetailScreen._isDefaultDir(widget.fileSubdirectory) ? '' : '/'),
+        [
+          (DetailScreen._isDefaultDir(widget.fileSubdirectory)
+              ? ''
+              : widget.fileSubdirectory),
+          widget.fileName
+        ].join(DetailScreen._isDefaultDir(widget.fileSubdirectory) ? '' : '/'),
       );
 
       String tempFileName = fileDetails['file_data']['name'] ?? 'Placeholder';
       String tempFileSize =
-          (fileDetails['file_data']['file_size'] / 1024 / 1024).toStringAsFixed(2) + ' MB'; // convert to MB
+          (fileDetails['file_data']['file_size'] / 1024 / 1024)
+                  .toStringAsFixed(2) +
+              ' MB'; // convert to MB
       String tempFileExtension = path.extension(tempFileName);
-      String tempLayerHeight = '${fileDetails['layer_height'].toStringAsFixed(3)} mm';
-      String tempModifiedDate = DateTime.fromMillisecondsSinceEpoch(fileDetails['file_data']['last_modified'] * 1000)
+      String tempLayerHeight =
+          '${fileDetails['layer_height'].toStringAsFixed(3)} mm';
+      String tempModifiedDate = DateTime.fromMillisecondsSinceEpoch(
+              fileDetails['file_data']['last_modified'] * 1000)
           .toString(); // convert to milliseconds
-      String tempMaterialName = 'N/A'; // this information is not provided by the API
+      String tempMaterialName =
+          'N/A'; // this information is not provided by the API
       String tempThumbnailPath = await ThumbnailUtil.extractThumbnail(
-          widget.fileLocation, widget.fileSubdirectory, widget.fileName); // fetch thumbnail from API
+          widget.fileLocation, widget.fileSubdirectory, widget.fileName,
+          size: 'Large'); // fetch thumbnail from API
       double tempPrintTimeInSeconds = fileDetails['print_time'];
-      Duration printDuration = Duration(seconds: tempPrintTimeInSeconds.toInt());
+      Duration printDuration =
+          Duration(seconds: tempPrintTimeInSeconds.toInt());
       String tempPrintTime =
           '${printDuration.inHours.remainder(24).toString().padLeft(2, '0')}:${printDuration.inMinutes.remainder(60).toString().padLeft(2, '0')}:${printDuration.inSeconds.remainder(60).toString().padLeft(2, '0')}';
       double tempMaterialVolumeInMilliliters = fileDetails['used_material'];
-      String tempMaterialVolume = '${tempMaterialVolumeInMilliliters.toStringAsFixed(2)} mL';
+      String tempMaterialVolume =
+          '${tempMaterialVolumeInMilliliters.toStringAsFixed(2)} mL';
 
       setState(() {
         fileName = tempFileName;
@@ -121,272 +130,252 @@ class DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initFileDetailsFuture,
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(
-              child: Text('Error: ${snapshot.error}'),
-            ),
-          );
-        } else {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final keys = [textKey1, textKey2, textKey3, textKey4, textKey5, textKey6];
-            double maxWidth = 0;
+    bool isLandScape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('File Details'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return isLandScape
+                ? Padding(
+                    padding:
+                        const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+                    child: buildLandscapeLayout(context))
+                : Padding(
+                    padding:
+                        const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+                    child: buildPortraitLayout(context));
+          },
+        ),
+      ),
+    );
+  }
 
-            for (var key in keys) {
-              final width = key.currentContext?.size?.width ?? 0;
-              if (width > maxWidth) {
-                maxWidth = width;
-              }
-            }
-
-            final previewWidth = previewKey.currentContext?.size?.width ?? 0;
-
-            final screenWidth = MediaQuery.of(context).size.width;
-            leftPadding = (screenWidth - maxWidth - previewWidth) / 3;
-            if (leftPadding < 0) leftPadding = 0;
-            rightPadding = leftPadding;
-
-            setState(() {
-              opacity = 1.0; // Set opacity to 1 after sizes have been calculated
-            });
-          });
-
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('File Details'),
-            ),
-            body: Opacity(
-              opacity: opacity,
-              child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  return Stack(
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: leftPadding <= 0 ? leftPadding : leftPadding - 10),
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 300),
-                                child: Card.outlined(
-                                  elevation: 1,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: AutoSizeText.rich(
-                                      maxLines: 1,
-                                      minFontSize: 16,
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: fileName.length >= 12 ? '${fileName.substring(0, 12)}...' : fileName,
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.primary),
-                                          ),
-                                          TextSpan(
-                                            text: ' - ',
-                                            style:
-                                                TextStyle(fontSize: 24, color: Theme.of(context).colorScheme.primary),
-                                          ),
-                                          TextSpan(
-                                            text: fileSize,
-                                            style:
-                                                TextStyle(fontSize: 24, color: Theme.of(context).colorScheme.primary),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: leftPadding),
-                              child: FittedBox(
-                                child: Text(
-                                  'Layer Height: $layerHeight',
-                                  key: textKey2,
-                                  style: const TextStyle(fontSize: 20),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: leftPadding),
-                              child: FittedBox(
-                                child: Text(
-                                  'Material: ${materialName.split('@0.')[0]}',
-                                  key: textKey3,
-                                  style: const TextStyle(fontSize: 20),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: leftPadding),
-                              child: FittedBox(
-                                child: Text(
-                                  'Print Time: $printTime',
-                                  key: textKey4,
-                                  style: const TextStyle(fontSize: 20),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: leftPadding),
-                              child: FittedBox(
-                                child: Text(
-                                  'Material Usage: $materialVolume',
-                                  key: textKey5,
-                                  style: const TextStyle(fontSize: 20),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: rightPadding),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              thumbnailPath.isNotEmpty
-                                  ? Card(
-                                      key: previewKey,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4.5),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(7.75),
-                                          child: Image.file(
-                                            File(thumbnailPath),
-                                            width: 220,
-                                            height: 220,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : Card(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4.5),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(7.75),
-                                          child: const Image(
-                                            image: AssetImage('assets/images/placeholder.png'),
-                                            width: 220,
-                                            height: 220,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            bottomNavigationBar: Opacity(
-              opacity: opacity,
-              child: Padding(
-                padding: EdgeInsets.only(
-                    left: (leftPadding - 10) < 0 ? 0 : leftPadding - 10,
-                    right: (rightPadding - 10) < 0 ? 0 : rightPadding - 10,
-                    bottom: 40,
-                    top: 20),
-                child: Row(
+  Widget buildPortraitLayout(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildNameCard(fileName),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Column(
                   children: [
-                    ElevatedButton(
-                      onPressed: null,
-                      // TODO: Add delete logic here
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(
-                          120, // Subtract the padding on both sides
-                          Theme.of(context).appBarTheme.toolbarHeight as double,
+                    buildThumbnailView(context),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: buildInfoCard('Layer Height', layerHeight),
                         ),
-                      ),
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(fontSize: 20),
-                      ),
+                        Expanded(
+                          child: buildInfoCard('Material & Volume',
+                              '$materialName - $materialVolume'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          String subdirectory = widget.fileSubdirectory;
-                          ApiService.startPrint(widget.fileLocation, path.join(subdirectory, widget.fileName));
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const StatusScreen(
-                                  newPrint: true,
-                                ),
-                              ));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(
-                            0, // Subtract the padding on both sides
-                            Theme.of(context).appBarTheme.toolbarHeight as double,
-                          ),
-                        ),
-                        child: const Text(
-                          'Print',
-                          style: TextStyle(fontSize: 24),
-                        ),
+                    const SizedBox(height: 5),
+                    Row(children: [
+                      Expanded(
+                        child: buildInfoCard('Print Time', printTime),
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: null,
-                      // TODO: Add edit logic here
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(
-                          120, // Subtract the padding on both sides
-                          Theme.of(context).appBarTheme.toolbarHeight as double,
-                        ),
+                      Expanded(
+                        child: buildInfoCard('File Size', fileSize),
                       ),
-                      child: const Text(
-                        'Edit',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ),
+                    ]),
+                    const SizedBox(height: 5),
+                    buildInfoCard('Modified Date', modifiedDate),
+                    const Spacer(),
+                    buildPrintButtons(),
                   ],
                 ),
               ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget buildLandscapeLayout(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: ListView(
+                  children: [
+                    buildNameCard(fileName),
+                    buildInfoCard('Layer Height', layerHeight),
+                    buildInfoCard(
+                        'Material & Volume', '$materialName - $materialVolume'),
+                    buildInfoCard('Print Time', printTime),
+                    buildInfoCard('Modified Date', modifiedDate),
+                    buildInfoCard('File Size', fileSize),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16.0),
+              Flexible(
+                flex: 0,
+                child: buildThumbnailView(context),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+          child: buildPrintButtons(),
+        ),
+      ],
+    );
+  }
+
+  Widget buildInfoCard(String title, String subtitle) {
+    return Card.outlined(
+      elevation: 1.0,
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(subtitle),
+      ),
+    );
+  }
+
+  Widget buildNameCard(String title) {
+    return Card.outlined(
+      elevation: 1.0,
+      child: ListTile(
+        title: AutoSizeText.rich(
+          maxLines: 1,
+          minFontSize: 16,
+          TextSpan(
+            children: [
+              TextSpan(
+                text: fileName.length >= 12
+                    ? '${fileName.substring(0, 12)}...'
+                    : fileName,
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildThumbnailView(BuildContext context) {
+    return Center(
+      child: Card.outlined(
+        elevation: 1.0,
+        child: Padding(
+          padding: const EdgeInsets.all(4.5),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(7.75),
+            child: thumbnailPath.isNotEmpty
+                ? Image.file(File(thumbnailPath))
+                : const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildPrintButtons() {
+    return Row(
+      children: [
+        HoldButton(
+          onPressed: () {
+            String subdirectory = widget.fileSubdirectory;
+            try {
+              _api.deleteFile(widget.fileLocation,
+                  path.join(subdirectory, widget.fileName));
+              _logger.info('File deleted successfully');
+              Navigator.pop(context, true);
+            } catch (e) {
+              _logger.severe('Failed to delete file', e);
+              Navigator.pop(context, false);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
             ),
-          );
-        }
-      },
+            minimumSize: Size(
+              0,
+              Theme.of(context).appBarTheme.toolbarHeight as double,
+            ),
+          ),
+          child: const Text(
+            'Delete',
+            style: TextStyle(fontSize: 20),
+          ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () {
+              try {
+                String subdirectory = widget.fileSubdirectory;
+                _api.startPrint(widget.fileLocation,
+                    path.join(subdirectory, widget.fileName));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StatusScreen(
+                        newPrint: true,
+                      ),
+                    ));
+              } catch (e) {
+                _logger.severe('Failed to start print', e);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              minimumSize: Size(
+                0, // Subtract the padding on both sides
+                Theme.of(context).appBarTheme.toolbarHeight as double,
+              ),
+            ),
+            child: const Text(
+              'Print',
+              style: TextStyle(fontSize: 24),
+            ),
+          ),
+        ),
+        const SizedBox(width: 20),
+        ElevatedButton(
+          onPressed: null,
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            minimumSize: Size(
+              120, // Subtract the padding on both sides
+              Theme.of(context).appBarTheme.toolbarHeight as double,
+            ),
+          ),
+          child: const Text(
+            'Edit',
+            style: TextStyle(fontSize: 20),
+          ),
+        ),
+      ],
     );
   }
 }
