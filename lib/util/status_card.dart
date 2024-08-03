@@ -57,9 +57,7 @@ class StatusCardState extends State<StatusCard> {
         (widget.isPausing && widget.status['paused'] != true) ||
                 (widget.isCanceling && widget.status['layer'] != null)
             ? null
-            : widget.progress == 0.0
-                ? 1.0
-                : 1.0;
+            : widget.progress;
 
     // If the print is active, not paused, canceled or finished, it is active.
     final isActive = (widget.isPausing == false &&
