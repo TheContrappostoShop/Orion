@@ -1,0 +1,10 @@
+name: Branch Deleted
+on: delete
+jobs:
+  delete:
+    if: github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean up
+        run: |
+          gh release delete "BRANCH_${{ github.event.ref }} -y --cleanup-tag"
