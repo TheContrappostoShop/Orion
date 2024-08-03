@@ -11,6 +11,6 @@ jobs:
       - uses: actions/checkout@v4.1.1
       - name: Clean up
         run: |
-          gh release delete "BRANCH_${{ github.event.ref }} -y --cleanup-tag"
+          gh release delete "BRANCH_${{ github.event.ref }}" -y --cleanup-tag
         env:
           GH_TOKEN: ${{ github.token }}
