@@ -457,7 +457,7 @@ class UpdateScreenState extends State<UpdateScreen> {
               ),
             ),
           ),
-          // Placeholder for Odyssey updater - pending API changes
+          // TODO: Placeholder for Odyssey updater - pending API changes
           const Card.outlined(
             elevation: 1,
             child: Padding(

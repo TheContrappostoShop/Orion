@@ -49,6 +49,7 @@ Future<String> getRaspberryPiModel() async {
   }
 }
 
+// TODO: Implement Odyssey version fetching, awaiting API
 Future<String> getVersionNumber() async {
   return 'Orion ${Pubspec.version}' ' - Odyssey 1.0.0';
 }
