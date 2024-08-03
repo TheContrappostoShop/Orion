@@ -8,3 +8,5 @@ jobs:
       - name: Clean up
         run: |
           gh release delete "BRANCH_${{ github.event.ref }} -y --cleanup-tag"
+        env:
+          GH_TOKEN: ${{ github.token }}
