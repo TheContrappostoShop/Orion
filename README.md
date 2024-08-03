@@ -65,7 +65,7 @@ The `orionpi.sh` script is a convenient way to build and deploy Orion to a Raspb
 
 1. **Prerequisites:** Ensure that you have [flutterpi_tool](https://pub.dev/packages/flutterpi_tool) installed on your host machine. On the target machine (Raspberry Pi), you should have [flutter-pi](https://github.com/ardera/flutter-pi) installed.
 2. **Prepare the Script:** Download the `orionpi.sh` script from the Orion repository and give it execute permissions using the command `chmod +x orionpi.sh`.
-3. **Run the Script:** Run the script with the necessary arguments. The command should look like this: `./orionpi.sh -a <IP_ADDRESS> -u <USERNAME> -p <PASSWORD>`.
+3. **Run the Script:** Run the script with the necessary arguments. The command should look like this: <br>`./orionpi.sh <IP_ADDRESS> <USERNAME> <PASSWORD>`.
 4. **Wait for Completion:** The script will build the Flutter bundle, copy it to the Raspberry Pi, and run it.
 5. **Verify the Deployment:** Check if the Orion application is running on your Raspberry Pi.
 
