@@ -63,6 +63,7 @@ class ToolsScreenState extends State<ToolsScreen> {
             icon: Icon(Icons.lightbulb),
             label: 'Exposure',
           ),
+          // TODO: Implement Self Test
           /*BottomNavigationBarItem(
             icon: Icon(Icons.check),
             label: 'Self Test',
