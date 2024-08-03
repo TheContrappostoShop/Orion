@@ -178,7 +178,7 @@ fi
 printf "\n\r[\033[0;32m✓\033[0m]\033[0;32m%s\033[0m\n" "  Running OrionPi on Raspberry Pi!"
 printf "\r[i]""  Press \033[0;31mCtrl+C\033[0m to disconnect.\n\n"
 if [ "$release" = true ]; then
-    sshpass -p "$password" ssh $user@$ip 'flutter-pi --release --pixelformat=RGB565 /home/pi/orion'
+    sshpass -p "$password" ssh $user@$ip 'flutter-pi --release --pixelformat=RGB565 /home/$user/orion'
 else
-    sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 /home/pi/orion'
+    sshpass -p "$password" ssh $user@$ip 'flutter-pi --pixelformat=RGB565 /home/$user/orion'
 fi
