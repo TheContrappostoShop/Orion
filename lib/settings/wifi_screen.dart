@@ -127,10 +127,6 @@ class _WifiScreenState extends State<WifiScreen> {
       {bool alreadyConnected = false}) async {
     wifiNetworks.clear();
     try {
-      /*if (Theme.of(context).platform == TargetPlatform.macOS &&
-          !alreadyConnected) {
-        currentWifiSSID = 'test';
-      }*/
       ProcessResult? result;
       switch (Theme.of(context).platform) {
         case TargetPlatform.macOS:
@@ -151,7 +147,6 @@ class _WifiScreenState extends State<WifiScreen> {
               'SECURITY': '(WPA2)'
             });
           }
-          //if (!alreadyConnected) currentWifiSSID = networks.first['SSID'];
           return networks;
         case TargetPlatform.linux:
           platform = 'linux';
@@ -201,11 +196,6 @@ class _WifiScreenState extends State<WifiScreen> {
           final RegExpMatch? match = pattern.firstMatch(lines[i]);
 
           if (match != null) {
-            /*print('---------------------------');
-            for (int i = 1; i < match.groupCount; i++) {
-              print('Group $i: ${match.group(i)}');
-            }*/
-
             if (platform == 'macos') {
               networks.add({
                 'SSID': match.group(1) ?? '',
