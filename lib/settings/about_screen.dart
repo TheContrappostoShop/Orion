@@ -24,7 +24,7 @@ import 'package:orion/themes/themes.dart';
 import 'package:orion/util/orion_config.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:toastification/toastification.dart';
-import 'dart:io';
+import 'package:universal_io/io.dart';
 
 Logger _logger = Logger('AboutScreen');
 

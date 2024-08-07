@@ -17,7 +17,8 @@
 */
 
 import 'dart:async';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:universal_io/io.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -355,9 +356,13 @@ class StatusScreenState extends State<StatusScreen>
         Expanded(
           child: Row(
             children: [
-              Expanded(
-                flex: 1,
+              Container(
+                constraints: BoxConstraints(
+                  minWidth: MediaQuery.of(context).size.width / 8,
+                  maxWidth: MediaQuery.of(context).size.width / 3,
+                ),
                 child: ListView(
+                  shrinkWrap: true,
                   children: [
                     buildNameCard(fileName),
                     buildInfoCard('Current Z Position',
@@ -373,7 +378,7 @@ class StatusScreenState extends State<StatusScreen>
               ),
               const SizedBox(width: 16.0),
               Flexible(
-                flex: 0,
+                flex: 1,
                 child: buildThumbnailView(context),
               ),
             ],
@@ -453,10 +458,12 @@ class StatusScreenState extends State<StatusScreen>
                             0, 0, 0, 1, 0,
                           ]),
                           child: thumbnail != null && thumbnail.isNotEmpty
-                              ? Image.file(
-                                  File(thumbnail),
-                                  fit: BoxFit.cover,
-                                )
+                              ? kIsWeb
+                                  ? Image.network(thumbnail)
+                                  : Image.file(
+                                      File(thumbnail),
+                                      fit: BoxFit.cover,
+                                    )
                               : const Center(
                                   child: CircularProgressIndicator(),
                                 ),
@@ -475,10 +482,12 @@ class StatusScreenState extends State<StatusScreen>
                                 alignment: Alignment.bottomCenter,
                                 heightFactor: progress,
                                 child: thumbnail != null && thumbnail.isNotEmpty
-                                    ? Image.file(
-                                        File(thumbnail),
-                                        fit: BoxFit.cover,
-                                      )
+                                    ? kIsWeb
+                                        ? Image.network(thumbnail)
+                                        : Image.file(
+                                            File(thumbnail),
+                                            fit: BoxFit.cover,
+                                          )
                                     : const Center(
                                         child: CircularProgressIndicator(),
                                       ),

@@ -17,7 +17,7 @@
 */
 
 import 'dart:async';
-import 'dart:io';
+import 'package:universal_io/io.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

@@ -18,7 +18,7 @@
 
 //import 'package:orion/files/details_screen.dart';
 
-import 'dart:io';
+import 'package:universal_io/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';

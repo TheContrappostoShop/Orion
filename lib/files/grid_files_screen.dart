@@ -20,7 +20,8 @@
 // import 'package:orion/files/search_file_screen.dart';
 
 import 'dart:async';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:universal_io/io.dart';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -502,11 +503,15 @@ class GridFilesScreenState extends State<GridFilesScreen> {
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               7.75), // Adjust the border radius as needed
-                                                      child: Image.file(
-                                                        File(snapshot.data!),
-                                                        fit: BoxFit
-                                                            .cover, // Use BoxFit.cover to ensure the image covers the entire card
-                                                      ),
+                                                      child: kIsWeb
+                                                          ? Image.network(
+                                                              snapshot.data!)
+                                                          : Image.file(
+                                                              File(snapshot
+                                                                  .data!),
+                                                              fit: BoxFit
+                                                                  .cover, // Use BoxFit.cover to ensure the image covers the entire card
+                                                            ),
                                                     );
                                                   }
                                                 },

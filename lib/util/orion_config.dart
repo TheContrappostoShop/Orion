@@ -16,11 +16,14 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:universal_io/io.dart';
 import 'package:path/path.dart' as path;
 import 'dart:convert';
+import 'orion_config_default.dart'
+    if (dart.library.html) 'orion_config_web.dart';
 
 class OrionConfig {
   final _logger = Logger('OrionConfig');
@@ -31,30 +34,30 @@ class OrionConfig {
   }
 
   ThemeMode getThemeMode() {
-    var config = _getConfig();
+    var config = getConfig();
     var themeMode = config['general']?['themeMode'] ?? 'light';
     return themeMode == 'dark' ? ThemeMode.dark : ThemeMode.light;
   }
 
   void setThemeMode(ThemeMode themeMode) {
-    var config = _getConfig();
+    var config = getConfig();
     config['general'] ??= {};
     config['general']['themeMode'] =
         themeMode == ThemeMode.dark ? 'dark' : 'light';
-    _writeConfig(config);
+    writeConfig(config);
   }
 
   void setFlag(String flagName, bool value, {String category = 'general'}) {
-    var config = _getConfig();
+    var config = getConfig();
     config[category] ??= {};
     config[category][flagName] = value;
     _logger.config('setFlag: $flagName to $value');
 
-    _writeConfig(config);
+    writeConfig(config);
   }
 
   void setString(String key, String value, {String category = 'general'}) {
-    var config = _getConfig();
+    var config = getConfig();
     config[category] ??= {};
     config[category][key] = value;
 
@@ -64,47 +67,22 @@ class OrionConfig {
       _logger.config('setString: $key to ${value == '' ? 'NULL' : value}');
     }
 
-    _writeConfig(config);
+    writeConfig(config);
   }
 
   bool getFlag(String flagName, {String category = 'general'}) {
-    var config = _getConfig();
+    var config = getConfig();
     return config[category]?[flagName] ?? false;
   }
 
   String getString(String key, {String category = 'general'}) {
-    var config = _getConfig();
+    var config = getConfig();
     return config[category]?[key] ?? '';
   }
 
   void toggleFlag(String flagName, {String category = 'general'}) {
     bool currentValue = getFlag(flagName, category: category);
     setFlag(flagName, !currentValue, category: category);
-  }
-
-  Map<String, dynamic> _getConfig() {
-    var fullPath = path.join(_configPath, 'orion.cfg');
-    var configFile = File(fullPath);
-
-    if (!configFile.existsSync() || configFile.readAsStringSync().isEmpty) {
-      var defaultConfig = {
-        'general': {
-          'themeMode': 'dark',
-        },
-        'advanced': {},
-      };
-      _writeConfig(defaultConfig);
-      return defaultConfig;
-    }
-
-    return json.decode(configFile.readAsStringSync());
-  }
-
-  void _writeConfig(Map<String, dynamic> config) {
-    var fullPath = path.join(_configPath, 'orion.cfg');
-    var configFile = File(fullPath);
-    var encoder = const JsonEncoder.withIndent('  ');
-    configFile.writeAsStringSync(encoder.convert(config));
   }
 
   void blowUp(BuildContext context, String imagePath) {

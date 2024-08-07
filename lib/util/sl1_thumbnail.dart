@@ -16,10 +16,12 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import 'dart:io';
+import 'package:universal_io/io.dart';
 import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:convert';
 
 class ThumbnailUtil {
   static final _logger = Logger('ThumbnailUtil');
@@ -34,40 +36,48 @@ class ThumbnailUtil {
           : [subdirectory, filename].join('/');
       final bytes = await _api.getFileThumbnail(location, finalLocation, size);
 
-      final tempDir = await getTemporaryDirectory();
-      final orionTmpDir = Directory('${tempDir.path}/oriontmp/$finalLocation');
-      if (!await orionTmpDir.exists()) {
-        await orionTmpDir.create(recursive: true);
-      }
-
-      final filePath = size == "Small"
-          ? '${orionTmpDir.path}/thumbnail400x400.png'
-          : '${orionTmpDir.path}/thumbnail840x400.png';
-      final outputFile = File(filePath);
-      outputFile.writeAsBytesSync(bytes);
-
-      // Check the total size of the oriontmp directory
-      int totalSize = 0;
-      final files = orionTmpDir.listSync(recursive: true);
-      for (var file in files) {
-        if (file is File) {
-          totalSize += await file.length();
+      if (kIsWeb) {
+        // On web, return a data URL
+        final base64Data = base64Encode(bytes);
+        return 'data:image/png;base64,$base64Data';
+      } else {
+        // On non-web platforms, save the file to the local file system
+        final tempDir = await getTemporaryDirectory();
+        final orionTmpDir =
+            Directory('${tempDir.path}/oriontmp/$finalLocation');
+        if (!await orionTmpDir.exists()) {
+          await orionTmpDir.create(recursive: true);
         }
-      }
 
-      // If the total size exceeds 100MB, delete the oldest files
-      if (totalSize > 100 * 1024 * 1024) {
-        files.sort(
-            (a, b) => a.statSync().modified.compareTo(b.statSync().modified));
-        while (totalSize > 100 * 1024 * 1024 && files.isNotEmpty) {
-          int fileSize = await (files.first as File).length();
-          await files.first.delete();
-          totalSize -= fileSize;
-          files.removeAt(0);
+        final filePath = size == "Small"
+            ? '${orionTmpDir.path}/thumbnail400x400.png'
+            : '${orionTmpDir.path}/thumbnail840x400.png';
+        final outputFile = File(filePath);
+        outputFile.writeAsBytesSync(bytes);
+
+        // Check the total size of the oriontmp directory
+        int totalSize = 0;
+        final files = orionTmpDir.listSync(recursive: true);
+        for (var file in files) {
+          if (file is File) {
+            totalSize += await file.length();
+          }
         }
-      }
 
-      return filePath;
+        // If the total size exceeds 100MB, delete the oldest files
+        if (totalSize > 100 * 1024 * 1024) {
+          files.sort(
+              (a, b) => a.statSync().modified.compareTo(b.statSync().modified));
+          while (totalSize > 100 * 1024 * 1024 && files.isNotEmpty) {
+            int fileSize = await (files.first as File).length();
+            await files.first.delete();
+            totalSize -= fileSize;
+            files.removeAt(0);
+          }
+        }
+
+        return filePath;
+      }
     } catch (e) {
       _logger.severe('Failed to fetch thumbnail', e);
     }

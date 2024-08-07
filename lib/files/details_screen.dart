@@ -16,7 +16,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:universal_io/io.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:logging/logging.dart';
 import 'package:orion/api_services/api_services.dart';
@@ -209,9 +210,13 @@ class DetailScreenState extends State<DetailScreen> {
         Expanded(
           child: Row(
             children: [
-              Expanded(
-                flex: 1,
+              Container(
+                constraints: BoxConstraints(
+                  minWidth: MediaQuery.of(context).size.width / 8,
+                  maxWidth: MediaQuery.of(context).size.width / 3,
+                ),
                 child: ListView(
+                  shrinkWrap: true,
                   children: [
                     buildNameCard(fileName),
                     buildInfoCard('Layer Height', layerHeight),
@@ -225,7 +230,7 @@ class DetailScreenState extends State<DetailScreen> {
               ),
               const SizedBox(width: 16.0),
               Flexible(
-                flex: 0,
+                flex: 1,
                 child: buildThumbnailView(context),
               ),
             ],
@@ -284,7 +289,9 @@ class DetailScreenState extends State<DetailScreen> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(7.75),
             child: thumbnailPath.isNotEmpty
-                ? Image.file(File(thumbnailPath))
+                ? kIsWeb
+                    ? Image.network(thumbnailPath)
+                    : Image.file(File(thumbnailPath))
                 : const Center(
                     child: CircularProgressIndicator(),
                   ),

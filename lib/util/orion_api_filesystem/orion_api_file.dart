@@ -16,12 +16,12 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import 'dart:io' as io;
+import 'package:universal_io/io.dart';
 
 import 'package:orion/util/orion_api_filesystem/orion_api_item.dart';
 
 class OrionApiFile implements OrionApiItem {
-  final io.File? file;
+  final File? file;
   @override
   final String path;
   final String name;
@@ -51,7 +51,7 @@ class OrionApiFile implements OrionApiItem {
     Map<String, dynamic> fileData = json['file_data'] ?? {};
 
     return OrionApiFile(
-      file: fileData['path'] != null ? io.File(fileData['path']) : null,
+      file: fileData['path'] != null ? File(fileData['path']) : null,
       path: fileData['path'] ?? '',
       name: fileData['name'] ?? '',
       lastModified: fileData['last_modified'] ?? 0,

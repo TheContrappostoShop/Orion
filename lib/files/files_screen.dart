@@ -19,7 +19,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:async';
-import 'dart:io';
+import 'package:universal_io/io.dart';
 import 'package:orion/files/search_file_screen.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
