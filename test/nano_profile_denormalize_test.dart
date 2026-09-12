@@ -20,43 +20,99 @@ import 'package:test/test.dart';
 import 'package:orion/backend_service/nanodlp/models/nano_profiles.dart';
 
 void main() {
-  test('denormalizeForBackend updates only supplied fields', () {
-    final backend = NanoProfile.denormalizeForBackend(
-      {'normal_cure_time': 2.75},
-    );
-
-    expect(backend, equals({'CureTime': 2.75}));
-  });
-
-  test('denormalizeForBackend maps all known normalized fields', () {
-    final backend = NanoProfile.denormalizeForBackend({
-      'burn_in_cure_time': 12.5,
-      'normal_cure_time': 2.8,
-      'lift_after_print': 6.0,
-      'burn_in_count': 5,
-      'wait_after_cure': 1.4,
-      'wait_after_life': 1.8,
-    });
-
-    expect(
-      backend,
-      equals({
+  group('normalizeForEdit', () {
+    test('reads the NanoDLP profile schema', () {
+      final normalized = NanoProfile.normalizeForEdit({
+        'CureTime': 2.5,
         'SupportCureTime': 12.5,
-        'CureTime': 2.8,
-        'TopDistance': 6.0,
-        'WaitHeight': 6.0,
-        'SupportLayerNumber': 5,
-        'TopWait': 1.4,
-        'WaitAfterPrint': 1.8,
-      }),
-    );
-  });
+        'WaitHeight': 5.5,
+        'SupportLayerNumber': 4,
+        'WaitAfterPrint': 1.4,
+        'TopWait': 1.8,
+        // 0/1 enable flag, not a burn-in layer count
+        'TransitionalLayer': 0,
+      });
 
-  test('normalizeForEdit reads lift_after_print from TopDistance', () {
-    final normalized = NanoProfile.normalizeForEdit({
-      'TopDistance': 7.25,
+      expect(normalized['normal_cure_time'], 2.5);
+      expect(normalized['burn_in_cure_time'], 12.5);
+      expect(normalized['lift_after_print'], 5.5);
+      expect(normalized['burn_in_count'], 4);
+      expect(normalized['wait_after_cure'], 1.4);
+      expect(normalized['wait_after_life'], 1.8);
     });
 
-    expect(normalized['lift_after_print'], 7.25);
+    test('lift distance is WaitHeight, not the peel-detection minimum', () {
+      // Shape of a real device payload: CustomValues overlays the profile and
+      // carries both PdPeelMinLiftDistance and ZLiftDistance. Neither is the
+      // stored lift distance.
+      final normalized = NanoProfile.normalizeForEdit({
+        'WaitHeight': 5.5,
+        'CustomValues': {
+          'PdPeelMinLiftDistance': '2',
+          'ZLiftDistance': '99',
+        },
+      });
+
+      expect(normalized['lift_after_print'], 5.5);
+    });
+
+    test('falls back to defaults when the payload is empty', () {
+      final normalized = NanoProfile.normalizeForEdit({});
+
+      expect(normalized['normal_cure_time'], 8.0);
+      expect(normalized['burn_in_cure_time'], 10.0);
+      expect(normalized['lift_after_print'], 5.0);
+      expect(normalized['burn_in_count'], 3);
+      expect(normalized['wait_after_cure'], 2.0);
+      expect(normalized['wait_after_life'], 2.0);
+    });
+  });
+
+  group('denormalizeForBackend', () {
+    test('updates only supplied fields', () {
+      final backend = NanoProfile.denormalizeForBackend(
+        {'normal_cure_time': 2.75},
+      );
+
+      expect(backend, equals({'CureTime': 2.75}));
+    });
+
+    test('maps all known normalized fields to the NanoDLP schema', () {
+      final backend = NanoProfile.denormalizeForBackend({
+        'burn_in_cure_time': 12.5,
+        'normal_cure_time': 2.8,
+        'lift_after_print': 6.0,
+        'burn_in_count': 5,
+        'wait_after_cure': 1.4,
+        'wait_after_life': 1.8,
+      });
+
+      expect(
+        backend,
+        equals({
+          'SupportCureTime': 12.5,
+          'CureTime': 2.8,
+          'WaitHeight': 6.0,
+          'SupportLayerNumber': 5,
+          'WaitAfterPrint': 1.4,
+          'TopWait': 1.8,
+        }),
+      );
+    });
+
+    test('round-trips through normalizeForEdit', () {
+      final normalized = <String, dynamic>{
+        'normal_cure_time': 2.8,
+        'burn_in_cure_time': 12.5,
+        'lift_after_print': 6.0,
+        'burn_in_count': 5,
+        'wait_after_cure': 1.4,
+        'wait_after_life': 1.8,
+      };
+
+      final backend = NanoProfile.denormalizeForBackend(normalized);
+
+      expect(NanoProfile.normalizeForEdit(backend), equals(normalized));
+    });
   });
 }

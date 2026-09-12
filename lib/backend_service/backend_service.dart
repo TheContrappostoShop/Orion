@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:orion/backend_service/backend_client.dart';
 import 'package:orion/backend_service/athena_iot/athena_iot_client.dart';
@@ -75,6 +75,20 @@ class BackendService implements BackendClient {
     if (registerSharedConfigListener) {
       _registerConfigListener();
     }
+  }
+
+  /// Replaces the delegate backing the shared instance ([BackendService]).
+  ///
+  /// Test-only hook: widget tests need the screens that call `BackendService()`
+  /// directly to talk to a fake backend. Production code always selects the
+  /// delegate from configuration.
+  @visibleForTesting
+  static void debugSetSharedDelegate(BackendClient delegate) {
+    _sharedInstance ??= BackendService._internal(
+      delegate: delegate,
+      registerSharedConfigListener: false,
+    );
+    _sharedInstance!._delegate = delegate;
   }
 
   // Automatically reload the delegate when the on-disk config is updated.
@@ -529,6 +543,14 @@ class BackendService implements BackendClient {
       return {};
     }
   }
+
+  /// Clone a profile. Failures are propagated on purpose: creating a profile
+  /// is a user-visible action and the UI must be able to report a failure
+  /// rather than claim success.
+  @override
+  Future<Map<String, dynamic>> cloneProfile(
+          int sourceId, Map<String, dynamic> fields) =>
+      _delegate.cloneProfile(sourceId, fields);
 
   @override
   Future<Map<String, dynamic>> getProfileJson(int id) async {

@@ -295,17 +295,18 @@ class ResinsScreenState extends State<ResinsScreen> {
                       Row(
                         children: [
                           if (isLocked) ...[
-                            Tooltip(
-                              message: FlutterI18n.translate(
+                            // Deliberately not a Tooltip: Tooltip uses an
+                            // OverlayPortal whose semantics graft trips a
+                            // Windows engine AXTree bug when it sits inside a
+                            // scrollable viewport (flutter/flutter#182444).
+                            // The icon keeps the same accessibility label.
+                            Icon(
+                              Icons.lock_outline,
+                              size: 16,
+                              color:
+                                  Theme.of(context).textTheme.bodySmall?.color,
+                              semanticLabel: FlutterI18n.translate(
                                   context, 'resins.locked'),
-                              child: Icon(
-                                Icons.lock_outline,
-                                size: 16,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color,
-                              ),
                             ),
                             const SizedBox(width: 6),
                           ],
@@ -375,35 +376,41 @@ class ResinsScreenState extends State<ResinsScreen> {
                 // Edit affordance. Locked (manufacturer) profiles stay
                 // tappable: tapping one explains the lock and offers to
                 // open it as a clone instead of editing it in place.
-                Tooltip(
-                  message: isLocked
-                      ? FlutterI18n.translate(context, 'resins.locked')
-                      : FlutterI18n.translate(context, 'resins.edit'),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: isLocked
-                        ? () => _showClonePrompt(resin)
-                        : () => _onEditResin(resin),
-                    child: SizedBox(
-                      width: 110,
-                      height: 46,
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            PhosphorIcon(PhosphorIcons.pencil(),
-                                size: 21, color: Colors.grey.shade200),
-                            const SizedBox(width: 7),
-                            Text(
-                              FlutterI18n.translate(context, 'resins.edit'),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade200,
-                              ),
+                // No Tooltip wrapper here on purpose: Tooltip's OverlayPortal
+                // semantics graft trips the Windows AXTree bug inside this
+                // ListView (flutter/flutter#182444). The visible "Edit" text
+                // and the icon's semantic label carry the meaning instead.
+                InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: isLocked
+                      ? () => _showClonePrompt(resin, provider)
+                      : () => _onEditResin(resin, provider),
+                  child: SizedBox(
+                    width: 110,
+                    height: 46,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PhosphorIcon(
+                            PhosphorIcons.pencil(),
+                            size: 21,
+                            color: Colors.grey.shade200,
+                            semanticLabel: isLocked
+                                ? FlutterI18n.translate(
+                                    context, 'resins.locked')
+                                : FlutterI18n.translate(context, 'resins.edit'),
+                          ),
+                          const SizedBox(width: 7),
+                          Text(
+                            FlutterI18n.translate(context, 'resins.edit'),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade200,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -459,22 +466,22 @@ class ResinsScreenState extends State<ResinsScreen> {
     });
   }
 
-  void _onEditResin(ResinProfile resin) {
+  void _onEditResin(ResinProfile resin, ResinsProvider provider) {
     _logger.info('Edit resin: ${resin.name}');
-    // Open the new edit screen which returns a map of edited values on save.
+    // The edit screen refreshes the list itself once a save succeeds, so the
+    // list is current by the time the user is back on this page.
     Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-      return EditResinScreen(resin: resin);
+      return EditResinScreen(resin: resin, onSaved: provider.refresh);
     })).then((result) {
       if (result is Map<String, dynamic>) {
         _logger.info('Edit result: $result');
-        // TODO: wire saving of edited fields to the provider/backend.
       }
     });
   }
 
   /// Locked (manufacturer) profiles cannot be edited in place. Explain the
   /// lock and offer to open the profile as an editable clone instead.
-  void _showClonePrompt(ResinProfile resin) {
+  void _showClonePrompt(ResinProfile resin, ResinsProvider provider) {
     _logger.info('Clone prompt for locked resin: ${resin.name}');
     showDialog(
       context: context,
@@ -501,7 +508,7 @@ class ResinsScreenState extends State<ResinsScreen> {
             ),
             onPressed: () {
               Navigator.of(dialogContext).pop();
-              _onEditResin(resin);
+              _onEditResin(resin, provider);
             },
             child: Text(FlutterI18n.translate(context, 'resins.clone'),
                 style: const TextStyle(fontSize: 20)),

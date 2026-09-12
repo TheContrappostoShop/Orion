@@ -491,6 +491,18 @@ class OdysseyHttpClient implements BackendClient {
   }
 
   @override
+  Future<Map<String, dynamic>> cloneProfile(
+      int sourceId, Map<String, dynamic> fields) async {
+    // Odyssey has no profile create/clone endpoint. Throwing (rather than
+    // returning an empty map) keeps the UI from reporting a clone that never
+    // happened.
+    _log.fine('cloneProfile called on OdysseyHttpClient (unsupported) '
+        'source=$sourceId');
+    throw UnsupportedError(
+        'Cloning resin profiles is not supported by Odyssey backend.');
+  }
+
+  @override
   Future getChamberTemperature() {
     // TODO: implement getChamberTemperature
     throw UnimplementedError();

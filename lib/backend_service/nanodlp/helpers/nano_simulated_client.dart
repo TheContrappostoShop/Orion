@@ -657,6 +657,28 @@ class NanoDlpSimulatedClient implements BackendClient {
   Future<int?> getDefaultProfileId() async => _defaultProfileId;
 
   @override
+  Future<Map<String, dynamic>> cloneProfile(
+      int sourceId, Map<String, dynamic> fields) async {
+    final clone = Map<String, dynamic>.from(await getProfileJson(sourceId));
+    final nextId = _profiles.keys.isEmpty ? 1 : _profiles.keys.reduce(max) + 1;
+    clone['ProfileID'] = nextId;
+    clone['ManufacturerLock'] = false;
+
+    final custom = clone['CustomValues'] is Map
+        ? Map<String, dynamic>.from(clone['CustomValues'] as Map)
+        : <String, dynamic>{};
+    fields.forEach((key, value) {
+      clone[key] = value;
+      custom[key] = '$value';
+    });
+    clone['CustomValues'] = custom;
+
+    _profiles[nextId] = clone;
+    _persistState();
+    return clone;
+  }
+
+  @override
   Future<void> setDefaultProfileId(int id) async {
     _defaultProfileId = id;
     _persistState();

@@ -36,7 +36,12 @@ import 'package:orion/widgets/zoom_value_editor_dialog.dart';
 class EditResinScreen extends StatefulWidget {
   final ResinProfile? resin;
 
-  const EditResinScreen({super.key, this.resin});
+  /// Invoked after the backend write succeeds, before this screen returns.
+  /// Owners pass a refresh here so a cloned profile is in the list as soon as
+  /// the user gets back to it.
+  final Future<void> Function()? onSaved;
+
+  const EditResinScreen({super.key, this.resin, this.onSaved});
 
   @override
   EditResinScreenState createState() => EditResinScreenState();
@@ -56,48 +61,9 @@ class EditResinScreenState extends State<EditResinScreen> {
   bool _saving = false;
 
   ResinSettings _settingsFromMeta(Map<String, dynamic> meta) {
-    num asNum(dynamic v, num fallback) {
-      if (v is num) return v;
-      if (v is String) return num.tryParse(v) ?? fallback;
-      return fallback;
-    }
-
-    final customValues = (meta['CustomValues'] is Map<String, dynamic>)
-        ? (meta['CustomValues'] as Map<String, dynamic>)
-        : <String, dynamic>{};
-
-    dynamic pick(String normalized, List<String> aliases, dynamic fallback) {
-      if (meta.containsKey(normalized)) return meta[normalized];
-      for (final key in aliases) {
-        if (meta.containsKey(key)) return meta[key];
-      }
-      if (customValues.containsKey(normalized)) return customValues[normalized];
-      for (final key in aliases) {
-        if (customValues.containsKey(key)) return customValues[key];
-      }
-      return fallback;
-    }
-
-    return ResinSettings(
-      burnInCureTime:
-          asNum(pick('burn_in_cure_time', ['SupportCureTime'], 10.0), 10.0)
-              .toDouble(),
-      normalCureTime:
-          asNum(pick('normal_cure_time', ['CureTime'], 8.0), 8.0).toDouble(),
-      liftAfterPrint: asNum(
-              pick('lift_after_print',
-                  ['TopDistance', 'WaitHeight', 'LiftAfterPrint'], 5.0),
-              5.0)
-          .toDouble(),
-      burnInCount:
-          asNum(pick('burn_in_count', ['SupportLayerNumber'], 3), 3).toInt(),
-      waitAfterCure: asNum(
-              pick('wait_after_cure', ['WaitAfterPrint', 'WaitAfterCure'], 2.0),
-              2.0)
-          .toDouble(),
-      waitAfterLife: asNum(pick('wait_after_life', ['WaitAfterLift'], 2.0), 2.0)
-          .toDouble(),
-    );
+    // Single source of truth for NanoDLP key mapping lives in the model so
+    // the pre-fetch placeholder and the fetched values can never disagree.
+    return ResinSettings.fromNormalizedMap(NanoProfile.normalizeForEdit(meta));
   }
 
   void _applySettings(ResinSettings settings, {bool setInitial = false}) {
@@ -214,15 +180,20 @@ class EditResinScreenState extends State<EditResinScreen> {
         waitAfterLife: _waitAfterLife,
       );
       if (cloneName != null) {
-        // Cloned save: persist the edited values together with the new
-        // title so the copy is stored under the name the user chose.
+        // Cloned save: create a new profile from the locked source, storing
+        // the edited values under the name the user chose.
         final fields =
             NanoProfile.denormalizeForBackend(settings.toNormalizedMap());
         fields['Title'] = cloneName;
-        await svc.editProfile(profileId, fields);
+        await svc.cloneProfile(profileId, fields);
       } else {
         await svc.saveResinSettings(profileId, settings);
       }
+
+      // The write landed; let the owner re-read profiles now so the list is
+      // already up to date when the user returns to it (a clone adds an
+      // entry the pre-save list cannot contain).
+      await widget.onSaved?.call();
 
       if (mounted) {
         setState(() {
@@ -383,8 +354,8 @@ class EditResinScreenState extends State<EditResinScreen> {
               children: [
                 SpawnOrionTextField(
                   key: nameKey,
-                  keyboardHint: FlutterI18n.translate(
-                      context, 'editResin.cloneNameHint'),
+                  keyboardHint:
+                      FlutterI18n.translate(context, 'editResin.cloneNameHint'),
                   locale: Localizations.localeOf(dialogContext).toString(),
                   presetText: defaultName,
                 ),
@@ -408,8 +379,7 @@ class EditResinScreenState extends State<EditResinScreen> {
               minimumSize: const Size(0, 60),
             ),
             onPressed: () {
-              final name =
-                  nameKey.currentState?.getCurrentText().trim() ?? '';
+              final name = nameKey.currentState?.getCurrentText().trim() ?? '';
               if (name.isEmpty) return;
               Navigator.of(dialogContext).pop(name);
             },

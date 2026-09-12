@@ -159,6 +159,18 @@ abstract class BackendClient {
   /// response when available or an empty map on success/unsupported.
   Future<Map<String, dynamic>> editProfile(int id, Map<String, dynamic> fields);
 
+  /// Create a new profile by cloning [sourceId] and applying [fields], which
+  /// use the backend's own field names (e.g. NanoDLP's `Title`, `CureTime`).
+  ///
+  /// Returns the created profile's raw payload when the backend can report it
+  /// and an empty map otherwise. Implementations without profile cloning
+  /// should leave the default, which throws [UnsupportedError].
+  Future<Map<String, dynamic>> cloneProfile(
+      int sourceId, Map<String, dynamic> fields) async {
+    throw UnsupportedError(
+        'Cloning resin profiles is not supported by this backend.');
+  }
+
   /// Return the backend's notion of the default profile id when available.
   /// This abstracts parsing machine metadata (e.g. NanoDLP's machine.json)
   /// so callers don't need to inspect raw maps.
