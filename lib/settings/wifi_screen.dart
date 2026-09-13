@@ -100,7 +100,7 @@ class WifiScreenState extends State<WifiScreen> {
         provider.connectionType == 'ethernet';
 
     if (isConnected) {
-      // We're connected â€” do not refresh network details on every provider
+      // We're connected — do not refresh network details on every provider
       // notification. This keeps the UI stable. If we previously didn't have
       // details, keep the cached ones.
       return;

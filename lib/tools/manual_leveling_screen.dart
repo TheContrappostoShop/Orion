@@ -531,7 +531,7 @@ class ManualLevelingScreenState extends State<ManualLevelingScreen> {
 
         return GlassCard(
           child: Padding(
-            // Match FAB padding (16*1.3 ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  21, 12*1.3 ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  16)
+            // Match FAB padding (16*1.3 ≈ 21, 12*1.3 ≈ 16)
             padding:
                 const EdgeInsets.symmetric(horizontal: 21.0, vertical: 16.0),
             child: Row(

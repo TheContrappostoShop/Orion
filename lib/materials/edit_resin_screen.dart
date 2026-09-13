@@ -201,7 +201,7 @@ class EditResinScreenState extends State<EditResinScreen> {
         });
       }
 
-      // Show success dialog with oldÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢new comparison for normal cure time
+      // Show success dialog with old→new comparison for normal cure time
       double parseNum(dynamic v) {
         if (v == null) return 0.0;
         if (v is num) return v.toDouble();

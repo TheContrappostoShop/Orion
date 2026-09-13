@@ -447,7 +447,7 @@ class StatusScreenState extends State<StatusScreen> {
         // the thumbnail so the UI doesn't immediately render a stale/placeholder
         // preview. However, if the backend reports the job has already finished
         // (idle with layer data) or is canceled we should not remain in a
-        // spinner indefinitely â€” render the final status instead.
+        // spinner indefinitely — render the final status instead.
         final bool finishedSnapshot =
             status?.isIdle == true && status?.layer != null;
         final bool canceledSnapshot = status?.isCanceled == true;
@@ -935,7 +935,7 @@ class StatusScreenState extends State<StatusScreen> {
   Widget _buildThumbnailView(
       BuildContext context, StatusProvider provider, StatusModel? status) {
     // Prefer provider's thumbnail bytes. If none yet, consider the
-    // initialThumbnailBytes passed from the Details screen â€” but do not
+    // initialThumbnailBytes passed from the Details screen — but do not
     // show a generated placeholder as the initial preview while the
     // provider is still probing for a real preview. In that case show the
     // spinner until provider provides a non-placeholder or finishes.
@@ -1273,7 +1273,7 @@ class StatusScreenState extends State<StatusScreen> {
               BackendService(), plateId, layerIndex,
               filePath: filePath);
       if (bytes.isNotEmpty) {
-        // Start precaching but don't await it â€” decoding can be expensive
+        // Start precaching but don't await it — decoding can be expensive
         // and awaiting here can cause UI jank. Fire-and-forget instead.
         _precacheLayerPreview(bytes).catchError((_) {});
         setState(() {
@@ -1302,7 +1302,7 @@ class StatusScreenState extends State<StatusScreen> {
     try {
       final fileData = status.printData?.fileData;
       if (fileData != null) {
-        // Prefetch 3D thumbnail (Large size) â€” fetch bytes and precache so
+        // Prefetch 3D thumbnail (Large size) — fetch bytes and precache so
         // Flutter's image cache holds a decoded image for instant display.
         BackendService()
             .getFileThumbnail(

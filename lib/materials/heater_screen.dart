@@ -123,7 +123,7 @@ class HeaterScreenState extends State<HeaterScreen>
             maybeUpdateTargetFromManual();
           });
         } catch (_) {
-          // ignore ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â refreshHeaterEnabled already handles errors gracefully
+          // ignore — refreshHeaterEnabled already handles errors gracefully
         }
       });
     });

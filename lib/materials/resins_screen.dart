@@ -179,7 +179,7 @@ class ResinsScreenState extends State<ResinsScreen> {
                           );
                         }
 
-                        // No selected profile found ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â fall back to a simple list.
+                        // No selected profile found — fall back to a simple list.
                         return ListView.separated(
                           controller: _scrollController,
                           itemCount: items.length,
@@ -450,7 +450,7 @@ class ResinsScreenState extends State<ResinsScreen> {
 
     provider.selectResin(resin).then((_) {
       // Success: scroll the list back to top so the newly selected default
-      // (pinned) is visible at the top of the list. No snackbars ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â keep the
+      // (pinned) is visible at the top of the list. No snackbars — keep the
       // UX subtle and non-distracting.
       if (_scrollController.hasClients) {
         _scrollController.animateTo(0.0,

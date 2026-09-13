@@ -599,7 +599,7 @@ class _Athena2LevelingWizardState extends State<Athena2LevelingWizard> {
           .catchError((_) {});
     }
 
-    // Minimum running duration â€” always checked, independent of status
+    // Minimum running duration — always checked, independent of status
     if (!_engine.isRunning && _runningSince != null && !_holdingRunning) {
       final elapsed = DateTime.now().difference(_runningSince!);
       if (elapsed < _minRunningDuration) {
@@ -652,7 +652,7 @@ class _Athena2LevelingWizardState extends State<Athena2LevelingWizard> {
         }
         return;
       case _WizardPhase.adjustment:
-        // Back from adjustment â†’ cancel
+        // Back from adjustment → cancel
         _cancelLeveling();
         return;
     }
@@ -1936,7 +1936,7 @@ class _Athena2LevelingWizardState extends State<Athena2LevelingWizard> {
       );
     }
 
-    // Tighten-screws prompt (after alignment): Cancel | Done â†’ auto-run offset
+    // Tighten-screws prompt (after alignment): Cancel | Done → auto-run offset
     if (status == LevelingWorkflowStatus.stepComplete &&
         _engine.currentStep?.intermediateScreen == 'tighten' &&
         _alignDone &&
@@ -2053,7 +2053,7 @@ class _Athena2LevelingWizardState extends State<Athena2LevelingWizard> {
       );
     }
 
-    // Remove puck prompt: Cancel | Done â†’ advance + auto-run final prepare
+    // Remove puck prompt: Cancel | Done → advance + auto-run final prepare
     if (status == LevelingWorkflowStatus.stepComplete &&
         _engine.currentStep?.intermediateScreen == 'removePuck') {
       return Row(
@@ -3246,7 +3246,7 @@ class _Athena2LevelingWizardState extends State<Athena2LevelingWizard> {
 }
 
 // ================================================================================================================================================================================================
-// Phase: Intro (simplified â€” calibration-overlay style)
+// Phase: Intro (simplified — calibration-overlay style)
 // ================================================================================================================================================================================================
 
 class _PreLevelingPane extends StatelessWidget {
@@ -5091,7 +5091,7 @@ class _WorkflowPane extends StatelessWidget {
             margin: EdgeInsets.zero,
             child: Stack(
               children: [
-                // Back Left â€” top-left (back of printer, facing away)
+                // Back Left — top-left (back of printer, facing away)
                 Positioned(
                   top: OrionSpacing.cardPadding.top,
                   left: OrionSpacing.cardPadding.left,
@@ -5104,7 +5104,7 @@ class _WorkflowPane extends StatelessWidget {
                     maxZ,
                   ),
                 ),
-                // Back Right â€” top-right
+                // Back Right — top-right
                 Positioned(
                   top: OrionSpacing.cardPadding.top,
                   right: OrionSpacing.cardPadding.right,
@@ -5117,7 +5117,7 @@ class _WorkflowPane extends StatelessWidget {
                     maxZ,
                   ),
                 ),
-                // Front Right â€” bottom-right (front of printer, facing us)
+                // Front Right — bottom-right (front of printer, facing us)
                 Positioned(
                   bottom: OrionSpacing.cardPadding.bottom,
                   right: OrionSpacing.cardPadding.right,
@@ -5130,7 +5130,7 @@ class _WorkflowPane extends StatelessWidget {
                     maxZ,
                   ),
                 ),
-                // Front Left â€” bottom-left
+                // Front Left — bottom-left
                 Positioned(
                   bottom: OrionSpacing.cardPadding.bottom,
                   left: OrionSpacing.cardPadding.left,
@@ -5143,7 +5143,7 @@ class _WorkflowPane extends StatelessWidget {
                     maxZ,
                   ),
                 ),
-                // Total deviation â€” dead center
+                // Total deviation — dead center
                 Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -5420,7 +5420,7 @@ class _WorkflowPane extends StatelessWidget {
 }
 
 // ================================================================================================================================================================================================
-// Adjustment Feedback â€” live force gauge
+// Adjustment Feedback — live force gauge
 // ================================================================================================================================================================================================
 
 class _AdjustmentFeedbackScreen extends StatefulWidget {
