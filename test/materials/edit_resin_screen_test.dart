@@ -27,9 +27,12 @@ import 'package:orion/backend_service/nanodlp/models/nano_profiles.dart';
 import 'package:orion/backend_service/providers/analytics_provider.dart';
 import 'package:orion/backend_service/providers/resins_provider.dart';
 import 'package:orion/backend_service/providers/status_provider.dart';
+import 'package:orion/glasser/glasser.dart';
 import 'package:orion/materials/edit_resin_screen.dart';
+import 'package:orion/util/orion_spacing.dart';
 import 'package:orion/util/providers/theme_provider.dart';
 import 'package:orion/util/providers/wifi_provider.dart';
+import 'package:orion/widgets/orion_app_bar.dart';
 
 import '../fakes/fake_odyssey_client.dart';
 
@@ -266,6 +269,44 @@ void main() {
       expect(backend.lastCloneFields?['Title'], 'Locked Resin copy');
       // The clone is a brand new profile, so the list has to be re-read.
       expect(refreshes, 1);
+    } finally {
+      await harness.dispose(tester);
+    }
+  });
+
+  testWidgets('content sits on the shared edge inset, not a looser one',
+      (tester) async {
+    final backend = _FakeResinsBackend();
+    BackendService.debugSetSharedDelegate(backend);
+
+    final harness = await _pumpEditScreen(
+      tester,
+      resin: ResinProfile('User Resin', meta: const {'ProfileID': 5}),
+      onSaved: () async {},
+    );
+    try {
+      // The first row holds two cards; the left one shows the leading inset and
+      // the right one the trailing, which is why this reads both.
+      final cards = find.byType(GlassCard);
+      final left = tester.getRect(cards.first);
+      final right = tester.getRect(cards.at(1));
+      final width =
+          tester.view.physicalSize.width / tester.view.devicePixelRatio;
+
+      // GlassCard applies its 4px margin inside this box, so the box edge is
+      // the settings inset and the painted card lands on the baseline of 20.
+      // Leaving the shell at screenHorizontal puts the page 4px wider than
+      // every other Orion screen instead.
+      expect(left.left, OrionSpacing.settingsScreenHorizontal);
+      expect(right.right, width - OrionSpacing.settingsScreenHorizontal);
+
+      // Same story at the top: under OrionAppBar the tight offset is the one
+      // that keeps the gap to the bar in line with the rest of the app.
+      final bar = tester.getRect(find.byType(OrionAppBar));
+      expect(
+        left.top - bar.bottom,
+        OrionSpacing.settingsScreenPaddingTightTop.top,
+      );
     } finally {
       await harness.dispose(tester);
     }

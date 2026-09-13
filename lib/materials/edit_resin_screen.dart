@@ -475,11 +475,15 @@ class EditResinScreenState extends State<EditResinScreen> {
           toolbarHeight: Theme.of(context).appBarTheme.toolbarHeight,
         ),
         body: Padding(
-          padding: const EdgeInsets.only(
-              left: OrionSpacing.screenHorizontal,
-              right: OrionSpacing.screenHorizontal,
-              top: OrionSpacing.screenTop,
-              bottom: 20.0),
+          // The settings inset compensates GlassCard's default 4px margin, so
+          // the two together land on the app baseline of 20 - the same edge the
+          // rest of Orion uses. The tight top offset is the one for a screen
+          // sitting directly under OrionAppBar; the bottom stays at 20 because
+          // this route is pushed over the materials shell rather than sitting
+          // above its nav bar.
+          padding: OrionSpacing.settingsScreenPaddingTightTop.copyWith(
+            bottom: 20.0,
+          ),
           child: Column(
             children: [
               Expanded(
