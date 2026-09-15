@@ -17,12 +17,14 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 import 'models/athena_printer_data.dart';
 import 'models/athena_feature_flags.dart';
 import 'models/athena_kinematic_status.dart';
+import 'models/force_leveling_workflow.dart';
 
 class AthenaIotClient {
   AthenaIotClient(this.baseUrl,
@@ -141,6 +143,196 @@ class AthenaIotClient {
     } catch (e) {
       // Silent parse failure: return null.
       return null;
+    }
+  }
+
+  Future<ForceLevelingWorkflowResponse> runForceLevelingWorkflow(
+    String endpoint, {
+    String? screenType,
+  }) async {
+    final safeEndpoint = endpoint.replaceAll(RegExp(r'^/+|/+$'), '');
+    final baseNoSlash = baseUrl.replaceAll(RegExp(r'/+$'), '');
+    // The probe_standardarm / probe_offset endpoints accept a `screentype`
+    // query parameter (glass | waverelease) so the probe can account for
+    // the screen surface.  Other workflow steps don't take it.
+    final uri = Uri.parse(
+      '$baseNoSlash/athena-iot/forcesensor/workflow/$safeEndpoint',
+    ).replace(
+      queryParameters:
+          (screenType != null &&
+                  (safeEndpoint == 'probe_standardarm' ||
+                      safeEndpoint == 'probe_offset'))
+              ? {'screentype': screenType}
+              : null,
+    );
+    final client = _createClient();
+    try {
+      _log.info(
+        'Force leveling workflow request: POST $uri '
+        '(endpoint=$safeEndpoint, timeout=${_requestTimeout.inSeconds}s)',
+      );
+      final resp = await client.post(uri);
+      Map<String, dynamic>? decodedMap;
+      if (resp.body.trim().isNotEmpty) {
+        try {
+          final decoded = json.decode(resp.body);
+          if (decoded is Map<String, dynamic>) {
+            decodedMap = decoded;
+          } else if (decoded is Map) {
+            decodedMap = Map<String, dynamic>.from(decoded);
+          }
+        } catch (e, st) {
+          _log.fine('Failed to decode force workflow response', e, st);
+        }
+      }
+      _log.info(
+        'Force leveling workflow response: endpoint=$safeEndpoint '
+        'status=${resp.statusCode} body=${_shortBody(resp.body)}',
+      );
+
+      if (resp.statusCode == 200 && decodedMap != null) {
+        final parsed = ForceLevelingWorkflowResponse.fromJson(
+          decodedMap,
+          statusCode: resp.statusCode,
+        );
+        _log.info(
+          'Force leveling workflow parsed: endpoint=$safeEndpoint '
+          'result=${parsed.result} homed=${parsed.machineHomed} '
+          'offset=${parsed.zOffsetApplied} error="${parsed.error}"',
+        );
+        return parsed;
+      }
+
+      return ForceLevelingWorkflowResponse.httpFailure(
+        statusCode: resp.statusCode,
+        message:
+            'Force leveling workflow failed: ${resp.statusCode} ${resp.body}',
+        body: decodedMap,
+      );
+    } on TimeoutException catch (e) {
+      return ForceLevelingWorkflowResponse(
+        result: false,
+        error: e.message ?? 'Athena IoT request timed out.',
+        connectionFailed: true,
+      );
+    } on SocketException catch (e) {
+      _log.warning(
+        'Force leveling workflow socket failure: endpoint=$safeEndpoint uri=$uri',
+        e,
+      );
+      return ForceLevelingWorkflowResponse(
+        result: false,
+        error: _networkErrorMessage(e.message),
+        connectionFailed: true,
+      );
+    } on http.ClientException catch (e) {
+      _log.warning(
+        'Force leveling workflow client failure: endpoint=$safeEndpoint uri=$uri',
+        e,
+      );
+      return ForceLevelingWorkflowResponse(
+        result: false,
+        error: _networkErrorMessage(e.message),
+        connectionFailed: true,
+      );
+    } catch (e) {
+      _log.warning(
+        'Force leveling workflow unexpected failure: endpoint=$safeEndpoint uri=$uri',
+        e,
+      );
+      return ForceLevelingWorkflowResponse(
+        result: false,
+        error: e.toString(),
+      );
+    } finally {
+      client.close();
+    }
+  }
+
+  String _networkErrorMessage(String detail) {
+    final trimmed = detail.trim();
+    if (trimmed.isEmpty) {
+      return 'Could not reach the Athena IoT workflow service.';
+    }
+    return 'Could not reach the Athena IoT workflow service. $trimmed';
+  }
+
+  String _shortBody(String body) {
+    final compact = body.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (compact.length <= 800) return compact;
+    return '${compact.substring(0, 800)}...';
+  }
+
+  /// Show a corner alignment pattern on the projector.
+  ///
+  /// [location] must be one of: front-left, front-right, back-left, back-right.
+  /// Returns `true` on success (plain text "Ok"), `false` on failure.
+  Future<bool> showCornerScreen(String location) async {
+    final validLocations = {
+      'front-left',
+      'front-right',
+      'back-left',
+      'back-right',
+    };
+    if (!validLocations.contains(location)) {
+      _log.warning('Invalid corner location: $location');
+      return false;
+    }
+    return _getSpecialScreen(
+      path: '/athena-iot/specialscreens/corner',
+      queryParams: {'location': location},
+    );
+  }
+
+  /// Show the center alignment pattern on the projector.
+  /// Returns `true` on success (plain text "Ok"), `false` on failure.
+  Future<bool> showCenterScreen() async {
+    return _getSpecialScreen(path: '/athena-iot/specialscreens/center');
+  }
+
+  /// Turn off the projector's UV LED, hiding any active special screen.
+  /// Returns `true` on success (plain text "Ok"), `false` on failure.
+  Future<bool> uvledOff() async {
+    return _getSpecialScreen(path: '/athena-iot/specialscreens/uvled_off');
+  }
+
+  /// Shared helper for special screens GET requests.
+  Future<bool> _getSpecialScreen({
+    required String path,
+    Map<String, String>? queryParams,
+  }) async {
+    try {
+      final baseNoSlash = baseUrl.replaceAll(RegExp(r'/+$'), '');
+      final uri =
+          Uri.parse('$baseNoSlash$path').replace(queryParameters: queryParams);
+      final client = _createClient();
+      try {
+        final resp = await client.get(uri);
+        final body = resp.body.trim();
+        _log.info(
+          'Special screen response: $path status=${resp.statusCode} body="$body"',
+        );
+        if (resp.statusCode == 200 && body == 'Ok') return true;
+        if (resp.statusCode == 400) {
+          _log.warning('Special screen bad request: $path body="$body"');
+          return false;
+        }
+        _log.warning(
+          'Special screen failed: $path status=${resp.statusCode} body="$body"',
+        );
+        return false;
+      } finally {
+        client.close();
+      }
+    } on SocketException catch (e) {
+      _log.warning('Special screen connection failed: $path', e);
+      return false;
+    } on http.ClientException catch (e) {
+      _log.warning('Special screen HTTP error: $path', e);
+      return false;
+    } catch (e, st) {
+      _log.warning('Special screen unexpected error: $path', e, st);
+      return false;
     }
   }
 }

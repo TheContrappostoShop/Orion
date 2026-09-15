@@ -30,6 +30,7 @@ import 'package:orion/glasser/glasser.dart';
 import 'package:orion/util/error_handling/error_dialog.dart';
 import 'package:orion/util/orion_config.dart';
 import 'package:orion/util/orion_spacing.dart';
+import 'package:orion/util/safe_home.dart';
 import 'package:orion/util/providers/theme_provider.dart';
 
 class ManualLevelingScreen extends StatefulWidget {
@@ -110,7 +111,7 @@ class ManualLevelingScreenState extends State<ManualLevelingScreen> {
                 title,
                 style: TextStyle(
                   color: accentColor,
-                  fontSize: 24,
+                  fontSize: 25,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -119,7 +120,7 @@ class ManualLevelingScreenState extends State<ManualLevelingScreen> {
         ),
         content: Text(
           message,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
         ),
         actions: [
           GlassButton(
@@ -530,7 +531,7 @@ class ManualLevelingScreenState extends State<ManualLevelingScreen> {
 
         return GlassCard(
           child: Padding(
-            // Match FAB padding (16*1.3 ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  21, 12*1.3 ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  16)
+            // Match FAB padding (16*1.3 ≈ 21, 12*1.3 ≈ 16)
             padding:
                 const EdgeInsets.symmetric(horizontal: 21.0, vertical: 16.0),
             child: Row(
@@ -645,17 +646,11 @@ class ManualLevelingScreenState extends State<ManualLevelingScreen> {
                               ? null
                               : () async {
                                   _logger.info('Moving to home position');
-                                  final ok = await manual.manualHome();
+                                  final ok = await safeHome(context);
                                   if (!ok) {
                                     if (!mounted) return;
                                     _safeShowError('GOLDEN-APE');
                                   }
-                                  if (!context.mounted) return;
-                                  final statusProvider =
-                                      Provider.of<StatusProvider>(context,
-                                          listen: false);
-                                  await statusProvider.refreshKinematicStatus(
-                                      maxAttempts: 10);
                                 },
                           style: ElevatedButton.styleFrom(
                             minimumSize:

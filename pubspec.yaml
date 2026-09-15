@@ -71,13 +71,13 @@ dependencies:
   marquee: ^2.3.0
   json_annotation: ^4.9.0
   fl_chart: ^1.1.1
-  video_player: ^2.10.1
   google_fonts: ^6.1.0
   flutter_i18n: ^0.37.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  fake_async: ^1.3.1
   test: ^1.21.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -104,6 +104,7 @@ flutter:
     - assets/
     - assets/i18n/
     - assets/images/opensource.svg
+    - assets/images/ISO_7010_W024.svg
     - assets/images/placeholder.png
     - assets/images/bsod.png
     - assets/images/ora/open_resin_alliance_logo_darkmode.png
@@ -111,8 +112,22 @@ flutter:
     - assets/images/concepts_3d/c3d.svg
     - assets/images/concepts_3d/a2_pro_arm.svg
     - assets/images/concepts_3d/a2_standard_arm.svg
-    - assets/videos/concepts_3d/athena2_regular_step1.mp4
-    - assets/scripts/set_orion_config.sh
+    - assets/images/concepts_3d/levelingsystem/a2_pro_arm_solo_leveling_screws.svg
+    - assets/images/concepts_3d/levelingsystem/a2_lcd_pro_arm_align_plate.svg
+    - assets/images/concepts_3d/levelingsystem/a2_pro_arm_solo_leveling_screws_top.svg
+    - assets/images/concepts_3d/levelingsystem/a2_lcd_pro_arm_align_plate_bottom.svg
+    - assets/images/concepts_3d/levelingsystem/a2_lcd_ui_top_view.svg
+    - assets/images/concepts_3d/levelingsystem/a2_leveling_spacer_ui_top_view.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_long_end.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_long_end_top.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_long_end_top_layer1.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_long_end_top_layer2.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_short_end.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_short_end_top.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_short_end_top_layer1.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_arm_short_end_top_layer2.svg
+    - assets/images/concepts_3d/levelingsystem/a2_hex_key_ui_front_view.svg
+    - assets/images/concepts_3d/levelingsystem/a2_lcd_ui_top_view_sanitized.svg
     - README.md
     - CHANGELOG.md
 

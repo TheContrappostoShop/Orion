@@ -44,6 +44,7 @@ class BackendCapabilities {
   static const supportsAthena = 'supportsAthena';
   static const supportsAthenaUpdates = 'supportsAthenaUpdates';
   static const supportsAthenaFeatureFlags = 'supportsAthenaFeatureFlags';
+  static const supportsForceLeveling = 'supportsForceLeveling';
   static const supportsVatTemperature = 'supportsVatTemperature';
   static const supportsChamberTemperature = 'supportsChamberTemperature';
   static const supportsNotifications = 'supportsNotifications';

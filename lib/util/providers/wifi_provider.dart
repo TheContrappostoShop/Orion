@@ -65,6 +65,7 @@ class WiFiProvider with ChangeNotifier {
 
   Timer? _pollTimer;
   bool _disposed = false;
+  bool _unsupportedWarningShown = false;
   static const Duration _pollInterval = Duration(seconds: 5);
 
   WiFiProvider({bool startPolling = true}) {
@@ -220,7 +221,10 @@ class WiFiProvider with ChangeNotifier {
     final prevLinkSpeed = _linkSpeed;
 
     if (!Platform.isLinux && !Platform.isMacOS) {
-      _log.warning('WiFi status fetching is not supported on this platform');
+      if (!_unsupportedWarningShown) {
+        _log.warning('WiFi status fetching is not supported on this platform');
+        _unsupportedWarningShown = true;
+      }
       _currentSSID = null;
       _signalStrength = null;
       _isConnected = false;

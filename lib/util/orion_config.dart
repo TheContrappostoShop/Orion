@@ -38,6 +38,10 @@ class OrionConfig {
   // lightweight and avoid throwing.
   static final List<VoidCallback> _changeListeners = [];
 
+  /// The directory containing `orion.cfg`, or null if not yet resolved.
+  /// Resolved on first [OrionConfig] instantiation (happens early in startup).
+  static String? get configDirectory => _cachedConfigPath;
+
   /// Register a callback to be invoked after `orion.cfg` is written.
   static void addChangeListener(VoidCallback cb) {
     if (!_changeListeners.contains(cb)) _changeListeners.add(cb);
@@ -302,6 +306,41 @@ class OrionConfig {
   bool getFlag(String flagName, {String category = 'general'}) {
     var config = _getConfig();
     return config[category]?[flagName] ?? false;
+  }
+
+  /// Read a nested object stored at `category.key`, or null when absent or
+  /// not an object.  Used for records that have more than one field (e.g. the
+  /// persisted leveling verification record).
+  Map<String, dynamic>? getJson(String key, {String category = 'general'}) {
+    final config = _getConfig();
+    try {
+      final categoryMap = config[category];
+      if (categoryMap is Map && categoryMap[key] is Map) {
+        return Map<String, dynamic>.from(categoryMap[key] as Map);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Persist [value] as a nested object at `category.key`.  Passing null
+  /// removes the key.  No-op when the stored value is already identical.
+  void setJson(String key, Map<String, dynamic>? value,
+      {String category = 'general'}) {
+    var config = _getConfig();
+    config[category] ??= {};
+
+    final existing = config[category][key];
+    if (value == null) {
+      if (existing == null) return;
+      config[category].remove(key);
+      _logger.config('setJson: cleared $key');
+    } else {
+      if (existing is Map && jsonEncode(existing) == jsonEncode(value)) return;
+      config[category][key] = value;
+      _logger.config('setJson: $key updated');
+    }
+
+    _writeConfig(config);
   }
 
   String getString(String key, {String category = 'general'}) {
@@ -696,6 +735,82 @@ class OrionConfig {
 
   /// Convenience boolean: true when configured 'up'
   bool isHomePositionUp() => getHomePosition() == 'up';
+
+  /// Read the vendor `levelingMode` setting (e.g. "athena2", "manual", "").
+  /// Checks top-level `levelingMode` first, then `vendor.levelingMode`.
+  /// Returns empty string when absent (meaning no assisted leveling available).
+  String getLevelingMode() {
+    final vendor = _getVendorConfig();
+    if (vendor['levelingMode'] is String) {
+      return (vendor['levelingMode'] as String).trim().toLowerCase();
+    }
+    if (vendor['vendor'] is Map) {
+      final v = vendor['vendor']['levelingMode'];
+      if (v is String) return v.trim().toLowerCase();
+    }
+    return '';
+  }
+
+  /// Whether the printer is currently considered leveled — i.e. a leveling
+  /// session has completed successfully and its Z offset is still valid.
+  ///
+  /// Persisted in `orion.cfg` under the `leveling` section.  Starts false;
+  /// set true when a leveling session completes successfully, and reset to
+  /// false when a Verify Leveling run starts (which clears the Z offset).
+  bool isLeveled() => getFlag('isLeveled', category: 'leveling');
+
+  /// Set whether the printer is currently considered leveled.
+  void setLeveled(bool value) =>
+      setFlag('isLeveled', value, category: 'leveling');
+
+  /// Summary of the last leveling check that passed, or null when none has.
+  /// Written by the wizard and read by the Verify Leveling screen; kept in
+  /// `orion.cfg` alongside [isLeveled] so the verification state stays with
+  /// the machine state instead of with the human-readable log.
+  Map<String, dynamic>? getLastPassedLevelingSession() =>
+      getJson('lastPassedSession', category: 'leveling');
+
+  /// Persist the summary of the last passed leveling check.
+  void setLastPassedLevelingSession(Map<String, dynamic>? session) =>
+      setJson('lastPassedSession', session, category: 'leveling');
+
+  /// The persisted leveling screen type id (e.g. `'tempered_glass'`,
+  /// `'wave_release_film'`), or empty when not configured.
+  String getScreenType() => getString('screenType', category: 'leveling');
+
+  /// Persist the leveling screen type id.
+  void setScreenType(String id) =>
+      setString('screenType', id, category: 'leveling');
+
+  /// The persisted leveling variant/arm id (e.g. `'pro'`, `'regular'`), or
+  /// empty when not configured.
+  String getLevelingVariant() => getString('variant', category: 'leveling');
+
+  /// Persist the leveling variant/arm id.
+  void setLevelingVariant(String id) =>
+      setString('variant', id, category: 'leveling');
+
+  /// The Z offset applied by the last leveling session (mm), or null when
+  /// not recorded.  Manual adjustments are stored separately as an override
+  /// so the leveling-settings edit range stays anchored to this original.
+  double? getBaseZOffset() {
+    final s = getString('baseZOffset', category: 'leveling');
+    if (s.isEmpty) return null;
+    return double.tryParse(s);
+  }
+
+  void setBaseZOffset(double value) =>
+      setString('baseZOffset', value.toString(), category: 'leveling');
+
+  /// Manual Z-offset adjustment (mm) added on top of [getBaseZOffset].
+  /// The effective offset is `base + override`.
+  double getZOffsetOverride() {
+    final s = getString('zOffsetOverride', category: 'leveling');
+    return double.tryParse(s) ?? 0.0;
+  }
+
+  void setZOffsetOverride(double value) =>
+      setString('zOffsetOverride', value.toString(), category: 'leveling');
 
   /// Query a boolean feature flag from the vendor `featureFlags` section.
   /// Returns [defaultValue] when not present.

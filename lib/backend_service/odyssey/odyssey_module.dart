@@ -59,6 +59,7 @@ class OdysseyModule implements BackendModule {
       BackendCapabilities.supportsAthena: false,
       BackendCapabilities.supportsAthenaUpdates: false,
       BackendCapabilities.supportsAthenaFeatureFlags: false,
+      BackendCapabilities.supportsForceLeveling: false,
 
       // Temperature/vat control
       BackendCapabilities.supportsVatTemperature: false,

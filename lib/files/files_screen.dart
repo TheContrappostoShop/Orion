@@ -426,7 +426,7 @@ class FilesScreenState extends State<FilesScreen> {
                                             context, 'files.deleteConfirm'),
                                         style: TextStyle(
                                           height: 1.5,
-                                          fontSize: 18,
+                                          fontSize: 20,
                                         ),
                                       ),
                                       actions: [

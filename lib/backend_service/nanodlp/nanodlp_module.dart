@@ -57,6 +57,7 @@ class NanoDlpModule implements BackendModule {
       BackendCapabilities.supportsAthena: true,
       BackendCapabilities.supportsAthenaUpdates: true,
       BackendCapabilities.supportsAthenaFeatureFlags: true,
+      BackendCapabilities.supportsForceLeveling: true,
 
       // Temperature/vat control
       BackendCapabilities.supportsVatTemperature: true,

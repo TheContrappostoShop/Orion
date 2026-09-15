@@ -144,7 +144,7 @@ ButtonStyle _baseNonGlassButtonStyle(BuildContext context, {Color? tintColor}) {
   final baseTextStyle =
       (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
     fontFamily: 'AtkinsonHyperlegible',
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: FontWeight.w500,
   );
 

@@ -25,6 +25,22 @@ import 'package:http/testing.dart';
 import 'package:image/image.dart' as img;
 import 'package:orion/backend_service/nanodlp/nanodlp_http_client.dart';
 
+/// Trimmed `/profile/clone/<id>` page: the advanced form NanoDLP renders for
+/// both editing and cloning.
+const _cloneFormHtml = '''
+<html><body>
+<form action="" method="post" class="edit-page" id="setup">
+  <input type="text" value="Locked Resin" name="Title">
+  <input type="number" value="18.1" name="SupportCureTime">
+  <input type="number" value="7.9" name="CureTime">
+  <textarea name="ShieldBeforeLayer">ATHENA_DIP VISCOSITY=[[_Viscosity]]</textarea>
+  <input type="hidden" value="true" name="UpdateCustomInput">
+  <input type="text" value="9.7" name="TopWait">
+  <button type="submit">Save</button>
+</form>
+</body></html>
+''';
+
 void main() {
   group('NanoDlpHttpClient caching', () {
     test('reuses thumbnail bytes within cache TTL', () async {
@@ -211,8 +227,13 @@ void main() {
                   'SupportCureTime': 10.0,
                   'WaitHeight': 1.8,
                   'SupportLayerNumber': 8,
-                  'TopWait': 1.2,
+                  'TopWait': 0.6,
                   'WaitAfterPrint': 1.2,
+                  // Not modelled by ResinSettings: must survive the save.
+                  'ZStepWait': 1,
+                  'WaitBeforePrint': 0,
+                  'LiftSpeed': 3,
+                  'RetractSpeed': 4,
                 }),
                 200,
                 headers: {'content-type': 'application/json'},
@@ -228,11 +249,18 @@ void main() {
 
               // Existing values preserved
               expect(request.bodyFields['SupportCureTime'], '10.0');
-              expect(request.bodyFields['TopDistance'], '1.8');
               expect(request.bodyFields['WaitHeight'], '1.8');
               expect(request.bodyFields['SupportLayerNumber'], '8');
-              expect(request.bodyFields['TopWait'], '1.2');
+              expect(request.bodyFields['TopWait'], '0.6');
               expect(request.bodyFields['WaitAfterPrint'], '1.2');
+              expect(request.bodyFields.containsKey('TopDistance'), isFalse);
+
+              // Speed/wait fields the edit screen does not model are echoed
+              // back so the simple endpoint doesn't zero them.
+              expect(request.bodyFields['ZStepWait'], '1');
+              expect(request.bodyFields['WaitBeforePrint'], '0');
+              expect(request.bodyFields['LiftSpeed'], '3');
+              expect(request.bodyFields['RetractSpeed'], '4');
 
               return http.Response('', 302,
                   headers: {'location': '/profile/list'});
@@ -244,7 +272,7 @@ void main() {
       final client = NanoDlpHttpClient(clientFactory: mockFactory);
       await client.saveResinExposure(1000, 1.5);
 
-      expect(profileFetchCount, 1);
+      expect(profileFetchCount, 2);
       expect(profileEditCount, 1);
     });
 
@@ -265,6 +293,80 @@ void main() {
         throwsA(isA<StateError>()),
       );
       expect(profileEditCount, 0);
+    });
+
+    test('cloneProfile echoes the clone form and applies overrides', () async {
+      Map<String, String> posted = {};
+
+      http.Client mockFactory() => MockClient((request) async {
+            if (request.url.path.endsWith('/json/db/profiles.json')) {
+              return http.Response(
+                json.encode([
+                  {
+                    'ProfileID': 1000,
+                    'Title': 'Locked Resin',
+                    'ManufacturerLock': true,
+                  },
+                  if (posted.isNotEmpty)
+                    {
+                      'ProfileID': 1001,
+                      'Title': 'My Copy',
+                      'ManufacturerLock': false,
+                    },
+                ]),
+                200,
+                headers: {'content-type': 'application/json'},
+              );
+            }
+
+            if (request.url.path.endsWith('/profile/clone/1000')) {
+              if (request.method == 'POST') {
+                posted = Map.of(request.bodyFields);
+                return http.Response('', 302,
+                    headers: {'location': '/profiles'});
+              }
+              return http.Response(_cloneFormHtml, 200,
+                  headers: {'content-type': 'text/html'});
+            }
+
+            return http.Response('not found', 404);
+          });
+
+      final client = NanoDlpHttpClient(clientFactory: mockFactory);
+      final created = await client.cloneProfile(1000, {
+        'Title': 'My Copy',
+        'CureTime': 7.5,
+      });
+
+      // NanoDLP copies nothing server-side: untouched controls come back from
+      // the form, overrides win.
+      expect(posted['Title'], 'My Copy');
+      expect(posted['CureTime'], '7.5');
+      expect(posted['SupportCureTime'], '18.1');
+      expect(posted['TopWait'], '9.7');
+      expect(posted['UpdateCustomInput'], 'true');
+      expect(posted['ShieldBeforeLayer'], contains('ATHENA_DIP'));
+      expect(posted.containsKey('Save'), isFalse);
+
+      // The created profile is resolved from the profile list, not guessed.
+      expect(created['ProfileID'], 1001);
+      expect(created['Title'], 'My Copy');
+    });
+
+    test('cloneProfile fails when the clone form cannot be loaded', () async {
+      http.Client mockFactory() => MockClient((request) async {
+            if (request.url.path.endsWith('/json/db/profiles.json')) {
+              return http.Response('[]', 200,
+                  headers: {'content-type': 'application/json'});
+            }
+            return http.Response('not found', 404);
+          });
+
+      final client = NanoDlpHttpClient(clientFactory: mockFactory);
+      await expectLater(
+        client.cloneProfile(1000, {'Title': 'My Copy'}),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 }

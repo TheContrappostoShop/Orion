@@ -469,7 +469,7 @@ class UpdateManager extends ChangeNotifier {
             ),
             content: Text(
               FlutterI18n.translate(ctx, 'update.devWarningDetailed'),
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
             actions: [
               GlassButton(
@@ -515,7 +515,7 @@ class UpdateManager extends ChangeNotifier {
             ),
             content: Text(
               FlutterI18n.translate(ctx, 'update.confirmDevMsg'),
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
             actions: [
               GlassButton(
@@ -561,7 +561,7 @@ class UpdateManager extends ChangeNotifier {
             ),
             content: Text(
               FlutterI18n.translate(ctx, 'update.finalWarningMsgDetailed'),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
             actions: [
               GlassButton(
@@ -608,7 +608,7 @@ class UpdateManager extends ChangeNotifier {
             ),
             content: Text(
               FlutterI18n.translate(ctx, 'update.resetChannelMsg'),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
             actions: [
               GlassButton(

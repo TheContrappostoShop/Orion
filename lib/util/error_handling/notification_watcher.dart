@@ -25,7 +25,6 @@ import 'package:orion/backend_service/providers/notification_provider.dart';
 import 'package:orion/glasser/glasser.dart';
 import 'package:orion/backend_service/backend_service.dart';
 import 'package:orion/backend_service/nanodlp/models/nano_notification_types.dart';
-import 'package:orion/util/orion_config.dart';
 
 /// Installs a watcher that will show a GlassAlertDialog for each new
 /// notification reported by [NotificationProvider]. The provided [context]
@@ -254,15 +253,14 @@ class NotificationWatcher {
                             FlutterI18n.translate(context, 'common.close')),
                       ),
                     ];
-              final devMode =
-                  OrionConfig().getFlag('developerMode', category: 'advanced');
               final rawMessage = (item.text ?? '').trim();
-              final displayTitle = devMode
-                  ? getNanoTypeTitle(item.type)
-                  : FlutterI18n.translate(ctx,
-                      getNanoNotificationDisplayTitle(item.type, item.text));
-              final displayMessage = devMode
-                  ? (rawMessage.isNotEmpty ? rawMessage : '(no text)')
+              // Title keys always resolve via translate(); the message uses
+              // raw backend text directly and only translates the fallback
+              // key, so translate() never receives a non-key string.
+              final displayTitle = FlutterI18n.translate(ctx,
+                  getNanoNotificationDisplayTitle(item.type, item.text));
+              final displayMessage = rawMessage.isNotEmpty
+                  ? rawMessage
                   : FlutterI18n.translate(ctx,
                       getNanoNotificationDisplayMessage(item.type, item.text));
 

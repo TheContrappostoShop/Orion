@@ -124,7 +124,7 @@ class _MachineSettingsScreenState extends State<MachineSettingsScreen> {
                                           content: Text(
                                               FlutterI18n.translate(context,
                                                   'machineSettings.clearConfirm'),
-                                              style: TextStyle(fontSize: 22.0)),
+                                              style: TextStyle(fontSize: 20.0)),
                                           actions: [
                                             GlassButton(
                                                 style: ElevatedButton.styleFrom(

@@ -111,7 +111,7 @@ class NanoStatus {
       if (v is double) return v;
       if (v is num) return v.toDouble();
       if (v is String) {
-        // Some devices send '24.85Â°C' — strip non-numeric
+        // Some devices send '24.85°C' — strip non-numeric
         final cleaned = v.replaceAll(RegExp(r'[^0-9+\-\.]'), '');
         return double.tryParse(cleaned);
       }

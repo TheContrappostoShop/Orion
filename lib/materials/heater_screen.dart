@@ -41,7 +41,7 @@ class HeaterScreenState extends State<HeaterScreen>
   late final AnimationController _onPulseController;
   late final Animation<double> _onPulse;
 
-  int _targetTemperature = 30; // Default to 30Ãƒâ€šÃ‚Â°C
+  int _targetTemperature = 30; // Default to 30°C
   int? _lastBackendTemperature;
   bool _isUserInteracting = false;
   // Heater enabled/disabled state is now stored in [ManualProvider]. We refresh
@@ -73,7 +73,7 @@ class HeaterScreenState extends State<HeaterScreen>
           final chamber = manual.chamberTemp ?? 0.0;
 
           // If both reported temps are zero, treat that as "no backend
-          // target" rather than defaulting to 30Ãƒâ€šÃ‚Â°C. This avoids stomping a
+          // target" rather than defaulting to 30°C. This avoids stomping a
           // user-chosen value when heaters are off.
           final int? desiredFromBackend = (vat > 0.0)
               ? vat.round()
@@ -123,7 +123,7 @@ class HeaterScreenState extends State<HeaterScreen>
             maybeUpdateTargetFromManual();
           });
         } catch (_) {
-          // ignore ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â refreshHeaterEnabled already handles errors gracefully
+          // ignore — refreshHeaterEnabled already handles errors gracefully
         }
       });
     });
@@ -195,7 +195,7 @@ class HeaterScreenState extends State<HeaterScreen>
         context: context,
         builder: (context) => GlassAlertDialog(
           title: Text(FlutterI18n.translate(context, 'heater.confirmMixing'),
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600)),
           content: Text(
             FlutterI18n.translate(context, 'heater.mixingWarning'),
             style: TextStyle(fontSize: 20),
@@ -228,7 +228,7 @@ class HeaterScreenState extends State<HeaterScreen>
         final svc = BackendService();
         await svc.preheatAndMixStandalone();
         _logger.info(
-            'Mix and Preheat activated - Target: $_targetTemperatureÃƒâ€šÃ‚Â°C');
+            'Mix and Preheat activated - Target: $_targetTemperature°C');
       } catch (_) {
         if (!context.mounted) return;
         showErrorDialog(context, 'HEATER-MIX-FAILED');
@@ -556,7 +556,7 @@ class HeaterScreenState extends State<HeaterScreen>
                           Colors.red.shade600,
                           Colors.red.shade800
                         ],
-                        // Adjust stops so that 30Ãƒâ€šÃ‚Â°C (midpoint of 20-40) maps to a
+                        // Adjust stops so that 30°C (midpoint of 20-40) maps to a
                         // relatively warm color (orange) at the center of the gradient.
                         stops: const [0.0, 0.20, 0.40, 0.60, 0.80, 1.0],
                       ),

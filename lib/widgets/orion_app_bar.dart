@@ -75,10 +75,10 @@ class OrionAppBar extends StatelessWidget implements PreferredSizeWidget {
       button: true,
       // If the title is a Text widget, extract the string for a helpful
       // accessibility label; otherwise fall back to a generic label.
-      label: title is Text ? 'Back â€” ${(title as Text).data ?? ''}' : 'Back',
+      label: title is Text ? 'Back — ${(title as Text).data ?? ''}' : 'Back',
       child: Tooltip(
         message:
-            title is Text ? 'Back â€” ${(title as Text).data ?? ''}' : 'Back',
+            title is Text ? 'Back — ${(title as Text).data ?? ''}' : 'Back',
         child: Material(
           type: MaterialType.transparency,
           child: InkWell(

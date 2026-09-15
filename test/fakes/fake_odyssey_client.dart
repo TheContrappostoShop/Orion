@@ -258,6 +258,13 @@ class FakeBackendClient implements BackendClient {
   }
 
   @override
+  Future<Map<String, dynamic>> cloneProfile(
+      int sourceId, Map<String, dynamic> fields) {
+    // CHORE: implement cloneProfile
+    throw UnimplementedError();
+  }
+
+  @override
   Future<String?> getCalibrationImageUrl(int modelId) {
     // CHORE: implement getCalibrationImageUrl
     throw UnimplementedError();

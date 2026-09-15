@@ -277,7 +277,7 @@ class ModernWiFiBackend extends WiFiBackend {
     }
   }
 
-  /// Tracks interfaces where /sys/class/net/<iface>/speed is known to fail
+  /// Tracks interfaces where /sys/class/net/`<iface>`/speed is known to fail
   /// (e.g. WiFi interfaces) so we don't retry on every poll cycle.
   final Set<String> _brokenSpeedInterfaces = {};
 }

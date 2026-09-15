@@ -139,7 +139,7 @@ class UpdateScreenState extends State<UpdateScreen>
             ),
             content: Text(
               FlutterI18n.translate(context, 'update.resetChannelMsg'),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
             actions: [
               GlassButton(
@@ -209,7 +209,7 @@ class UpdateScreenState extends State<UpdateScreen>
                 ),
                 content: Text(
                   FlutterI18n.translate(context, 'update.devWarningDetailed'),
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                 ),
                 actions: [
                   GlassButton(
@@ -267,7 +267,7 @@ class UpdateScreenState extends State<UpdateScreen>
                 ),
                 content: Text(
                   FlutterI18n.translate(context, 'update.confirmDevMsg'),
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                 ),
                 actions: [
                   GlassButton(
@@ -326,7 +326,7 @@ class UpdateScreenState extends State<UpdateScreen>
                 content: Text(
                   FlutterI18n.translate(
                       context, 'update.finalWarningMsgDetailed'),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                 ),
                 actions: [
                   GlassButton(

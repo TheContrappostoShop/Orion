@@ -423,10 +423,27 @@ class ResinsProvider extends ChangeNotifier {
       }
 
       bool detectLocked(String name, Map<String, dynamic> meta) {
-        // Prefer explicit backend signals if provided
+        // Prefer explicit backend signals if provided. NanoDLP's
+        // profiles.json marks manufacturer profiles with
+        // `ManufacturerLock: true`, which may sit top-level or inside the
+        // nested merged meta map.
         try {
           final lockedMeta = meta['locked'];
           if (lockedMeta is bool) return lockedMeta;
+          final candidates = <dynamic>[meta['ManufacturerLock']];
+          final nested = meta['meta'];
+          if (nested is Map<String, dynamic>) {
+            candidates.add(nested['ManufacturerLock']);
+          }
+          for (final c in candidates) {
+            if (c is bool) return c;
+            if (c is num) return c != 0;
+            if (c is String) {
+              final v = c.trim().toLowerCase();
+              if (v == 'true' || v == '1') return true;
+              if (v == 'false' || v == '0') return false;
+            }
+          }
         } catch (_) {}
 
         // Heuristic: NanoDLP-style locked profiles often use short

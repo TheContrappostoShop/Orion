@@ -239,7 +239,7 @@ class _ConnectionErrorDialogContentState
                   Text(
                     FlutterI18n.translate(context, 'connection.connectionLost'),
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                        fontSize: 25, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -385,7 +385,7 @@ class _ConnectionErrorDialogContentState
                         FlutterI18n.translate(
                             context, 'connection.connectionLost'),
                         style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
+                            fontSize: 25, fontWeight: FontWeight.bold),
                       ),
                     ),
                     // Show attempt counter next to title in production mode

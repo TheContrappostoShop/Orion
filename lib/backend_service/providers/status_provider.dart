@@ -137,6 +137,17 @@ class StatusProvider extends ChangeNotifier {
   bool _isStatusScreenOpen = false;
   bool get isStatusScreenOpen => _isStatusScreenOpen;
 
+  /// Inhibitor flag set by the leveling wizard so the standby screen does
+  /// not activate while a force-leveling workflow is in progress.
+  bool _isLevelingWorkflowActive = false;
+  bool get isLevelingWorkflowActive => _isLevelingWorkflowActive;
+
+  void setLevelingWorkflowActive(bool active) {
+    if (_isLevelingWorkflowActive == active) return;
+    _isLevelingWorkflowActive = active;
+    notifyListeners();
+  }
+
   /// Update the visibility state of the Status Screen.
   void setStatusScreenOpen(bool isOpen) {
     if (_isStatusScreenOpen == isOpen) return;

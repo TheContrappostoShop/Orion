@@ -240,11 +240,14 @@ class _StandbyOverlayState extends State<StandbyOverlay>
         Provider.of<StandbySettingsProvider>(context, listen: false);
 
     if (!_isStandbyActive && widget.enabled && standbySettings.standbyEnabled) {
+      // Don't activate standby while a leveling workflow is in progress
+      final statusProvider =
+          Provider.of<StatusProvider>(context, listen: false);
+      if (statusProvider.isLevelingWorkflowActive) return;
+
       // Block RGB commands if there's been print activity since the last
       // explicit wake — otherwise we'd disrupt the printer's internal LED
       // control during/after a print.
-      final statusProvider =
-          Provider.of<StatusProvider>(context, listen: false);
       final isActiveJob = (statusProvider.status?.isPrinting ?? false) ||
           (statusProvider.status?.isPaused ?? false) ||
           statusProvider.isPausing ||

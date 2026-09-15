@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="1191" height="842" viewBox="0 0 1191 842">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(.12,0,0,-.12,0,842)" d="M0 0H9921V7015H0Z"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(.12,0,0,-.12,0,842)" d="M0 0H9921V7015H0Z"/>
+</clipPath>
+<clipPath id="clip_3">
+<path transform="matrix(.12,0,0,-.12,0,842)" d="M0 0H9921V7015H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+</g>
+<g clip-path="url(#clip_2)">
+<g inkscape:groupmode="layer" inkscape:label="Geometries">
+<path transform="matrix(.12,0,0,-.12,0,842)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#000000" d="M5668.5 3932C5668.5 3605.8758 5404.124 3341.5 5078 3341.5 4751.876 3341.5 4487.5 3605.8758 4487.5 3932 4487.5 4258.124 4751.876 4522.5 5078 4522.5 5404.124 4522.5 5668.5 4258.124 5668.5 3932"/>
+<path transform="matrix(.12,0,0,-.12,0,842)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#000000" d="M5692 3932C5692 3592.8973 5417.103 3318 5078 3318 4738.897 3318 4464 3592.8973 4464 3932 4464 4271.103 4738.897 4546 5078 4546 5417.103 4546 5692 4271.103 5692 3932"/>
+<path transform="matrix(.12,0,0,-.12,0,842)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#000000" d="M5904.5 3932C5904.5 3475.5367 5534.4636 3105.5 5078 3105.5 4621.5368 3105.5 4251.5 3475.5367 4251.5 3932 4251.5 4388.4636 4621.5368 4758.5 5078 4758.5 5534.4636 4758.5 5904.5 4388.4636 5904.5 3932"/>
+</g>
+</g>
+<g clip-path="url(#clip_3)">
+<g inkscape:groupmode="layer" inkscape:label="0">
+<path transform="matrix(.12,0,0,-.12,0,842)" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#000000" d="M0 0V7015H9920V0H0"/>
+</g>
+</g>
+</svg>

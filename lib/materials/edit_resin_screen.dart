@@ -21,6 +21,9 @@ import 'package:logging/logging.dart';
 import 'package:orion/backend_service/providers/resins_provider.dart';
 import 'package:orion/backend_service/backend_service.dart';
 import 'package:orion/backend_service/domain/models.dart';
+import 'package:orion/backend_service/nanodlp/models/nano_profiles.dart';
+import 'package:orion/util/orion_kb/orion_keyboard_expander.dart';
+import 'package:orion/util/orion_kb/orion_textfield_spawn.dart';
 import 'package:orion/glasser/glasser.dart';
 import 'package:orion/util/error_handling/error_dialog.dart';
 import 'package:orion/util/orion_spacing.dart';
@@ -33,7 +36,12 @@ import 'package:orion/widgets/zoom_value_editor_dialog.dart';
 class EditResinScreen extends StatefulWidget {
   final ResinProfile? resin;
 
-  const EditResinScreen({super.key, this.resin});
+  /// Invoked after the backend write succeeds, before this screen returns.
+  /// Owners pass a refresh here so a cloned profile is in the list as soon as
+  /// the user gets back to it.
+  final Future<void> Function()? onSaved;
+
+  const EditResinScreen({super.key, this.resin, this.onSaved});
 
   @override
   EditResinScreenState createState() => EditResinScreenState();
@@ -53,48 +61,9 @@ class EditResinScreenState extends State<EditResinScreen> {
   bool _saving = false;
 
   ResinSettings _settingsFromMeta(Map<String, dynamic> meta) {
-    num asNum(dynamic v, num fallback) {
-      if (v is num) return v;
-      if (v is String) return num.tryParse(v) ?? fallback;
-      return fallback;
-    }
-
-    final customValues = (meta['CustomValues'] is Map<String, dynamic>)
-        ? (meta['CustomValues'] as Map<String, dynamic>)
-        : <String, dynamic>{};
-
-    dynamic pick(String normalized, List<String> aliases, dynamic fallback) {
-      if (meta.containsKey(normalized)) return meta[normalized];
-      for (final key in aliases) {
-        if (meta.containsKey(key)) return meta[key];
-      }
-      if (customValues.containsKey(normalized)) return customValues[normalized];
-      for (final key in aliases) {
-        if (customValues.containsKey(key)) return customValues[key];
-      }
-      return fallback;
-    }
-
-    return ResinSettings(
-      burnInCureTime:
-          asNum(pick('burn_in_cure_time', ['SupportCureTime'], 10.0), 10.0)
-              .toDouble(),
-      normalCureTime:
-          asNum(pick('normal_cure_time', ['CureTime'], 8.0), 8.0).toDouble(),
-      liftAfterPrint: asNum(
-              pick('lift_after_print',
-                  ['TopDistance', 'WaitHeight', 'LiftAfterPrint'], 5.0),
-              5.0)
-          .toDouble(),
-      burnInCount:
-          asNum(pick('burn_in_count', ['SupportLayerNumber'], 3), 3).toInt(),
-      waitAfterCure: asNum(
-              pick('wait_after_cure', ['WaitAfterPrint', 'WaitAfterCure'], 2.0),
-              2.0)
-          .toDouble(),
-      waitAfterLife: asNum(pick('wait_after_life', ['WaitAfterLift'], 2.0), 2.0)
-          .toDouble(),
-    );
+    // Single source of truth for NanoDLP key mapping lives in the model so
+    // the pre-fetch placeholder and the fetched values can never disagree.
+    return ResinSettings.fromNormalizedMap(NanoProfile.normalizeForEdit(meta));
   }
 
   void _applySettings(ResinSettings settings, {bool setInitial = false}) {
@@ -159,6 +128,16 @@ class EditResinScreenState extends State<EditResinScreen> {
   }
 
   void _save() async {
+    // Locked (manufacturer) profiles are never overwritten in place: saving
+    // them always produces a renamed clone. Ask for the clone name first so
+    // the user explicitly acknowledges the copy.
+    String? cloneName;
+    if (widget.resin?.locked == true) {
+      cloneName = await _promptCloneName();
+      // Empty/cancelled: stay on the edit screen, nothing is saved.
+      if (cloneName == null || cloneName.isEmpty) return;
+    }
+
     final result = {
       'burn_in_cure_time': _burnInTime,
       'normal_cure_time': _normalTime,
@@ -166,6 +145,7 @@ class EditResinScreenState extends State<EditResinScreen> {
       'burn_in_count': _burnInCount,
       'wait_after_cure': _waitAfterCure,
       'wait_after_life': _waitAfterLife,
+      if (cloneName != null) 'title': cloneName,
     };
 
     _log.info('Saving profile edits: $result');
@@ -180,6 +160,7 @@ class EditResinScreenState extends State<EditResinScreen> {
     }
 
     if (profileId == null || profileId == 0) {
+      if (!mounted) return;
       Navigator.of(context).pop(result);
       return;
     }
@@ -198,7 +179,21 @@ class EditResinScreenState extends State<EditResinScreen> {
         waitAfterCure: _waitAfterCure,
         waitAfterLife: _waitAfterLife,
       );
-      await svc.saveResinSettings(profileId, settings);
+      if (cloneName != null) {
+        // Cloned save: create a new profile from the locked source, storing
+        // the edited values under the name the user chose.
+        final fields =
+            NanoProfile.denormalizeForBackend(settings.toNormalizedMap());
+        fields['Title'] = cloneName;
+        await svc.cloneProfile(profileId, fields);
+      } else {
+        await svc.saveResinSettings(profileId, settings);
+      }
+
+      // The write landed; let the owner re-read profiles now so the list is
+      // already up to date when the user returns to it (a clone adds an
+      // entry the pre-save list cannot contain).
+      await widget.onSaved?.call();
 
       if (mounted) {
         setState(() {
@@ -206,7 +201,7 @@ class EditResinScreenState extends State<EditResinScreen> {
         });
       }
 
-      // Show success dialog with oldÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢new comparison for normal cure time
+      // Show success dialog with old→new comparison for normal cure time
       double parseNum(dynamic v) {
         if (v == null) return 0.0;
         if (v is num) return v.toDouble();
@@ -224,12 +219,12 @@ class EditResinScreenState extends State<EditResinScreen> {
           builder: (context) => GlassAlertDialog(
             title: Text(
                 FlutterI18n.translate(context, 'editResin.profileSaved'),
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  widget.resin?.name ?? 'Resin Profile',
+                  cloneName ?? widget.resin?.name ?? 'Resin Profile',
                   style: TextStyle(
                     fontSize: 22,
                     color: Colors.grey.shade400,
@@ -341,6 +336,61 @@ class EditResinScreenState extends State<EditResinScreen> {
     }
   }
 
+  /// Ask the user to name the clone produced from a locked (manufacturer)
+  /// profile. Returns the chosen name, or null when the dialog is
+  /// cancelled or left empty.
+  Future<String?> _promptCloneName() {
+    final nameKey = GlobalKey<SpawnOrionTextFieldState>();
+    final defaultName = '${widget.resin?.name ?? 'Resin Profile'} copy';
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) => GlassAlertDialog(
+        title: Text(FlutterI18n.translate(context, 'editResin.cloneNameTitle')),
+        content: SizedBox(
+          width: MediaQuery.of(dialogContext).size.width * 0.5,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SpawnOrionTextField(
+                  key: nameKey,
+                  keyboardHint:
+                      FlutterI18n.translate(context, 'editResin.cloneNameHint'),
+                  locale: Localizations.localeOf(dialogContext).toString(),
+                  presetText: defaultName,
+                ),
+                OrionKbExpander(textFieldKey: nameKey),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          GlassButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(0, 60),
+            ),
+            child: Text(FlutterI18n.translate(context, 'common.cancel'),
+                style: const TextStyle(fontSize: 20)),
+          ),
+          GlassButton(
+            tint: GlassButtonTint.positive,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(0, 60),
+            ),
+            onPressed: () {
+              final name = nameKey.currentState?.getCurrentText().trim() ?? '';
+              if (name.isEmpty) return;
+              Navigator.of(dialogContext).pop(name);
+            },
+            child: Text(FlutterI18n.translate(context, 'common.save'),
+                style: const TextStyle(fontSize: 20)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCard({
     required String title,
     required String value,
@@ -425,11 +475,15 @@ class EditResinScreenState extends State<EditResinScreen> {
           toolbarHeight: Theme.of(context).appBarTheme.toolbarHeight,
         ),
         body: Padding(
-          padding: const EdgeInsets.only(
-              left: OrionSpacing.screenHorizontal,
-              right: OrionSpacing.screenHorizontal,
-              top: OrionSpacing.screenTop,
-              bottom: 20.0),
+          // The settings inset compensates GlassCard's default 4px margin, so
+          // the two together land on the app baseline of 20 - the same edge the
+          // rest of Orion uses. The tight top offset is the one for a screen
+          // sitting directly under OrionAppBar; the bottom stays at 20 because
+          // this route is pushed over the materials shell rather than sitting
+          // above its nav bar.
+          padding: OrionSpacing.settingsScreenPaddingTightTop.copyWith(
+            bottom: 20.0,
+          ),
           child: Column(
             children: [
               Expanded(

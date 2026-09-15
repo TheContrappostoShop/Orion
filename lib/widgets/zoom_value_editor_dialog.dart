@@ -265,7 +265,7 @@ class _ZoomValueEditorDialogState extends State<ZoomValueEditorDialog>
 
     return GlassAlertDialog(
       title: Text(widget.title,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w600)),
       content: SizedBox(
         width: 400,
         child: Column(
@@ -288,7 +288,7 @@ class _ZoomValueEditorDialogState extends State<ZoomValueEditorDialog>
                             child: Text(
                               widget.description!,
                               style: TextStyle(
-                                fontSize: 19,
+                                fontSize: 20,
                                 color: Colors.grey.shade400,
                                 height: 1.4,
                               ),
@@ -332,7 +332,7 @@ class _ZoomValueEditorDialogState extends State<ZoomValueEditorDialog>
                         // Empty: show just integer placeholder dashes
                         final intPlaces =
                             widget.max.toString().split('.')[0].length;
-                        valueStr = 'Ã¢Ë†â€™' * intPlaces;
+                        valueStr = '−' * intPlaces;
                       } else {
                         valueStr = _tempEditValue!;
                         // Only add decimal placeholder if user has entered decimal point
@@ -341,7 +341,7 @@ class _ZoomValueEditorDialogState extends State<ZoomValueEditorDialog>
                           if (parts[1].length < activeDecimals) {
                             // Has decimal but incomplete, pad with dashes
                             valueStr +=
-                                'Ã¢Ë†â€™' * (activeDecimals - parts[1].length);
+                                '−' * (activeDecimals - parts[1].length);
                           }
                         }
                       }
@@ -378,7 +378,7 @@ class _ZoomValueEditorDialogState extends State<ZoomValueEditorDialog>
                         int currentExp = digitsBeforeDecimal - 1;
                         for (var i = 0; i < valueStr.length; i++) {
                           final ch = valueStr[i];
-                          if (ch == '-' || ch == 'Ã¢Ë†â€™') {
+                          if (ch == '-' || ch == '−') {
                             spans.add(TextSpan(
                                 text: ch,
                                 style: baseStyle.copyWith(color: dimColor)));
@@ -414,7 +414,7 @@ class _ZoomValueEditorDialogState extends State<ZoomValueEditorDialog>
                       for (var i = 0; i < valueStr.length; i++) {
                         final ch = valueStr[i];
                         // Make placeholder dashes blink based on editing position
-                        if (showCursor && ch == 'Ã¢Ë†â€™') {
+                        if (showCursor && ch == '−') {
                           // Find if we're before or after decimal point
                           bool isBeforeDecimal = true;
                           for (var j = 0; j < i; j++) {

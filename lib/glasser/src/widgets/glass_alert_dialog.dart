@@ -95,7 +95,7 @@ class GlassAlertDialog extends StatelessWidget {
                     child: DefaultTextStyle(
                       style: TextStyle(
                         fontFamily: 'AtkinsonHyperlegible',
-                        fontSize: 24,
+                        fontSize: 25,
                         fontWeight: FontWeight.w600,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
@@ -109,7 +109,7 @@ class GlassAlertDialog extends StatelessWidget {
                       child: DefaultTextStyle(
                         style: TextStyle(
                           fontFamily: 'AtkinsonHyperlegible',
-                          fontSize: 19,
+                          fontSize: 20,
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface
@@ -187,7 +187,7 @@ class GlassAlertDialog extends StatelessWidget {
                         child: DefaultTextStyle(
                           style: const TextStyle(
                             fontFamily: 'AtkinsonHyperlegible',
-                            fontSize: 24,
+                            fontSize: 25,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
@@ -201,7 +201,7 @@ class GlassAlertDialog extends StatelessWidget {
                           child: DefaultTextStyle(
                             style: const TextStyle(
                               fontFamily: 'AtkinsonHyperlegible',
-                              fontSize: 19,
+                              fontSize: 20,
                               color: Colors.white70,
                               height: 1.45,
                             ),

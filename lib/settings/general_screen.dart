@@ -61,6 +61,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
   late bool overrideUpdateCheck;
   late bool overrideRawForceSensorValues;
   late bool reuseCalibrationPlate;
+  late bool forceMechanicalSkew;
   late String overrideRelease;
   late bool verboseLogging;
   late bool selfDestructMode;
@@ -103,6 +104,8 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
         config.getFlag('overrideRawForceSensorValues', category: 'developer');
     reuseCalibrationPlate =
         config.getFlag('reuseCalibrationPlate', category: 'developer');
+    forceMechanicalSkew =
+        config.getFlag('forceMechanicalSkew', category: 'developer');
     overrideRelease =
         config.getString('overrideRelease', category: 'developer');
     verboseLogging = config.getFlag('verboseLogging', category: 'developer');
@@ -638,7 +641,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                         content: Text(
                                             FlutterI18n.translate(context,
                                                 'generalSettings.resetConfirmMsg'),
-                                            style: TextStyle(fontSize: 18.0)),
+                                            style: TextStyle(fontSize: 20.0)),
                                         actions: [
                                           GlassButton(
                                             style: ElevatedButton.styleFrom(
@@ -764,7 +767,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                               FlutterI18n.translate(context,
                                                   'generalSettings.deliveryMsg'),
                                               style: const TextStyle(
-                                                  fontSize: 18.0)),
+                                                  fontSize: 20.0)),
                                           actions: [
                                             GlassButton(
                                                 style: ElevatedButton.styleFrom(
@@ -1023,6 +1026,20 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
               },
             ),
             const SizedBox(height: 20.0),
+            OrionListTile(
+              title: FlutterI18n.translate(
+                  context, 'update.forceMechanicalSkew'),
+              icon: PhosphorIcons.warning(),
+              value: forceMechanicalSkew,
+              onChanged: (bool value) {
+                setState(() {
+                  forceMechanicalSkew = value;
+                  config.setFlag('forceMechanicalSkew', value,
+                      category: 'developer');
+                });
+              },
+            ),
+            const SizedBox(height: 20.0),
             Row(
               children: [
                 Expanded(
@@ -1041,7 +1058,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                               content: Text(
                                   FlutterI18n.translate(
                                       context, 'generalSettings.cacheClearMsg'),
-                                  style: const TextStyle(fontSize: 18.0)),
+                                  style: const TextStyle(fontSize: 20.0)),
                               actions: [
                                 GlassButton(
                                     style: ElevatedButton.styleFrom(
@@ -1085,7 +1102,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                   Text(
                                       FlutterI18n.translate(context,
                                           'generalSettings.cacheClearing'),
-                                      style: const TextStyle(fontSize: 18)),
+                                      style: const TextStyle(fontSize: 20)),
                                 ],
                               ),
                             ),
@@ -1107,7 +1124,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                 content: Text(
                                     FlutterI18n.translate(context,
                                         'generalSettings.cacheCleared'),
-                                    style: const TextStyle(fontSize: 18)),
+                                    style: const TextStyle(fontSize: 20)),
                                 actions: [
                                   GlassButton(
                                     style: ElevatedButton.styleFrom(
@@ -1134,7 +1151,7 @@ class GeneralCfgScreenState extends State<GeneralCfgScreen> {
                                     context, 'common.error')),
                                 content: Text(
                                     '${FlutterI18n.translate(context, 'generalSettings.failedToClearCache')}$e',
-                                    style: const TextStyle(fontSize: 18)),
+                                    style: const TextStyle(fontSize: 20)),
                                 actions: [
                                   GlassButton(
                                     style: ElevatedButton.styleFrom(

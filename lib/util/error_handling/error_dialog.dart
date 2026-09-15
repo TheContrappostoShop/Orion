@@ -42,7 +42,7 @@ void showErrorDialog(BuildContext context, String errorCode) {
                     Text(
                       _getErrorTitle(context, errorCode),
                       style: const TextStyle(
-                        fontSize: 22,
+                        fontSize: 25,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -64,7 +64,7 @@ void showErrorDialog(BuildContext context, String errorCode) {
           content: Text(
             _getErrorMessage(context, errorCode),
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               height: 1.5,
             ),
           ),

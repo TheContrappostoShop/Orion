@@ -126,7 +126,7 @@ class UpdateNotificationWatcher {
         builder: (ctx) => GlassAlertDialog(
           title: Text(
             FlutterI18n.translate(context, 'updateNotification.title'),
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
           ),
           content: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
@@ -156,7 +156,7 @@ class UpdateNotificationWatcher {
                   FlutterI18n.translate(
                       context, 'updateNotification.wouldYouLike'),
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     color: Colors.grey.shade400,
                   ),
                   textAlign: TextAlign.center,
