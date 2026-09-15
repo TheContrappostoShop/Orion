@@ -433,6 +433,8 @@
     "verifyDesc": "Disponible après une séance de nivellement réussie.",
     "verifyNoData": "Aucune donnée de nivellement trouvée",
     "verifyNoDataHint": "Effectuez d'abord un nivellement assisté.",
+    "verifyRecordMissing": "Enregistrement de nivellement indisponible",
+    "verifyRecordMissingHint": "L'imprimante est toujours considérée comme nivelée, mais les mesures des coins de cette session ne sont plus disponibles sur cette imprimante. Lancez une revérification pour mesurer à nouveau le plateau.",
     "verifyClearOffsetTitle": "Effacer le décalage Z actuel ?",
     "verifyClearOffsetMsg": "Le démarrage de la revérification effacera le décalage Z actuel. Il ne sera réglé à nouveau qu’une fois la vérification terminée avec succès.\n\nVoulez-vous continuer ?",
     "notAvailable": "Indisponible",

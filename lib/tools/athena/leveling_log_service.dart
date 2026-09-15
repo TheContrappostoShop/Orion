@@ -85,28 +85,17 @@ class LevelingLogService {
       // ── Corner measurements table ──
       buf.writeln('Corner Measurements:');
       buf.writeln('  ${'Pos'.padRight(4)} ${'Corner'.padRight(13)} ${'Z (mm)'.padRight(11)} ${'1st Peak (gf)'.padRight(16)} ${'2nd Peak (gf)'.padRight(16)} ${'1st Over.'.padRight(12)} ${'2nd Over.'.padRight(12)}');
-      final zValues = <double>[];
+      final stats = CornerStats.fromLookup((label) => r[label]?.finalZ);
       for (int i = 0; i < 4; i++) {
         final c = r[cornerLabels[i]];
-        final z = c?.finalZ;
-        if (z != null) zValues.add(z);
-        buf.writeln('  ${cornerLabels[i].padRight(4)} ${cornerNames[i].padRight(13)} ${_fmt(z, 10)} ${_fmt(c?.firstStagePeakForce, 15)} ${_fmt(c?.secondStagePeakForce, 15)} ${_fmt(c?.firstStageOvershoot, 11)} ${_fmt(c?.secondStageOvershoot, 11)}');
+        buf.writeln('  ${cornerLabels[i].padRight(4)} ${cornerNames[i].padRight(13)} ${_fmt(c?.finalZ, 10)} ${_fmt(c?.firstStagePeakForce, 15)} ${_fmt(c?.secondStagePeakForce, 15)} ${_fmt(c?.firstStageOvershoot, 11)} ${_fmt(c?.secondStageOvershoot, 11)}');
       }
       buf.writeln(sub);
 
       // ── Summary stats ──
-      final frontZ = <double>[];
-      final backZ = <double>[];
-      if (r['FL']?.finalZ != null) frontZ.add(r['FL']!.finalZ!);
-      if (r['FR']?.finalZ != null) frontZ.add(r['FR']!.finalZ!);
-      if (r['BR']?.finalZ != null) backZ.add(r['BR']!.finalZ!);
-      if (r['BL']?.finalZ != null) backZ.add(r['BL']!.finalZ!);
-
-      if (frontZ.isNotEmpty && backZ.isNotEmpty) {
-        final frontAvg =
-            frontZ.reduce((a, b) => a + b) / frontZ.length;
-        final backAvg =
-            backZ.reduce((a, b) => a + b) / backZ.length;
+      final frontAvg = stats.frontAvgZ;
+      final backAvg = stats.backAvgZ;
+      if (frontAvg != null && backAvg != null) {
         final gap = frontAvg - backAvg;
         final gapDir = gap > 0 ? 'back lower' : 'back higher';
         buf.write('Front Avg Z: ${frontAvg.toStringAsFixed(3)} mm');
@@ -114,12 +103,13 @@ class LevelingLogService {
         buf.writeln('    Gap: ${gap.abs().toStringAsFixed(3)} mm ($gapDir)');
       }
 
-      if (zValues.isNotEmpty) {
-        final minZ = zValues.reduce((a, b) => a < b ? a : b);
-        final maxZ = zValues.reduce((a, b) => a > b ? a : b);
+      final minZ = stats.minZ;
+      final maxZ = stats.maxZ;
+      final rangeMm = stats.rangeMm;
+      if (minZ != null && maxZ != null && rangeMm != null) {
         buf.write('Min Z: ${minZ.toStringAsFixed(3)} mm');
         buf.write('    Max Z: ${maxZ.toStringAsFixed(3)} mm');
-        buf.writeln('    Range: ${(maxZ - minZ).toStringAsFixed(3)} mm');
+        buf.writeln('    Range: ${rangeMm.toStringAsFixed(3)} mm');
       }
 
       // ── Coupling estimate ──

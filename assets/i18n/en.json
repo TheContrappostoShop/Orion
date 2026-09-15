@@ -433,6 +433,8 @@
     "verifyDesc": "Available after a successful leveling session.",
     "verifyNoData": "No leveling data found",
     "verifyNoDataHint": "Complete an assisted leveling session first.",
+    "verifyRecordMissing": "Leveling record unavailable",
+    "verifyRecordMissingHint": "The printer is still marked as leveled, but the corner measurements from that session are no longer on this printer. Run a re-check to measure the plate again.",
     "verifyClearOffsetTitle": "Clear Current Z Offset?",
     "verifyClearOffsetMsg": "Starting a re-check clears the current Z offset. It will only be set again after verification completes successfully.\n\nDo you want to continue?",
     "notAvailable": "Not Available",

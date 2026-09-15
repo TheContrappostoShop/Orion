@@ -101,6 +101,70 @@ class ProbeConfigSnapshot {
       };
 }
 
+/// Front/back plane averages and the Z spread across the measured corners.
+///
+/// Shared by the human-readable leveling log and the `orion.cfg` verification
+/// snapshot so both report identical numbers.
+class CornerStats {
+  const CornerStats({
+    this.frontAvgZ,
+    this.backAvgZ,
+    this.minZ,
+    this.maxZ,
+  });
+
+  /// [z] resolves a corner label (`'FL'`/`'FR'`/`'BR'`/`'BL'`) to its measured
+  /// Z, or null when that corner has no reading.
+  factory CornerStats.fromLookup(double? Function(String label) z) {
+    final fl = z('FL');
+    final fr = z('FR');
+    final br = z('BR');
+    final bl = z('BL');
+
+    final frontCount = (fl == null ? 0 : 1) + (fr == null ? 0 : 1);
+    final backCount = (br == null ? 0 : 1) + (bl == null ? 0 : 1);
+
+    double? minZ;
+    double? maxZ;
+    for (final v in [fl, fr, br, bl]) {
+      if (v == null) continue;
+      if (minZ == null || v < minZ) minZ = v;
+      if (maxZ == null || v > maxZ) maxZ = v;
+    }
+
+    return CornerStats(
+      frontAvgZ: frontCount == 0 ? null : ((fl ?? 0) + (fr ?? 0)) / frontCount,
+      backAvgZ: backCount == 0 ? null : ((br ?? 0) + (bl ?? 0)) / backCount,
+      minZ: minZ,
+      maxZ: maxZ,
+    );
+  }
+
+  /// Mean Z of the front corners (FL/FR), or null when both are missing.
+  final double? frontAvgZ;
+
+  /// Mean Z of the back corners (BR/BL), or null when both are missing.
+  final double? backAvgZ;
+
+  final double? minZ;
+  final double? maxZ;
+
+  /// Peak-to-peak Z spread (mm), or null when nothing was measured.
+  double? get rangeMm {
+    final lo = minZ;
+    final hi = maxZ;
+    return (lo == null || hi == null) ? null : hi - lo;
+  }
+
+  /// Absolute front-to-back plane gap (mm), or null when either plane is
+  /// missing a corner.
+  double? get frontBackGapMm {
+    final front = frontAvgZ;
+    final back = backAvgZ;
+    return (front == null || back == null) ? null : (front - back).abs();
+  }
+}
+
 /// One complete corner-check session (4 corners probed, deviation computed).
 class LevelingLogEntry {
   const LevelingLogEntry({

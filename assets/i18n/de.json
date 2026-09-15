@@ -433,6 +433,8 @@
     "verifyDesc": "Verfügbar nach einer erfolgreichen Nivellierungssitzung.",
     "verifyNoData": "Keine Nivellierungsdaten gefunden",
     "verifyNoDataHint": "Führen Sie zuerst eine geführte Nivellierung durch.",
+    "verifyRecordMissing": "Nivellierungsdatensatz nicht verfügbar",
+    "verifyRecordMissingHint": "Der Drucker gilt weiterhin als nivelliert, aber die Eckenmessungen dieser Sitzung sind auf diesem Drucker nicht mehr vorhanden. Führen Sie eine erneute Prüfung durch, um die Bauplatte erneut zu vermessen.",
     "verifyClearOffsetTitle": "Aktuellen Z-Offset löschen?",
     "verifyClearOffsetMsg": "Beim Starten der erneuten Prüfung wird der aktuelle Z-Offset gelöscht. Er wird erst wieder gesetzt, nachdem die Überprüfung erfolgreich abgeschlossen wurde.\n\nMöchten Sie fortfahren?",
     "notAvailable": "Nicht verfügbar",

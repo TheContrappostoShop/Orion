@@ -433,6 +433,8 @@
     "verifyDesc": "成功调平后可用。",
     "verifyNoData": "未找到调平数据",
     "verifyNoDataHint": "请先完成辅助调平。",
+    "verifyRecordMissing": "调平记录不可用",
+    "verifyRecordMissingHint": "打印机仍标记为已调平，但该次会话的角落测量数据已不在本打印机上。请执行重新检查以再次测量平台。",
     "verifyClearOffsetTitle": "要清除当前的 Z 偏移吗？",
     "verifyClearOffsetMsg": "开始重新检查将清除当前的 Z 偏移。只有检查成功完成后，才会重新设置该偏移。\n\n是否继续？",
     "notAvailable": "Not Available",

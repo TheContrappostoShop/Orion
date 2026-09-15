@@ -33,6 +33,7 @@ import 'package:orion/tools/athena/leveling_configs.dart';
 import 'package:orion/tools/athena/screen_type_visual.dart';
 import 'package:orion/tools/athena/leveling_log_entry.dart';
 import 'package:orion/tools/athena/leveling_log_service.dart';
+import 'package:orion/tools/athena/leveling_verification_record.dart';
 import 'package:orion/tools/athena/svg_cache.dart';
 import 'package:orion/tools/athena/leveling_workflow_engine.dart';
 import 'package:orion/tools/athena/uv_safety_timer.dart';
@@ -1222,6 +1223,14 @@ class _Athena2LevelingWizardState extends State<Athena2LevelingWizard> {
       achievedForceGf: achievedGf,
     );
     LevelingLogService.logCornerCheck(entry);
+
+    // Mirror a passed check into orion.cfg.  The log is a human-readable
+    // audit trail that an update or manual cleanup can remove; the record the
+    // Verify Leveling screen renders has to travel with the machine config.
+    if (entry.passed) {
+      OrionConfig().setLastPassedLevelingSession(
+          LevelingVerificationRecord.fromLogEntry(entry).toJson());
+    }
   }
 
   void _runRecheckCorners() {

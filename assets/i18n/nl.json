@@ -433,6 +433,8 @@
     "verifyDesc": "Beschikbaar na een succesvolle nivelleringssessie.",
     "verifyNoData": "Geen nivelleringsgegevens gevonden",
     "verifyNoDataHint": "Voltooi eerst een geleide nivelleringssessie.",
+    "verifyRecordMissing": "Nivelleringsrecord niet beschikbaar",
+    "verifyRecordMissingHint": "De printer wordt nog steeds als genivelleerd beschouwd, maar de hoekmetingen van die sessie staan niet meer op deze printer. Voer een hercontrole uit om de bouwplaat opnieuw te meten.",
     "verifyClearOffsetTitle": "Huidige Z-offset wissen?",
     "verifyClearOffsetMsg": "Het starten van de hercontrole wist de huidige Z-offset. Deze wordt pas opnieuw ingesteld nadat de controle met succes is voltooid.\n\nWilt u doorgaan?",
     "notAvailable": "Niet beschikbaar",

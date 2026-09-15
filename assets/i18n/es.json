@@ -433,6 +433,8 @@
     "verifyDesc": "Disponible tras una nivelación exitosa.",
     "verifyNoData": "No se encontraron datos de nivelación",
     "verifyNoDataHint": "Complete primero una nivelación asistida.",
+    "verifyRecordMissing": "Registro de nivelación no disponible",
+    "verifyRecordMissingHint": "La impresora sigue marcada como nivelada, pero las mediciones de las esquinas de esa sesión ya no están en esta impresora. Realice una revisión para medir la placa de nuevo.",
     "verifyClearOffsetTitle": "¿Borrar el desplazamiento Z actual?",
     "verifyClearOffsetMsg": "Al iniciar la revisión se borrará el desplazamiento Z actual. Solo se volverá a establecer después de que la verificación se complete con éxito.\n\n¿Desea continuar?",
     "notAvailable": "No disponible",

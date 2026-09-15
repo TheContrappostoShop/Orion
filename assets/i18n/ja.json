@@ -433,6 +433,8 @@
     "verifyDesc": "正常にレベリングが完了すると利用可能になります。",
     "verifyNoData": "レベリングデータが見つかりません",
     "verifyNoDataHint": "最初にアシストレベリングを完了してください。",
+    "verifyRecordMissing": "レベリング記録を利用できません",
+    "verifyRecordMissingHint": "プリンターは引き続きレベリング済みとして扱われていますが、そのセッションのコーナー測定値はこのプリンターに残っていません。再チェックを実行してプレートを再度測定してください。",
     "verifyClearOffsetTitle": "現在のZオフセットをクリアしますか？",
     "verifyClearOffsetMsg": "再確認を開始すると、現在のZオフセットがクリアされます。確認が正常に完了した後にのみ再設定されます。\n\n続行しますか？",
     "notAvailable": "Not Available",

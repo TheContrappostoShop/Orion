@@ -433,6 +433,8 @@
     "verifyDesc": "Disponibile dopo una sessione di livellamento riuscita.",
     "verifyNoData": "Nessun dato di livellamento trovato",
     "verifyNoDataHint": "Completa prima una sessione di livellamento assistito.",
+    "verifyRecordMissing": "Record di livellamento non disponibile",
+    "verifyRecordMissingHint": "La stampante è ancora contrassegnata come livellata, ma le misurazioni degli angoli di quella sessione non sono più presenti su questa stampante. Esegui una riverifica per misurare di nuovo la piastra.",
     "verifyClearOffsetTitle": "Cancellare l’offset Z attuale?",
     "verifyClearOffsetMsg": "L’avvio della riverifica cancellerà l’offset Z corrente. Verrà reimpostato solo dopo il completamento con successo della verifica.\n\nVuoi continuare?",
     "notAvailable": "Non disponibile",
