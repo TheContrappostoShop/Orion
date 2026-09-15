@@ -24,6 +24,8 @@ import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:orion/settings/update_progress.dart';
+import 'package:orion/tools/athena/leveling_log_service.dart';
+import 'package:orion/tools/athena/screw_calibration_store.dart';
 import 'package:orion/util/install_locator.dart';
 import 'package:orion/util/orion_config.dart';
 import 'package:orion/pubspec.dart';
@@ -37,6 +39,18 @@ import 'package:orion/pubspec.dart';
 class OrionUpdateProvider extends ChangeNotifier {
   final Logger _logger = Logger('OrionUpdateProvider');
   final OrionConfig _config = OrionConfig();
+
+  /// Files Orion keeps next to `orion.cfg` that hold user/machine state.
+  ///
+  /// The update script replaces the whole install directory — which is also
+  /// the config directory on most installs — so every one of these has to be
+  /// copied back from the backup. Anything missing here is destroyed by an
+  /// update (a lost leveling log reads back as "printer not leveled").
+  static const List<String> persistedStateFiles = <String>[
+    'orion.cfg',
+    LevelingLogService.fileName,
+    ScrewCalibrationStore.fileName,
+  ];
 
   final ValueNotifier<double> progress = ValueNotifier<double>(0.0);
   final ValueNotifier<String> message = ValueNotifier<String>('');
@@ -681,9 +695,15 @@ if [ -d "\$orion_folder" ]; then
   sudo rm -R "\$orion_folder"
 fi
 
-# Restore config file if present
-if [ -f "\$backup_folder/orion.cfg" ] && [ -d "\$new_orion_folder" ]; then
-  sudo cp "\$backup_folder/orion.cfg" "\$new_orion_folder"
+# Restore persistent state files (orion.cfg plus the leveling state that
+# lives beside it).  They were in the directory that was just replaced, so
+# only the backup copy exists now.
+if [ -d "\$new_orion_folder" ]; then
+  for state_file in ${persistedStateFiles.join(' ')}; do
+    if [ -f "\$backup_folder/\$state_file" ]; then
+      sudo cp "\$backup_folder/\$state_file" "\$new_orion_folder"
+    fi
+  done
 fi
 
 # Move the new Orion directory to the original location

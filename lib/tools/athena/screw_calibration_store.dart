@@ -38,6 +38,11 @@ import 'package:path/path.dart' as path;
 class ScrewCalibrationStore {
   ScrewCalibrationStore({String? directory}) : _directoryOverride = directory;
 
+  /// Name of the store, resolved next to `orion.cfg`. Exposed so callers that
+  /// must preserve state across an install (see `OrionUpdateProvider`) can
+  /// name it without duplicating the literal.
+  static const String fileName = 'orion_leveling_calibration.json';
+
   static final _log = Logger('ScrewCalibrationStore');
   final String? _directoryOverride;
   String? _resolvedDir;
@@ -59,7 +64,7 @@ class ScrewCalibrationStore {
 
   String get filePath {
     _resolvedDir ??= _resolveDir();
-    return path.join(_resolvedDir!, 'orion_leveling_calibration.json');
+    return path.join(_resolvedDir!, fileName);
   }
 
   /// Read the stored couplings (mm/gf), keyed by screw id

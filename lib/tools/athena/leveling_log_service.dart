@@ -28,6 +28,11 @@ import 'package:path/path.dart' as path;
 class LevelingLogService {
   LevelingLogService._();
 
+  /// Name of the log file, resolved next to `orion.cfg`. Exposed so callers
+  /// that must preserve state across an install (see `OrionUpdateProvider`)
+  /// can name it without duplicating the literal.
+  static const String fileName = 'orion_level.log';
+
   static final _log = Logger('LevelingLogService');
   static String? _resolvedDir;
 
@@ -46,7 +51,7 @@ class LevelingLogService {
 
   static String get logFilePath {
     _resolvedDir ??= _resolveLogDir();
-    return path.join(_resolvedDir!, 'orion_level.log');
+    return path.join(_resolvedDir!, fileName);
   }
 
   /// Append a corner-check entry to the log file in human-readable format.
